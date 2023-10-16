@@ -1,11 +1,13 @@
 {
-  "name": "webpack-practice",
+  "name": "Color-Palette",
+  "homepage": "https://johnny95731.github.io/Color-Palette",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "dev": "webpack --watch",
     "build": "webpack",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "deploy": "gh-pages -d build"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",
@@ -22,6 +24,7 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "gh-pages": "^6.0.0",
     "mini-css-extract-plugin": "^2.7.6",
     "node-sass": "^9.0.0",
     "normalize.css": "^8.0.1",

@@ -350,7 +350,10 @@ template {
 .src-components-Header-title___KOGx9 {
   margin: auto 0;
   width: auto;
-  font-size: 24px; }
+  font-size: 24px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none; }
 
 .src-components-Header-btnContainer___IKBYg {
   flex-grow: 1;
@@ -370,6 +373,9 @@ template {
   border-width: 0px;
   padding: 5px 10px;
   background-color: inherit;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   cursor: pointer; }
   .src-components-Header-btn___Oex_G:hover {
     background-color: #e0e0e0;
@@ -378,33 +384,34 @@ template {
 .src-components-Header-dropdownMenu___enZ0N {
   position: relative; }
   .src-components-Header-dropdownMenu___enZ0N:hover .src-components-Header-dropdownContent___RAeR_ {
-    visibility: visible; }
+    display: block; }
 
 .src-components-Header-dropdownContent___RAeR_ {
-  visibility: hidden;
+  display: none;
   position: absolute;
   left: 50%;
   top: 100%;
   transform: translateX(-50%);
-  width: 120px;
+  width: -moz-min-content;
+  width: min-content;
+  text-wrap: nowrap;
   background-color: #e5e5e5;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
+  transition: display 0.1s linear;
   z-index: 999; }
   .src-components-Header-dropdownContent___RAeR_ > div {
     width: auto;
     font-weight: 600;
     padding: 5px 10px;
     border-width: 1px 0;
+    padding: 5px 17px;
     background-color: inherit;
     text-align: center;
     -webkit-user-select: none;
        -moz-user-select: none;
             user-select: none; }
     .src-components-Header-dropdownContent___RAeR_ > div:hover {
-      -webkit-text-decoration: underline;
-      text-decoration: underline;
-      filter: brightness(90%); }
+      background-color: #d2d2d2; }
 
 /*!*****************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/App.scss ***!
@@ -422,28 +429,38 @@ template {
   flex: 1 1;
   position: relative;
   display: flex;
-  box-sizing: border-box; }
-  .src-components-Card-cardContainer___lFeKI:hover .src-components-Card-toolContainer___UW5_K {
+  height: 100%; }
+  .src-components-Card-cardContainer___lFeKI:hover .src-components-Card-toolContainer___UW5_K > img {
     visibility: visible; }
 
-.src-components-Card-leftCard___mTIfU {
-  flex-basis: 20%;
-  flex-shrink: 2; }
+.src-components-Card-sideCard___FZq5a {
+  position: relative;
+  flex-grow: 1;
+  flex-shrink: 1; }
+  .src-components-Card-sideCard___FZq5a:hover .src-components-Card-insertBtn___uohgi {
+    display: block; }
 
-.src-components-Card-rightCard___HBEcM {
-  flex-basis: 20%;
-  flex-shrink: 2; }
+.src-components-Card-insertBtn___uohgi {
+  position: absolute;
+  display: none;
+  width: 30px;
+  height: auto;
+  top: 40%;
+  z-index: 999;
+  cursor: pointer; }
+
+.src-components-Card-insertBtnR___i7kSz {
+  left: 100%;
+  transform: translateX(-100%); }
 
 .src-components-Card-toolContainer___UW5_K {
   flex: 0 0 60%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 120px;
   flex-direction: column; }
-  .src-components-Card-toolContainer___UW5_K > div {
-    width: -moz-min-content;
-    width: min-content;
-    cursor: pointer; }
   .src-components-Card-toolContainer___UW5_K > img {
+    visibility: hidden;
     margin: 15px auto;
     width: 25px;
     cursor: pointer; }
@@ -451,6 +468,16 @@ template {
     .src-components-Card-toolContainer___UW5_K > img {
       margin: 25px auto;
       width: 50px; } }
+
+.src-components-Card-regulator___KSLqL {
+  display: block;
+  width: 100%; }
+  .src-components-Card-regulator___KSLqL > div {
+    width: -moz-min-content;
+    width: min-content;
+    cursor: pointer; }
+  .src-components-Card-regulator___KSLqL > label {
+    font-size: 16px; }
 
 .src-components-Card-hexText___EJdFd {
   margin: 15px auto 10px;
@@ -467,6 +494,22 @@ template {
     .src-components-Card-rgbText___J8jsW {
       margin: 20px auto;
       font-size: 32px; } }
+
+.src-components-Card-hexInput___QWBxm {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  border-radius: 10px;
+  border-width: 0;
+  -webkit-user-select: text;
+     -moz-user-select: text;
+          user-select: text; }
+
+.src-components-Card-sliderContent___Yl21e {
+  width: 100%; }
+
+.src-components-Card-slider___ccc_4 {
+  width: 100%; }
 
 /*!********************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/tooltip.scss ***!
