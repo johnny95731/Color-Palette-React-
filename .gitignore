@@ -1,0 +1,5 @@
+# Basic folder
+node_modules
+.vscode
+
+test.js
