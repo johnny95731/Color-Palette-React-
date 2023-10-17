@@ -57,7 +57,7 @@ const EditBtn = ({isLight, onClick}) => {
   />;
 };
 
-const InsertIcon = ({side, isLight, onClick}) => {
+const InsertIcon = ({totalNum, side, isLight, onClick}) => {
   const url = side==="right" ? insertRight : insertLeft;
   return (
     <div className={styles.sideCard}>
@@ -173,15 +173,17 @@ const Card = ({
       <InsertIcon side="left"
         isLight={isLight} onClick={handleInsertClick}
       />
-      <div className={styles.toolContainer}>
-        <CloseTool totalNum={totalNum} isLight={isLight} onClick={delCard} />
-        <LockTool isLight={isLight} isLock={isLock} onClick={lockCard} />
-        <RefreshTool isLight={isLight} isLock={isLock} onClick={refresh}/>
-        <EditBtn
-          isLight={isLight}
-          onClick={() => setIsEditing((prev) => !prev)}
-        />
-        <div className={styles.regulator}>
+      <div className={`${styles.centerCard}`}>
+        <div className={styles.toolContainer}>
+          <CloseTool totalNum={totalNum} isLight={isLight} onClick={delCard} />
+          <LockTool isLight={isLight} isLock={isLock} onClick={lockCard} />
+          <RefreshTool isLight={isLight} isLock={isLock} onClick={refresh}/>
+          <EditBtn
+            isLight={isLight}
+            onClick={() => setIsEditing((prev) => !prev)}
+          />
+        </div>
+        <div className={styles.textRegion}>
           {
             !isEditing ?
             <>
@@ -221,7 +223,7 @@ const Card = ({
                         id={`card${cardId}-slider${i}`}
                         type="range" min="0" max={maxs[i]}
                         defaultValue={modeColor[i]}
-                        className={styles.slider}
+                        style={{width: "100%"}}
                         onChange={(e) => handleSliderChange(e, i)}
                       />
                     </Fragment>

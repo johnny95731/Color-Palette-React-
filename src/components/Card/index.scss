@@ -1,27 +1,21 @@
-.cardContainer{
+
+.cardContainer {
   flex: 1 1;
   position: relative;
   display: flex;
   height: 100%;
-  // border-right-style: solid;
-  // border-right-color: #fff;
-  // border-right-width: 1px;
-  // border-left-style: solid;
-  // border-left-color: #fff;
-  // border-left-width: 1px;
-  // border-collapse: collapse;
 
-  &:hover .toolContainer >img {
+  &:hover .toolContainer img {
     visibility: visible;
   }
 }
 
-.sideCard{
+.sideCard {
   position: relative;
   flex-grow: 1;
   flex-shrink: 1;
 
-  &:hover .insertBtn{
+  &:hover .insertBtn {
     display: block;
   }
 }
@@ -41,29 +35,37 @@
   transform: translateX(-100%);
 }
 
-.toolContainer{
+.centerCard {
+  position: relative;
   flex: 0 0 60%;
-  display: flex;
-  justify-content: flex-start;
-  padding-top: 120px;
-  flex-direction: column;
-  >img {
+}
+
+.toolContainer {
+  position: relative;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  img {
+    display: block;
     visibility: hidden;
-    margin: 15px auto;
-    width: 25px;
+    margin: 30px auto;
+    width: 30px;
     cursor: pointer;
   }
 
   @media (min-width: 2559px) {
-    >img{
-      margin: 25px auto;
+    >img {
+      margin: 30px auto;
       width: 50px;
     }
   }
 }
 
-.regulator {
-  display: block;
+.textRegion {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
   >div {
     width: min-content;
@@ -75,36 +77,29 @@
   }
 }
 
-.hexText{
-  margin: 15px auto 10px;
-  font-size: 24px;
+.hexText {
+  margin: 25px auto 20px;
+  font-size: 30px;
   @media (min-width: 2559px) {
     margin: 25px auto 20px;
     font-size: 48px;
   }
 }
 
-.rgbText{
-  margin: 10px auto;
-  font-size: 16px;
+.rgbText {
+  margin: 20px auto;
+  font-size: 18px;
   @media (min-width: 2559px) {
     margin: 20px auto;
     font-size: 32px;
   }
 }
 
-.hexInput{
+.hexInput {
   margin-top: 20px;
   margin-bottom: 20px;
   width: 100%;
   border-radius: 10px;
   border-width: 0;
   user-select: text;
-}
-
-.sliderContent {
-  width: 100%;
-}
-.slider {
-  width: 100%;
 }

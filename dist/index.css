@@ -430,7 +430,7 @@ template {
   position: relative;
   display: flex;
   height: 100%; }
-  .src-components-Card-cardContainer___lFeKI:hover .src-components-Card-toolContainer___UW5_K > img {
+  .src-components-Card-cardContainer___lFeKI:hover .src-components-Card-toolContainer___UW5_K img {
     visibility: visible; }
 
 .src-components-Card-sideCard___FZq5a {
@@ -453,43 +453,50 @@ template {
   left: 100%;
   transform: translateX(-100%); }
 
+.src-components-Card-centerCard___pCPkT {
+  position: relative;
+  flex: 0 0 60%; }
+
 .src-components-Card-toolContainer___UW5_K {
-  flex: 0 0 60%;
-  display: flex;
-  justify-content: flex-start;
-  padding-top: 120px;
-  flex-direction: column; }
-  .src-components-Card-toolContainer___UW5_K > img {
+  position: relative;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%); }
+  .src-components-Card-toolContainer___UW5_K img {
+    display: block;
     visibility: hidden;
-    margin: 15px auto;
-    width: 25px;
+    margin: 30px auto;
+    width: 30px;
     cursor: pointer; }
   @media (min-width: 2559px) {
     .src-components-Card-toolContainer___UW5_K > img {
-      margin: 25px auto;
+      margin: 30px auto;
       width: 50px; } }
 
-.src-components-Card-regulator___KSLqL {
-  display: block;
+.src-components-Card-textRegion____dVHW {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%; }
-  .src-components-Card-regulator___KSLqL > div {
+  .src-components-Card-textRegion____dVHW > div {
     width: -moz-min-content;
     width: min-content;
     cursor: pointer; }
-  .src-components-Card-regulator___KSLqL > label {
+  .src-components-Card-textRegion____dVHW > label {
     font-size: 16px; }
 
 .src-components-Card-hexText___EJdFd {
-  margin: 15px auto 10px;
-  font-size: 24px; }
+  margin: 25px auto 20px;
+  font-size: 30px; }
   @media (min-width: 2559px) {
     .src-components-Card-hexText___EJdFd {
       margin: 25px auto 20px;
       font-size: 48px; } }
 
 .src-components-Card-rgbText___J8jsW {
-  margin: 10px auto;
-  font-size: 16px; }
+  margin: 20px auto;
+  font-size: 18px; }
   @media (min-width: 2559px) {
     .src-components-Card-rgbText___J8jsW {
       margin: 20px auto;
@@ -504,12 +511,6 @@ template {
   -webkit-user-select: text;
      -moz-user-select: text;
           user-select: text; }
-
-.src-components-Card-sliderContent___Yl21e {
-  width: 100%; }
-
-.src-components-Card-slider___ccc_4 {
-  width: 100%; }
 
 /*!********************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/tooltip.scss ***!
