@@ -33,3 +33,7 @@
   進入編輯模式。具有「Hex碼input」以及「數值滑桿」。\
   編輯input後，會在離開input（點選其他位置）更新，若不是有效的Hex顏色，則不會更新。\
   滑桿的數值會即時更新，所使用的色彩空間可在上方「Mode」選單改變，預設為RGB模式。
+
+## 版權宣告
+Favicon: color-wheel.png來自flaticon之[Color creator](https://www.flaticon.com/authors/color-creator)
+其餘圖案來自[Bootstrap Icons](https://icons.getbootstrap.com/)
