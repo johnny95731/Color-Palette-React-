@@ -7,6 +7,8 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
+  font-size: 14px;
+  font-weight: 700;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
  sans-serif;
@@ -332,126 +334,140 @@ template {
 [hidden] {
   display: none; }
 
+/*!******************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/icons.scss ***!
+  \******************************************************************************************************************************************************************************************/
+.icon {
+  cursor: pointer;
+  width: 100%;
+  height: 100%; }
+
 /*!*************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/Header/index.scss ***!
   \*************************************************************************************************************************************************************************************************/
 .src-components-Header-header___L6vga {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   width: 100%;
   height: 60px;
-  padding: 0px 60px;
+  padding: 0 50px 0 80px;
   box-sizing: border-box;
-  border-bottom-style: solid;
-  border-bottom-color: #ddd;
-  border-bottom-width: 2px;
   background-color: #f0f0f0;
-  color: #1d1d57; }
-
-.src-components-Header-title___KOGx9 {
-  margin: auto 0;
-  width: auto;
-  font-size: 24px;
+  color: #1d1d57;
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none; }
 
-.src-components-Header-btnContainer___IKBYg {
-  flex-grow: 1;
-  height: -moz-min-content;
-  height: min-content;
-  margin: auto 20px auto 30px; }
-  .src-components-Header-btnContainer___IKBYg > span {
-    margin: auto 20px; }
+.src-components-Header-title___KOGx9 {
+  font-size: 24px; }
+
+.src-components-Header-menubar___task6 {
+  flex: 1 1 auto;
+  display: table;
+  align-content: center;
+  margin: auto 10px auto 20px; }
 
 .src-components-Header-btn___Oex_G {
-  width: -moz-min-content;
-  width: min-content;
-  height: -moz-min-content;
-  height: min-content;
-  font-weight: 700;
+  float: left;
   border-radius: 5px;
   border-width: 0px;
-  padding: 5px 10px;
+  padding: 5px 8px;
+  margin-right: 3px;
   background-color: inherit;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
   cursor: pointer; }
+  .src-components-Header-btn___Oex_G > img {
+    margin-right: 3px;
+    height: 100%;
+    vertical-align: bottom; }
   .src-components-Header-btn___Oex_G:hover {
     background-color: #e0e0e0;
     color: #21214d; }
 
+.src-components-Header-btnR___G0TrY {
+  float: right;
+  margin: 0; }
+
 .src-components-Header-dropdownMenu___enZ0N {
-  position: relative; }
+  position: relative;
+  cursor: default; }
   .src-components-Header-dropdownMenu___enZ0N:hover .src-components-Header-dropdownContent___RAeR_ {
     display: block; }
 
-.src-components-Header-dropdownContent___RAeR_ {
+/*!************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/Menus/menus.scss ***!
+  \************************************************************************************************************************************************************************************************/
+.src-components-Menus-dropdownMenu___fB4py, .src-components-Menus-popupMenu___zI4FA {
+  position: relative;
+  cursor: default; }
+
+.src-components-Menus-dropdownMenu___fB4py:hover .src-components-Menus-menuContent___Og_9E {
+  display: block; }
+
+.src-components-Menus-menuContent___Og_9E {
   display: none;
   position: absolute;
-  left: 50%;
   top: 100%;
-  transform: translateX(-50%);
   width: -moz-min-content;
   width: min-content;
   text-wrap: nowrap;
   background-color: #e5e5e5;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  transition: display 0.1s linear;
-  z-index: 999; }
-  .src-components-Header-dropdownContent___RAeR_ > div {
-    width: auto;
+  transition: opacity .2s ease;
+  z-index: 999;
+  cursor: pointer; }
+  .src-components-Menus-menuContent___Og_9E > * {
     font-weight: 600;
     padding: 5px 10px;
     border-width: 1px 0;
     padding: 5px 17px;
     background-color: inherit;
-    text-align: center;
-    -webkit-user-select: none;
-       -moz-user-select: none;
-            user-select: none; }
-    .src-components-Header-dropdownContent___RAeR_ > div:hover {
+    text-align: center; }
+    .src-components-Menus-menuContent___Og_9E > *:hover {
       background-color: #d2d2d2; }
 
-/*!*****************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/App.scss ***!
-  \*****************************************************************************************************************************************************************************/
-.src-main___ScykI {
-  position: absolute;
-  display: flex;
-  width: 100%;
-  height: calc(100% - 60px); }
+.src-components-Menus-menuContent___Og_9E {
+  left: 50%;
+  transform: translateX(-50%); }
+
+.src-components-Menus-menuContentL___Sn1pt {
+  left: 0;
+  right: auto;
+  transform: none; }
+
+.src-components-Menus-menuContentR___S8uFI {
+  left: auto;
+  right: 0;
+  transform: none; }
 
 /*!***********************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/Card/index.scss ***!
   \***********************************************************************************************************************************************************************************************/
 .src-components-Card-cardContainer___lFeKI {
-  flex: 1 1;
+  flex: 1 1 auto;
   position: relative;
   display: flex;
   height: 100%; }
-  .src-components-Card-cardContainer___lFeKI:hover .src-components-Card-toolContainer___UW5_K img {
+  .src-components-Card-cardContainer___lFeKI:hover .src-components-Card-toolContainer___UW5_K * {
     visibility: visible; }
 
 .src-components-Card-sideCard___FZq5a {
   position: relative;
-  flex-grow: 1;
-  flex-shrink: 1; }
-  .src-components-Card-sideCard___FZq5a:hover .src-components-Card-insertBtn___uohgi {
+  flex: 1 1; }
+  .src-components-Card-sideCard___FZq5a:hover .icon {
     display: block; }
 
-.src-components-Card-insertBtn___uohgi {
+.src-components-Card-insertLeft___VxMkL, .src-components-Card-insertRight____aXFo {
   position: absolute;
   display: none;
-  width: 30px;
-  height: auto;
-  top: 40%;
+  width: 25px;
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 999;
   cursor: pointer; }
 
-.src-components-Card-insertBtnR___i7kSz {
-  left: 100%;
-  transform: translateX(-100%); }
+.src-components-Card-insertRight____aXFo {
+  right: 0; }
 
 .src-components-Card-centerCard___pCPkT {
   position: relative;
@@ -459,17 +475,17 @@ template {
 
 .src-components-Card-toolContainer___UW5_K {
   position: relative;
-  top: 40%;
+  top: 35%;
   left: 50%;
   transform: translate(-50%, -50%); }
-  .src-components-Card-toolContainer___UW5_K img {
+  .src-components-Card-toolContainer___UW5_K .icon {
     display: block;
     visibility: hidden;
     margin: 30px auto;
-    width: 30px;
-    cursor: pointer; }
+    height: 25px;
+    width: 25px; }
   @media (min-width: 2559px) {
-    .src-components-Card-toolContainer___UW5_K > img {
+    .src-components-Card-toolContainer___UW5_K * {
       margin: 30px auto;
       width: 50px; } }
 
@@ -512,43 +528,130 @@ template {
      -moz-user-select: text;
           user-select: text; }
 
-/*!********************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/tooltip.scss ***!
-  \********************************************************************************************************************************************************************************************/
-.src-components-tooltip___DECGJ {
-  position: relative; }
-  .src-components-tooltip___DECGJ:hover .src-components-topTip___s40ao, .src-components-tooltip___DECGJ:hover .src-components-bottomTip___X0JbY {
-    visibility: visible; }
-
-.src-components-topTip___s40ao {
-  visibility: hidden;
+/*!****************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/components/FavColors/index.scss ***!
+  \****************************************************************************************************************************************************************************************************/
+.src-components-FavColors-menuBar___r2OoP > .icon, .src-components-FavColors-colorBlock___K1ava > span {
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  width: -moz-max-content;
-  width: max-content;
-  background-color: rgba(127, 127, 127, 0.7);
-  color: #fff;
-  text-align: center;
-  font-size: 14px;
-  border-radius: 6px;
-  padding: 5px;
-  transform: translateX(-50%);
-  transition: opacity 0.3s; }
+  top: 50%;
+  transform: translateY(-50%); }
 
-.src-components-bottomTip___X0JbY {
-  visibility: hidden;
+.src-components-FavColors-palleteBlock___TDejm > span .icon {
   position: absolute;
-  top: 100%;
+  top: 50%;
   left: 50%;
-  width: -moz-max-content;
-  width: max-content;
-  background-color: rgba(127, 127, 127, 0.7);
-  color: #fff;
-  text-align: center;
-  font-size: 14px;
-  border-radius: 6px;
-  padding: 5px;
-  transform: translateX(-50%);
-  transition: opacity 0.3s; }
+  transform: translate(-50%, -50%); }
+
+.src-components-FavColors-blank___aSryY {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0,0,0,0.33333); }
+
+.src-components-FavColors-favColors___wENbf {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 300px;
+  background-color: #ccc; }
+
+.src-components-FavColors-menuBar___r2OoP {
+  position: relative;
+  display: flex;
+  height: 45px;
+  width: 100%;
+  padding: 0 5px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
+  background-color: #f0f0f0; }
+  .src-components-FavColors-menuBar___r2OoP > span {
+    width: -moz-min-content;
+    width: min-content;
+    margin: auto 3px auto 0;
+    padding: 3px 7px;
+    border-radius: 10px;
+    border: 1px solid #999;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+    cursor: pointer; }
+    .src-components-FavColors-menuBar___r2OoP > span:hover {
+      background-color: #555; }
+  .src-components-FavColors-menuBar___r2OoP > .icon {
+    right: 8px;
+    height: 20px;
+    width: auto;
+    filter: invert(1); }
+    .src-components-FavColors-menuBar___r2OoP > .icon:hover {
+      background-color: #aaa; }
+
+.src-components-FavColors-pageContent___IBvxT {
+  margin-top: 45px;
+  overflow-y: auto; }
+
+.src-components-FavColors-colorBlock___K1ava, .src-components-FavColors-palleteBlock___TDejm {
+  margin: 5px;
+  border-radius: 10px;
+  overflow: hidden; }
+
+.src-components-FavColors-colorBlock___K1ava {
+  position: relative;
+  display: inline-block;
+  height: 45px;
+  width: calc(50% - 10px); }
+  .src-components-FavColors-colorBlock___K1ava :first-child {
+    display: inline-block;
+    width: -moz-max-content;
+    width: max-content;
+    height: 20px;
+    left: 10px;
+    font-weight: 600;
+    cursor: pointer; }
+    .src-components-FavColors-colorBlock___K1ava :first-child > .icon {
+      height: 20px;
+      width: auto;
+      margin-right: 8px;
+      vertical-align: bottom; }
+  .src-components-FavColors-colorBlock___K1ava > span {
+    height: 15px;
+    right: 9px; }
+
+.src-components-FavColors-palleteBlock___TDejm {
+  position: relative;
+  height: -moz-min-content;
+  height: min-content; }
+  .src-components-FavColors-palleteBlock___TDejm :first-child {
+    height: 35px;
+    width: 100%; }
+  .src-components-FavColors-palleteBlock___TDejm > span {
+    position: absolute;
+    display: none;
+    height: 100%;
+    width: 30px;
+    top: 0;
+    left: auto;
+    right: 0;
+    background-color: rgba(0,0,0,0.46667); }
+    .src-components-FavColors-palleteBlock___TDejm > span .icon {
+      height: 13px;
+      filter: invert(1); }
+  .src-components-FavColors-palleteBlock___TDejm :nth-child(3) {
+    background-color: #fff;
+    font-weight: 600;
+    padding: 3px 0 3px 7px;
+    margin-top: 1px; }
+  .src-components-FavColors-palleteBlock___TDejm:hover > span {
+    display: inline; }
+
+/*!*****************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/App.scss ***!
+  \*****************************************************************************************************************************************************************************/
+.src-main___ScykI {
+  position: absolute;
+  display: flex;
+  width: 100%;
+  height: calc(100% - 60px); }
 

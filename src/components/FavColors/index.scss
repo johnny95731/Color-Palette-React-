@@ -1,0 +1,123 @@
+@import "../commons.scss";
+
+.blank {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #0005;
+}
+
+.favColors {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 300px;
+  background-color: #d0d0d0;
+  :global(.icon) {
+    height: 13px;
+    filter: invert(1);
+  }
+}
+
+.menuBar {
+  position: relative;
+  display: flex;
+  height: 45px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  background-color: #eee;
+  user-select: none;
+  >* {
+    border-radius: 7px;
+    &:hover {
+      background-color: #d0d0d0;
+    }
+  }
+  >span {
+    width: min-content;
+    margin: auto 3px auto 0;
+    padding: 3px 7px;
+    cursor: pointer;
+  }
+  :global(.icon) {
+    @extend %verticalCenter;
+    right: 8px;
+    padding: 4px;
+    filter: none;
+  }
+}
+
+.focusButton {
+  background-color: #fff;
+}
+
+.pageContent {
+  height: calc(100% - 45px);
+  overflow-y: auto;
+  list-style-type: none;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  padding-inline-start: 0;
+}
+
+.delRegion {
+  opacity: 0;
+  position: absolute;
+  height: 100%;
+  width: 30px;
+  top: 0;
+  left: auto;
+  right: 0;
+  background-color: #0007;
+  >:global(.icon) {
+    @extend %center;
+  }
+}
+
+%favBlock {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 5px;
+  list-style-type: none;
+
+  &:hover .delRegion {
+    opacity: 1;
+  }
+}
+
+.colorBlock {
+  @extend %favBlock;
+  height: 40px;
+  >div {
+    @extend %verticalCenter;
+    left: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    >:global(.icon) {
+      opacity: 0;
+      margin-right: 5px;
+    }
+  }
+  &:hover :global(.icon) {
+    opacity: 1;
+  }
+}
+
+.palleteBlock {
+  @extend %favBlock;
+  height: min-content;
+  div:first-child {
+    height: 35px;
+  }
+  div:nth-child(3) {
+    background-color: #fff;
+    font-weight: 600;
+    padding: 3px 0 3px 7px;
+    margin-top: 1px;
+  }
+}

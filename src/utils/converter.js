@@ -1,58 +1,64 @@
+/**
+ * The modulo function. Equivalent to
+ *   `let a = n % m;
+ *   if (a < 0) a += m;`
+ * @param {Number} n Dividend.
+ * @param {Number} m Divisor.
+ * @return {Number} Signed remainder.
+ */
+export const mod = (n, m) => {
+  return ((n % m) + m) % m;
+};
 
 // From RGB.
 /**
  * Convert RGB to Hex.
  * @param {Array} rgb RGB color array.
- * @return {Array} Hex color.
+ * @return {String} Hex color.
  */
 export const rgb2hex = (rgb) => {
-  return rgb.reduce(
-      (cummul, val) => {
-        // Convert int to hex.
-        if (typeof val === "number") {
-          val = val.toString(16).toUpperCase();
-        } else {
-          val = Number(val).toString(16).toUpperCase();
-        }
-        if (val.length === 1) {
-          return cummul + "0" + val;
-        } else {
-          return cummul += val;
-        }
-      }, "#",
-  );
+  let hex6 = "#";
+
+  for (let i = 0; i < 3; i ++) {
+    if (rgb[i] < 16) {
+      hex6 += `0${rgb[i].toString(16)}`;
+    } else {
+      hex6 += rgb[i].toString(16);
+    }
+  }
+  return hex6.toUpperCase();
 };
 /**
- * Conver hex to luminance (L channel of HSL).
+ * Conver RGB to luminance (L channel of HSL).
  * @param {Array} rgb RGB color array.
  * @return {Number} Luminance (L channel of HSL).
  */
-export const hex2lum = (rgb) => {
-  return Math.round((Math.max(...rgb) + Math.min(...rgb)) / 2);
-};
+// export const rgb2lum = (rgb) => {
+//   return Math.round((Math.max(...rgb) + Math.min(...rgb)) / 2);
+// };
 
 /**
- * Conver hex to value (V channel of HSV).
+ * Conver RGB to value (V channel of HSV).
  * @param {Array} rgb RGB color array.
  * @return {Number} value
  */
-export const rgb2val = (rgb) => {
-  return Math.max(...rgb);
-};
+// export const rgb2val = (rgb) => {
+//   return Math.max(...rgb);
+// };
 
 /**
- * Conver hex to black (k of cmyk).
+ * Conver Hex to black (k of cmyk).
  * @param {Array} rgb RGB color array.
  * @return {Number} black
  */
-export const rgb2k = (rgb) => {
-  return Math.min(...rgb);
-};
+// export const rgb2k = (rgb) => {
+//   return Math.min(...rgb);
+// };
 
 const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
 /**
- * Conver hex to grayscale.
- * @param {Array} rgb RGB color array.
+ * Conver Hex to grayscale.
+ * @param {Array} rgb Array of RGB color.
  * @return {Number} grayscale
  */
 export const rgb2gray = (rgb) => {
@@ -60,24 +66,29 @@ export const rgb2gray = (rgb) => {
 };
 
 /**
- * Calculate hue (H channel of HSL/HSV) from rgb.
- * @param {Array} rgb RGB color array.
+ * Calculate hue (H channel of HSL/HSV) from rgb. Also, returns minimum and
+ * maximum of rgb.
+ * @param {Array} rgb RGB array.
  * @return {Array} [hue, min(r,g,b), max(r,g,b)].
  */
 const rgb2hue = (rgb) => {
   const [r, g, b] = rgb;
-  let h;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  if (max === min) {
-    return [0, 0, r];
-  } else if (max === r) {
-    if (g >= b) h = (g-b) / (max-min) * 60;
-    else if (b > g) h = (g-b) / (max-min) * 60 + 360;
-  } else if (max === g) {
-    h = (b-r) / (max-min) * 60 + 120;
-  } else {
-    h = (r-g) / (max-min) * 60 + 240;
+  const delta = max - min;
+  let h;
+  switch (max) {
+    case min:
+      h = 0;
+      break;
+    case r:
+      h = 60 * mod(((g - b) / delta), 6);
+      break;
+    case g:
+      h = ((b-r) / delta + 2) * 60;
+      break;
+    default: // case b:
+      h = ((r-g) / delta + 4) * 60;
   }
   return [h, min, max];
 };
@@ -89,9 +100,8 @@ const rgb2hue = (rgb) => {
  */
 export const rgb2hsv = (rgb) => {
   const [h, min, max] = rgb2hue(rgb);
-  const s = max === 0 ? 0 : (1 - (min/max)) * 255;
-  const v = max;
-  return [h, s, v].map((val)=> Math.round(val));
+  const s = max ? ((max - min) / max) * 255 : 0;
+  return [h, s, max].map((val)=> Math.round(val));
 };
 
 /**
@@ -101,7 +111,7 @@ export const rgb2hsv = (rgb) => {
  */
 export const rgb2hsl = (rgb) => {
   const [h, min, max] = rgb2hue(rgb);
-  const l = (max+min) / 2;
+  const l = (max + min) / 2;
   let s;
   if ((max === 0) || (max === min)) {
     s = 0;
@@ -196,15 +206,18 @@ export const hex2rgb = (hex) => {
   if (hex.startsWith("#")) {
     hex = hex.slice(1);
   }
-  if ( hex.length === 3 ) { // eg, #e52 === #ee5522
-    return hex.split("").map((str, i) => parseInt(str+str, 16));
-  } else if ( hex.length === 6 ) {
-    return Array.from(
-        {length: 3},
-        (_, i) => parseInt(hex.slice(2*i, 2*i+2), 16),
-    );
+  switch (hex.length) {
+    case 3:
+      return hex.split("").map((str) => parseInt(str+str, 16));
+    case 6:
+      return [
+        parseInt(hex.slice(0, 2), 16),
+        parseInt(hex.slice(2, 4), 16),
+        parseInt(hex.slice(4, 6), 16),
+      ];
+    default:
+      return null;
   }
-  return null;
 };
 
 
@@ -214,15 +227,28 @@ export const hex2rgb = (hex) => {
  * @return {Array} [R, G, B]
  */
 export const randRgbGen = () => {
-  return Array.from({length: 3}, () => {
-    return Math.floor(Math.random()*256);
-  });
+  const rgb = new Array(3);
+  for (let i = 0; i < 3; i ++) {
+    rgb[i] = Math.floor(Math.random() * 256);
+  }
+  return rgb;
+};
+/**
+ * Generate a Hex color.
+ * @return {Array} [R, G, B]
+ */
+export const randHexGen = () => {
+  let hex6 = "#";
+  for (let i = 0; i < 6; i ++) {
+    hex6 += Math.floor(Math.random() * 16).toString(16);
+  }
+  return hex6.toUpperCase();
 };
 
 
-// Hex.
+// Validator
 /**
- * Verify the string whether is a hex color.
+ * Verify the string whether is a Hex color.
  * @param {String} hex Hex color string.
  * @return {Boolean} Validity of string.
  */
@@ -231,8 +257,8 @@ export const isValidHex = (hex) => {
   let str = String(hex);
   if (str.startsWith("#")) str = str.slice(1);
   else return false;
-  str = str.replace(/[^a-f0-9]+$/ig, "");
-  console.log(hex, str, (str.length !== 3), str.length !== 6);
-  if ((str.length !== 3) && (str.length !== 6)) return false;
+  const nonHex = str.match(/[^0-9A-F]/i);
+  // str = str.replace(/[^0-9A-F]+$/ig, "");
+  if ((nonHex !== null) || (![3, 6].includes(str.length))) return false;
   return true;
 };

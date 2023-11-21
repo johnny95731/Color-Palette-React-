@@ -1,64 +1,145 @@
-import React from "react";
+import React, {useEffect} from "react";
+import Icon from "../Icons.jsx";
 import styles from "./index.scss";
+
+import {Menu} from "../Menus/Menus.jsx";
 
 const Header = ({
   refresh,
   sortCard,
   optionChanged,
+  favoritingPlt,
+  isFavPlt,
+  favShowingChanged,
 }) => {
+  // Connect refresh event to `space` button.
+  useEffect(() => {
+    const body = document.body;
+    const refreshEvent = (e) => {
+      if (e.key === " ") refresh();
+      else if (e.key.toLowerCase() === "g") sortCard("gray");
+      else if (e.key.toLowerCase() === "r") sortCard("random");
+    };
+    body.addEventListener("keypress", refreshEvent);
+    return () => body.removeEventListener("keypress", refreshEvent);
+  }, []);
+
   return (
     <header className={styles.header}>
       <h1 className={styles.title}>
         Color Palette
       </h1>
-      <div className={styles.btnContainer}>
-        <span className={styles.btn} onClick={refresh}>Refresh</span>
-        <span className={`${styles.btn} ${styles.dropdownMenu}`}>
-          Sort
-          <div className={styles.dropdownContent}>
-            <div onClick={() => sortCard("gray")}>Gray</div>
-            <div onClick={() => sortCard("random")}>Random</div>
-            <div onClick={() => sortCard("invert")}>Invert</div>
-          </div>
-        </span>
-        <span className={`${styles.btn} ${styles.dropdownMenu}`}>
-          Insert Alg
-          <div className={styles.dropdownContent}>
-            {
-              ["RGB Mean", "Random"].map((val, i) => {
-                return (
-                  <div key={`mode${i}`}
-                    onClick={(e) => optionChanged(e, "insert", i)}
-                  >
-                    {val}
-                  </div>
-                );
-              })
-            }
-          </div>
-        </span>
-        <span className={`${styles.btn} ${styles.dropdownMenu}`}>
-          Mode
-          <div className={styles.dropdownContent}>
-            {
-              ["RGB", "HSB", "HSL", "CMY"].map((val, i) => {
-                return (
-                  <div key={`mode${i}`}
-                    onClick={(e) => optionChanged(e, "mode", i)}
-                  >
-                    {val}
-                  </div>
-                );
-              })
-            }
-            {/* <div onClick={modeChanged}>RGB</div>
-            <div onClick={modeChanged}>HSB</div>
-            <div onClick={modeChanged}>HSL</div>
-            <div onClick={modeChanged}>CMY</div> */}
-          </div>
-        </span>
+      <div className={styles.menubar}>
+        {/* Left */}
+        <RefreshAll onClick={refresh} />
+        <Sort sortCard={sortCard} />
+        <Insert optionChanged={optionChanged} />
+        <Edit optionChanged={optionChanged} />
+        {/* Right */}
+        {/* <Setting /> */}
+        <Favorite onClick={favShowingChanged} />
+        <FavoritingPallete isFavPlt={isFavPlt} onClick={favoritingPlt} />
       </div>
     </header>
   );
 };
 export default Header;
+
+
+// Other components
+const RefreshAll = ({onClick}) => {
+  return (
+    <span className={styles.btn} onClick={onClick}>
+      <Icon type="refresh" />
+      All
+    </span>
+  );
+};
+
+const Sort = ({sortCard}) => {
+  return (
+    <Menu className={styles.btn}
+      iconType={"sort"}
+      title="Sort"
+      type="popup"
+    >
+      <div onClick={() => sortCard("gray")}>Gray (g)</div>
+      <div onClick={() => sortCard("random")}>Random (r)</div>
+      <div onClick={() => sortCard("invert")}>Invert</div>
+    </Menu>
+  );
+};
+
+const Insert = ({optionChanged}) => {
+  return (
+    <Menu className={styles.btn}
+      iconType={"insert"}
+      title={"Insert"}
+    >
+      {
+        ["RGB Mean", "Random"].map((val, i) => {
+          return (
+            <div key={`mode${i}`}
+              onClick={() => optionChanged("insert", i)}
+            >
+              {val}
+            </div>
+          );
+        })
+      }
+    </Menu>
+  );
+};
+
+const Edit = ({optionChanged}) => {
+  return (
+    <Menu className={styles.btn}
+      iconType={"edit"}
+      title={"Edit"}
+    >
+      {
+        ["RGB", "HSB", "HSL", "CMY"].map((val, i) => {
+          return (
+            <div key={`mode${i}`}
+              onClick={() => optionChanged("mode", val.toLowerCase())}
+            >
+              {val}
+            </div>
+          );
+        })
+      }
+    </Menu>
+  );
+};
+
+
+const FavoritingPallete = ({isFavPlt, onClick}) => {
+  return (
+    <span className={`${styles.btn} ${styles.btnR}`}
+      onClick={onClick}
+    >
+      <Icon type={"FavorPallete"} />
+      {isFavPlt ? "Unfavor" : "Favor"} Pallete
+    </span>
+  );
+};
+
+const Favorite = ({onClick}) => {
+  return (
+    <span className={`${styles.btn} ${styles.btnR}`}
+      onClick={onClick}
+    >
+      <Icon type={"bookmark"} />
+      Bookmarks
+    </span>
+  );
+};
+
+const Setting = ({optionChanged}) => {
+  return (
+    <span className={`${styles.btn} ${styles.btnR}`}>
+      <Icon type={"gear"} />
+      Setting
+    </span>
+  );
+};

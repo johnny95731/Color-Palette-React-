@@ -1,43 +1,57 @@
-import React from "react";
-import {useReducer} from "react";
-import Header from "./components/Header";
+import React, {
+  useReducer, useRef, useState, useCallback, useEffect, useMemo,
+} from "react";
 
-import styles from "./App.scss";
+import Header from "./components/Header";
 import Card from "./components/Card";
+import FavSidebar from "./components/FavColors";
+import styles from "./App.scss";
+import useFavColor from "./hooks/useFavColor.jsx";
+import useFavPlts from "./hooks/useFavPalettes.jsx";
+
 import {
   randRgbGen, rgb2gray, rgb2hsv, hsv2rgb, rgb2hsl, hsl2rgb,
-  rgb2cmy, cmy2rgb,
+  rgb2cmy, cmy2rgb, rgb2hex,
 } from "./utils/converter.js";
-import {shuffle} from "./utils/algo.js";
+import {shuffle} from "./utils/helpers.js";
 
-
+/**
+ * Infomations be used in edit mode.
+ * @param {String} colorMode color space.
+ * @return {Object} {
+ *   labels: labels for sliders,
+ *   maxes: the maximums of sliders,
+ *   converter: convert rbg to specified color space.
+ *   inverter: convert specified color space to rbg space.
+ * }
+ */
 const getModeInfos = (colorMode) => {
   switch (colorMode) {
-    case 0: // rgb
+    case "rgb":
       return {
         labels: ["Red", "Green", "Blue"],
-        maxs: ["255", "255", "255"],
+        maxes: ["255", "255", "255"],
         converter: (x) => x,
         inverter: (x) => x,
       };
-    case 1: // hsl
+    case "hsl":
       return {
         labels: ["Hue", "Saturation", "Luminance"],
-        maxs: ["359", "255", "255"],
+        maxes: ["359", "255", "255"],
         converter: rgb2hsl,
         inverter: hsl2rgb,
       };
-    case 2: // hsb, hsv
+    case "hsb": // hsb, hsv
       return {
         labels: ["Hue", "Saturation", "Brightness"],
-        maxs: ["359", "255", "255"],
+        maxes: ["359", "255", "255"],
         converter: rgb2hsv,
         inverter: hsv2rgb,
       };
-    case 3: // cmy
+    case "cmy":
       return {
         labels: ["Cyam", "Magenta", "Yellow"],
-        maxs: ["255", "255", "255"],
+        maxes: ["255", "255", "255"],
         converter: rgb2cmy,
         inverter: cmy2rgb,
       };
@@ -46,23 +60,24 @@ const getModeInfos = (colorMode) => {
   }
 };
 
-
-const newCardState = (color) => {
+const newCardState = () => {
   /**
    * Create a new state object.
-   * @param {String} color Hex color.
    * @return {Object} State object.
    */
+  const rgb = randRgbGen();
   return {
-    color: randRgbGen(),
+    color: rgb,
+    hex: rgb2hex(rgb),
     isLock: false,
   };
 };
 
 const initialState = {
-  mode: 0, // rgb
-  infos: getModeInfos(0),
+  mode: "rgb",
+  infos: getModeInfos("rgb"), // getModeInfos(mode)
   insert: 0, // 0: rnadom, 1: RGB Mean,
+  sort: "random",
   cards: Array.from({length: 5}, () => newCardState()),
 };
 
@@ -76,12 +91,17 @@ const reducer = (prevStates, action) => {
     case "refresh":
       if ((typeof action.idx) === "number") {
         if (cards[action.idx].isLock) return prevStates;
-        cards[action.idx] = newCardState();
+        const cardState = newCardState();
+        cards[action.idx] = cardState;
       } else if (action.idx === "all") {
         cards.forEach((state) => {
-          if (!state.isLock) state.color = randRgbGen();
+          if (!state.isLock) {
+            state.color = randRgbGen();
+            state.hex = rgb2hex(state.color);
+          }
         });
       }
+      option.sort = "random";
       break;
     case "del":
       if (n === 1) return prevStates;
@@ -89,41 +109,60 @@ const reducer = (prevStates, action) => {
       break;
     case "add":
       if (n === 7) return prevStates;
-      cards.splice(action.right, 0, newCardState());
-      if (option.insert === 0) {
-        let newColor;
-        if (action.right === 0) {
-          newColor = cards[action.right+1].color.map((val) => Math.round(val / 2));
-        } else if (action.right > n) {
-          newColor = cards[action.left].color.map((val) => Math.round((val + 255) / 2));
-        } else {
-          const leftColor = cards[action.left].color;
-          newColor = cards[action.right+1].color.map(
-              (val, i) => Math.round((val + leftColor[i]) / 2),
-          );
+      else {
+        const cardState = newCardState();
+        if (option.insert === 0) { // RGB Mean
+          let newColor;
+          if (action.right === 0) {
+            cardState.color = cards[action.right].color.map(
+                (val) => Math.round(val / 2));
+          } else if (action.right > n) {
+            cardState.color = cards[action.left].color.map(
+                (val) => Math.round((val + 255) / 2),
+            );
+          } else {
+            const leftColor = cards[action.left].color;
+            const rightColor = cards[action.right].color;
+            cardState.color = rightColor.color.map(
+                (val, i) => Math.round((val + leftColor[i]) / 2),
+            );
+          }
+          cardState.color = newColor;
         }
-        cards[action.right].color = newColor;
+        cardState.hex = rgb2hex(cardState.color);
+        cards.splice(action.right, 0, cardState);
       }
       break;
     case "edit":
-      cards[action.idx].color = action.color;
+      {
+        const cardState = cards[action.idx];
+        cardState.color = action.color;
+        cardState.hex = rgb2hex(action.color);
+      }
       break;
     case "sort":
       switch (action.sortBy) {
         case "gray":
-          cards.sort((a, b) => rgb2gray(a.color) - rgb2gray(b.color));
+          if (option.sort === "gray") {
+            cards.sort((a, b) => rgb2gray(b.color) - rgb2gray(a.color));
+            option.sort = "grayInv";
+          } else {
+            cards.sort((a, b) => rgb2gray(a.color) - rgb2gray(b.color));
+            option.sort = "gray";
+          }
           break;
         case "random":
           shuffle(cards);
+          option.sort = action.sortBy;
           break;
         case "invert":
           for (let i = 0; i < n / 2; i++) {
             [cards[i], cards[n-i]] = [cards[n-i], cards[i]];
           }
+          option.sort = action.sortBy;
       }
       break;
     case "option":
-      console.log(action);
       option[action.option] = action.newOp;
       if (action.option === "mode") {
         option.infos = getModeInfos(action.newOp);
@@ -137,45 +176,71 @@ const reducer = (prevStates, action) => {
   };
 };
 
-
 const App = () => {
-  const [states, dispatch] = useReducer(reducer, initialState);
+  const dbLoaded = useRef([false, false]); // Database is loaded.
+  const [favColors, favColorChanged, ckeckIsFavColor] = useFavColor(dbLoaded);
+  const [favPlts, favPltChanged, ckeckIsFavPlt] = useFavPlts(dbLoaded);
 
-  const lockCard = (idx) => {
+  const [states, dispatch] = useReducer(reducer, initialState);
+  const [favShowing, setFavShowing] = useState(() => false);
+  const plt = states.cards.map((state) => state.hex.slice(1)).join("-");
+  const cardsIsFav = useMemo(() => {
+    const cards = states.cards;
+    const newIsFav = new Array(cards.length);
+    for (let i = 0; i < cards.length; i++) {
+      newIsFav[i] = ckeckIsFavColor(cards[i].hex);
+    }
+    return newIsFav;
+  }, [favColors.length, plt]);
+  const isFavPlt = useMemo(() => ckeckIsFavPlt(plt), [plt, favPlts.length]);
+
+  const lockCard = useCallback((idx) => {
     dispatch({
       type: "lock", idx,
     });
-  };
-  const refresh = (idx) => {
+  }, []);
+  const refresh = useCallback((idx) => {
     dispatch({
       type: "refresh", idx,
     });
-  };
-  const delCard = (idx) => {
+  }, []);
+  const delCard = useCallback((idx) => {
     dispatch({
       type: "del", idx,
     });
-  };
-  const addCard = (left, right) => {
+  }, []);
+  /**
+   * Add a card between `left` and `right`.
+   * @param {Number} left Index of left card.
+   * @param {Number} right Index of right card.
+   */
+  const addCard = useCallback((left, right) => {
     dispatch({
       type: "add", left, right,
     });
-  };
-  const editCard = (idx, color) => {
+  }, []);
+  const editCard = useCallback((idx, color) => {
     dispatch({
       type: "edit", idx, color,
     });
-  };
-  const sortCard = (sortBy) => {
+  }, []);
+  const sortCard = useCallback((sortBy) => {
     dispatch({
       type: "sort", sortBy,
     });
-  };
-
-  const optionChanged = (e, option, newOp) => {
+  }, []);
+  const optionChanged = useCallback((option, newOp) => {
     dispatch({
       type: "option", option, newOp,
     });
+  }, []);
+
+  const favShowingChanged = useCallback(() => {
+    setFavShowing((prev) => !prev);
+  }, []);
+
+  const favoritingPlt = () => {
+    favPltChanged(plt);
   };
 
   return (
@@ -184,22 +249,36 @@ const App = () => {
         refresh={() => refresh("all")}
         sortCard={sortCard}
         optionChanged={optionChanged}
+        favoritingPlt={favoritingPlt}
+        isFavPlt={isFavPlt}
+        favShowingChanged={favShowingChanged}
       />
       <div className={styles.main}>
         {states.cards.map((state, i) => {
           return <Card
-            key={i} cardId={i} totalNum={states.cards.length}
+            key={`card${i}`} cardId={i} totalNum={states.cards.length}
             color={state.color} isLock={state.isLock}
-            lockCard={() => lockCard(i)}
-            refresh={() => refresh(i)}
+            cardState={state}
+            ifFav={cardsIsFav[i]}
             delCard={() => delCard(i)}
+            lockCard={() => lockCard(i)}
+            favChanged={() => favColorChanged(states.cards[i].hex)}
+            refresh={() => refresh(i)}
             addCard={addCard}
             editCard={editCard}
-            mode={states.mode}
+            editMode={states.mode}
             infos={states.infos}
           />;
         })}
       </div>
+      <FavSidebar
+        favColors={favColors}
+        favPlts={favPlts}
+        delColor={favColorChanged}
+        delPlt={favPltChanged}
+        isShowing={favShowing}
+        favShowingChanged={favShowingChanged}
+      />
     </>
   );
 };

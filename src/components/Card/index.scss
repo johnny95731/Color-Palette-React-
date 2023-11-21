@@ -1,60 +1,66 @@
+@import "../commons.scss";
 
 .cardContainer {
-  flex: 1 1;
+  flex: 1 1 auto;
   position: relative;
   display: flex;
   height: 100%;
 
-  &:hover .toolContainer img {
+  &:hover .toolContainer * {
     visibility: visible;
   }
 }
 
 .sideCard {
   position: relative;
-  flex-grow: 1;
-  flex-shrink: 1;
+  flex: 1 1;
 
-  &:hover .insertBtn {
+  &:hover :global(.icon) {
     display: block;
   }
 }
 
-.insertBtn {
+%insertBtn {
   position: absolute;
   display: none;
-  width: 30px;
-  height: auto;
-  top: 40%;
+  width: 25px;
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 999;
   cursor: pointer;
 }
 
-.insertBtnR {
-  left: 100%;
-  transform: translateX(-100%);
+.insertLeft {
+  @extend %insertBtn;
+}
+
+.insertRight {
+  @extend %insertBtn;
+  right: 0;
 }
 
 .centerCard {
   position: relative;
-  flex: 0 0 60%;
+  flex: 0 0 65%;
 }
 
 .toolContainer {
   position: relative;
-  top: 40%;
+  top: 35%;
   left: 50%;
   transform: translate(-50%, -50%);
-  img {
+  
+  :global(.icon) {
     display: block;
     visibility: hidden;
     margin: 30px auto;
-    width: 30px;
-    cursor: pointer;
+    height: 25px;
+    width: 25px;
   }
 
   @media (min-width: 2559px) {
-    >img {
+    * {
       margin: 30px auto;
       width: 50px;
     }
@@ -62,24 +68,37 @@
 }
 
 .textRegion {
+  @extend %horizontalCenter;
   position: absolute;
-  top: 60%;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 63%;
   width: 100%;
   >div {
-    width: min-content;
+    width: max-content;
     cursor: pointer;
+    :global(.icon) {
+      opacity: 0;
+    }
+    &:hover :global(.icon) {
+      opacity: 1;
+    }
   }
+}
 
-  >label {
-    font-size: 16px;
+$hexSize: 28px;
+@mixin colorDisplay($iconHeight, $iconMargin, $fontSize: 16px) {
+  position: absolute;
+  left: 50%;
+  transform: translateX(calc(-50% - (#{$fontSize} + #{$iconMargin}) / 2));
+  font-size: $fontSize;
+  :global(.icon) {
+    height: $iconHeight;
+    margin-right: $iconMargin;
   }
 }
 
 .hexText {
-  margin: 25px auto 20px;
-  font-size: 30px;
+  @include colorDisplay(20px, 5px, $hexSize);
+
   @media (min-width: 2559px) {
     margin: 25px auto 20px;
     font-size: 48px;
@@ -87,8 +106,8 @@
 }
 
 .rgbText {
-  margin: 20px auto;
-  font-size: 18px;
+  top: 45px;
+  @include colorDisplay(11px, 3px);
   @media (min-width: 2559px) {
     margin: 20px auto;
     font-size: 32px;
@@ -96,10 +115,13 @@
 }
 
 .hexInput {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  display: block;
+  margin: 0 auto 20px;
+  font-size: $hexSize;
   width: 100%;
-  border-radius: 10px;
+  border-radius: 5px;
   border-width: 0;
+  padding: 2px;
+  cursor: text;
   user-select: text;
 }

@@ -31,7 +31,7 @@ module.exports = {
   "rules": {
     "quotes": [2, "double"],
     "linebreak-style": 0,
-    "max-len": [2, {"code": 90}],
+    "max-len": [2, {"code": 80}],
     "semi": 2,
     "react/prop-types": "off",
   },

@@ -1,139 +1,62 @@
-import React, {Fragment, useState, useMemo, useEffect} from "react";
-import styles from "./index.scss";
-import tooltipStyles from "../tooltip.scss";
-const {tooltip, topTip} = tooltipStyles;
+import React, {
+  Fragment, useState, useMemo, useEffect, useCallback} from "react";
+import Icon from "../Icons.jsx";
+import css from "./index.scss";
 
 import {rgb2gray, rgb2hex, hex2rgb, isValidHex} from "../../utils/converter.js";
-import Close from "../../images/x-lg.svg?url";
-import Lock from "../../images/lock-fill.svg?url";
-import Unlock from "../../images/unlock-fill.svg?url";
-import Refresh from "../../images/arrow-clockwise.svg?url";
-import Pen from "../../images/pen-fill.svg?url";
-import insertRight from "../../images/arrow-bar-left.svg?url";
-import insertLeft from "../../images/arrow-bar-right.svg?url";
-
-
-// Other components
-const CloseTool = ({totalNum, isLight, onClick}) => {
-  return (
-    <img src={Close}
-      onClick={onClick}
-      style={{
-        filter: isLight ? "" : "invert(1)",
-        opacity: totalNum === 2 ? 0 : "",
-        cursor: totalNum === 2 ? "default" : "",
-      }}
-    />
-  );
-};
-
-const LockTool = ({isLight, isLock, onClick}) => {
-  return (
-    <img src={isLock ? Lock : Unlock}
-      onClick={onClick}
-      style={{
-        filter: isLight ? "" : "invert(1)",
-      }}
-    />
-  );
-};
-
-const RefreshTool = ({isLight, isLock, onClick}) => {
-  return <img src={Refresh}
-    onClick={onClick}
-    style={{
-      cursor: isLock ? "not-allowed" : "pointer",
-      filter: isLight ? "" : "invert(1)",
-    }}
-  />;
-};
-
-const EditBtn = ({isLight, onClick}) => {
-  return <img src={Pen}
-    onClick={onClick}
-    style={{
-      filter: isLight ? "" : "invert(1)",
-    }}
-  />;
-};
-
-const InsertIcon = ({totalNum, side, isLight, onClick}) => {
-  const url = side==="right" ? insertRight : insertLeft;
-  return (
-    <div className={styles.sideCard}>
-      <img src={url}
-        className={`${styles.insertBtn} ${side==="right" ? styles.insertBtnR : ""}`}
-        style={{
-          filter: isLight ? "" : "invert(1)",
-        }}
-        onClick={() => onClick(side)}
-      />
-    </div>
-  );
-};
-
+import {hexTextEdited, copyHex} from "../../utils/helpers.js";
 
 // Main component
 const Card = ({
   cardId,
   totalNum,
-  color, // in RGB space
-  isLock,
-  lockCard,
-  refresh,
+  cardState,
+  ifFav,
   delCard,
+  lockCard,
+  favChanged,
+  refresh,
   addCard,
   editCard,
-  mode,
-  infos: {labels, maxs, converter, inverter},
+  editMode,
+  infos: {labels, maxes, converter, inverter},
 }) => {
   // States
   const [isEditing, setIsEditing] = useState(() => false);
 
-  const {
-    pageHex,
+  const [
     isLight,
     modeColor,
-  } = useMemo(() => {
-    return {
-      pageHex: rgb2hex(color),
-      isLight: rgb2gray(color) > 127,
-      modeColor: converter(color),
-    };
-  }, [color[0], color[1], color[2], mode]);
+  ] = useMemo(() => {
+    return [
+      rgb2gray(cardState.color) > 127,
+      converter(cardState.color),
+    ];
+  }, [...cardState.color, editMode]);
+
+  const iconFilter = useMemo(() => {
+    return {filter: isLight ? undefined : "invert(1)"};
+  }, [isLight]);
 
   // Events
-  const hendleTextClick = (e) => {
-    // Copy text to clipboard
-    const target = e.target || e.srcElement;
-    const text = target.innerText;
-    const idx = text.indexOf("\n");
-    navigator.clipboard.writeText(
-        text.slice(text.startsWith("#") ? 1 : 0, idx),
-    );
-    target.lastChild.innerText = "Copied.";
-  };
-
-  const hendleTip = (e, type) => {
-    const target = (e.target || e.srcElement).lastChild;
-    target.innerText = target.dataset.tip;
-  };
-
-  const handleHexEdit = (e) => {
+  const handleHexBlur = useCallback((e) => {
     const textInput = (e.target || e.srcElement);
-    let text = (textInput.value).toUpperCase();
-    text = text.replace(/[^a-f0-9]+$/ig, "");
-    if (!text.startsWith("#")) text = "#" + text;
-    textInput.value = text;
-  };
-
-  const handleHexBlur = (e) => {
-    const textInput = (e.target || e.srcElement);
-    const text = (textInput.value).toUpperCase();
+    const text = textInput.value;
     if (isValidHex(text)) {
-      editCard(cardId, hex2rgb(text));
+      const rgb = hex2rgb(text);
+      const newModeColor = converter(rgb);
+      editCard(cardId, rgb);
+      let slider;
+      for (let i = 0; i < 3; i++) {
+        slider = document.getElementById(`card${cardId}-slider${i}`);
+        slider.value = newModeColor[i];
+      }
+      if (text.length === 4) {
+        const hex6 = `#${text[1]+text[1]}${text[2]+text[2]}${text[3]+text[3]}`;
+        textInput.value = hex6;
+      }
     }
-  };
+  }, []);
 
   const handleSliderChange = (e, idx) => {
     const target = (e.target || e.srcElement);
@@ -159,57 +82,65 @@ const Card = ({
         slider.value = modeColor[i];
       }
     }
-  }, [mode]);
+  }, [editMode]);
 
   return (
     <div
-      className={styles.cardContainer}
+      className={css.cardContainer}
       style={{
-        backgroundColor: pageHex,
-        color: isLight ? "#000" : "#fff",
-        // maxWidth: `${Math.floor(100/totalNum)}%`
+        backgroundColor: cardState.hex,
+        transition: "background-color .5s ease",
       }}
     >
-      <InsertIcon side="left"
+      <SideCard side="Left"
         isLight={isLight} onClick={handleInsertClick}
       />
-      <div className={`${styles.centerCard}`}>
-        <div className={styles.toolContainer}>
-          <CloseTool totalNum={totalNum} isLight={isLight} onClick={delCard} />
-          <LockTool isLight={isLight} isLock={isLock} onClick={lockCard} />
-          <RefreshTool isLight={isLight} isLock={isLock} onClick={refresh}/>
-          <EditBtn
-            isLight={isLight}
-            onClick={() => setIsEditing((prev) => !prev)}
-          />
-        </div>
-        <div className={styles.textRegion}>
+      <div className={css.centerCard}>
+        <ToolBar
+          totalNum={totalNum}
+          hex={cardState.hex}
+          lockIcon={cardState.isLock ? "lock" : "unlock"}
+          favIcon={ifFav ? "fav" : "unfav"}
+          iconFilter={iconFilter}
+          delCard={delCard}
+          lockCard={lockCard}
+          favChanged={favChanged}
+          refresh={refresh}
+          setIsEditing={setIsEditing}
+        />
+        <div className={css.textRegion}
+          style={iconFilter}
+        >
           {
             !isEditing ?
             <>
-              <div
-                className={`${styles.hexText} ${tooltip}`}
-                onClick={hendleTextClick}
-                onMouseEnter={hendleTip}
+              <div className={css.hexText}
+                onClick={copyHex}
               >
-                {pageHex}
-                <span className={topTip} data-tip="Copy to clipboard." />
+                <Icon type="copy"
+                  style={{
+                    filter: iconFilter,
+                  }}
+                />
+                {cardState.hex}
               </div>
-              <div
-                className={`${styles.rgbText} ${tooltip}`}
-                onClick={hendleTextClick}
-                onMouseEnter={hendleTip}
+              <div className={css.rgbText}
+                onClick={copyHex}
               >
-                rgb({color.toString()})
-                <span className={topTip} data-tip="Copy to clipboard." />
+                <Icon type="copy"
+                  style={{
+                    filter: iconFilter,
+                  }}
+                />
+                {`${editMode}(${modeColor.toString()})`}
               </div>
             </> : // Editing mode
             <>
               <input type="text" maxLength="7"
-                defaultValue={pageHex}
+                defaultValue={cardState.hex}
                 id={`card${cardId}-hex`}
-                className={`${styles.hexText} ${styles.hexInput}`}
-                onChange={handleHexEdit}
+                className={css.hexInput}
+                onChange={hexTextEdited}
                 onBlur={handleHexBlur}
               />
               {
@@ -217,11 +148,11 @@ const Card = ({
                   return (
                     <Fragment key={`card${cardId}-frag${i}`}>
                       <span key={`card${cardId}-label${i}`}>
-                        {label}: {modeColor[i]}
+                        {`${label}: ${modeColor[i]}`}
                       </span>
                       <input key={`card${cardId}-slider${i}`}
                         id={`card${cardId}-slider${i}`}
-                        type="range" min="0" max={maxs[i]}
+                        type="range" min="0" max={maxes[i]}
                         defaultValue={modeColor[i]}
                         style={{width: "100%"}}
                         onChange={(e) => handleSliderChange(e, i)}
@@ -234,10 +165,69 @@ const Card = ({
           }
         </div>
       </div>
-      <InsertIcon side="right"
+      <SideCard side="Right"
         isLight={isLight} onClick={handleInsertClick}
       />
     </div>
   );
 };
 export default Card;
+
+
+// Other Components
+const SideCard = ({totalNum, side, isLight, onClick}) => {
+  return (
+    <div className={css.sideCard}>
+      <Icon type={"insert" + side}
+        className={`${side==="Right" ? css.insertRight : css.insertLeft}`}
+        style={{
+          filter: isLight ? "" : "invert(1)",
+          display: totalNum === 8 ? "none" : "",
+        }}
+        events={[["click", () => onClick(side)]]}
+      />
+    </div>
+  );
+};
+
+const ToolBar = ({
+  totalNum,
+  hex,
+  lockIcon,
+  favIcon,
+  iconFilter,
+  delCard,
+  lockCard,
+  favChanged,
+  refresh,
+  setIsEditing,
+}) => {
+  return (
+    <div className={css.toolContainer}>
+      <Icon type="close"
+        style={{
+          ...iconFilter,
+          opacity: totalNum === 2 && 0,
+          cursor: totalNum === 2 ? "default" : "pointer",
+        }}
+        events={[["click", delCard]]}
+      />
+      <Icon type={lockIcon}
+        style={iconFilter}
+        events={[["click", lockCard]]}
+      />
+      <Icon type={favIcon}
+        style={iconFilter}
+        events={[["click", () => favChanged(hex)]]}
+      />
+      <Icon type="refresh"
+        style={iconFilter}
+        events={[["click", refresh]]}
+      />
+      <Icon type="edit"
+        style={iconFilter}
+        events={[["click", () => setIsEditing((prev) => !prev)]]}
+      />
+    </div>
+  );
+};
