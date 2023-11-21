@@ -123,13 +123,14 @@ const reducer = (prevStates, action) => {
           } else {
             const leftColor = cards[action.left].color;
             const rightColor = cards[action.right].color;
-            cardState.color = rightColor.color.map(
+            newColor = rightColor.map(
                 (val, i) => Math.round((val + leftColor[i]) / 2),
             );
           }
           cardState.color = newColor;
         }
         cardState.hex = rgb2hex(cardState.color);
+        console.log(action.right)
         cards.splice(action.right, 0, cardState);
       }
       break;

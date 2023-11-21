@@ -70,7 +70,7 @@ const Card = ({
   };
 
   const handleInsertClick = (side) => {
-    if (side === "left") addCard(cardId-1, cardId);
+    if (side === "Left") addCard(cardId-1, cardId);
     else addCard(cardId, cardId+1);
   };
 
@@ -178,8 +178,8 @@ export default Card;
 const SideCard = ({totalNum, side, isLight, onClick}) => {
   return (
     <div className={css.sideCard}>
-      <Icon type={"insert" + side}
-        className={`${side==="Right" ? css.insertRight : css.insertLeft}`}
+      <Icon type={`insert${side}`}
+        className={`${side === "Right" ? css.insertRight : css.insertLeft}`}
         style={{
           filter: isLight ? "" : "invert(1)",
           display: totalNum === 8 ? "none" : "",

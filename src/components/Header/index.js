@@ -36,7 +36,7 @@ const Header = ({
         <Insert optionChanged={optionChanged} />
         <Edit optionChanged={optionChanged} />
         {/* Right */}
-        {/* <Setting /> */}
+        <Setting />
         <Favorite onClick={favShowingChanged} />
         <FavoritingPallete isFavPlt={isFavPlt} onClick={favoritingPlt} />
       </div>
