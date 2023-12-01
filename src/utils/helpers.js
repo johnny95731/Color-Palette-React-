@@ -1,4 +1,4 @@
-import {update, get, set, createStore} from "idb-keyval";
+import {update, createStore} from "idb-keyval";
 // Sorting
 /**
  * Shuffle an array by Fisher-Yates shuffle. The process will change input
@@ -34,7 +34,7 @@ export const copyHex = (e) => {
     target = target.offsetParent;
   }
   const text = target.innerText;
-  const brIdx = text.indexOf("\n");
+  const brIdx = text.indexOf("\n"); // index of break.
   const start = text.startsWith("#") ? 1 : 0;
   let hex;
   if (brIdx > -1) {

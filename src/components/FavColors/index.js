@@ -121,7 +121,7 @@ const PalleteBlock = ({
           events={[["click", delPlt]]}
         />
       </span>
-      <div>{plt}</div>
+      <div onClick={copyHex}>{plt}</div>
     </li>
   );
 };
