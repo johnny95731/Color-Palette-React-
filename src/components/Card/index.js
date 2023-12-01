@@ -38,6 +38,11 @@ const Card = ({
     return {filter: isLight ? undefined : "invert(1)"};
   }, [isLight]);
 
+  const insertDisplay = useMemo(() => {
+    return totalNum === 8 ? "none" : undefined;
+  }, [totalNum]);
+
+
   // Events
   const handleHexBlur = useCallback((e) => {
     const textInput = (e.target || e.srcElement);
@@ -93,7 +98,11 @@ const Card = ({
       }}
     >
       <SideCard side="Left"
-        isLight={isLight} onClick={handleInsertClick}
+        style={{
+          ...iconFilter,
+          display: insertDisplay,
+        }}
+        onClick={handleInsertClick}
       />
       <div className={css.centerCard}>
         <ToolBar
@@ -108,14 +117,13 @@ const Card = ({
           refresh={refresh}
           setIsEditing={setIsEditing}
         />
-        <div className={css.textRegion}
-          style={iconFilter}
-        >
+        <div className={css.textRegion}>
           {
             !isEditing ?
             <>
               <div className={css.hexText}
                 onClick={copyHex}
+                style={iconFilter}
               >
                 <Icon type="copy"
                   style={{
@@ -125,6 +133,7 @@ const Card = ({
                 {cardState.hex}
               </div>
               <div className={css.rgbText}
+                style={iconFilter}
                 onClick={copyHex}
               >
                 <Icon type="copy"
@@ -143,30 +152,38 @@ const Card = ({
                 onChange={hexTextEdited}
                 onBlur={handleHexBlur}
               />
-              {
-                labels.map((label, i) => {
-                  return (
-                    <Fragment key={`card${cardId}-frag${i}`}>
-                      <span key={`card${cardId}-label${i}`}>
-                        {`${label}: ${modeColor[i]}`}
-                      </span>
-                      <input key={`card${cardId}-slider${i}`}
-                        id={`card${cardId}-slider${i}`}
-                        type="range" min="0" max={maxes[i]}
-                        defaultValue={modeColor[i]}
-                        style={{width: "100%"}}
-                        onChange={(e) => handleSliderChange(e, i)}
-                      />
-                    </Fragment>
-                  );
-                })
-              }
+              <form className={css.sliders}
+              >
+                {
+                  labels.map((label, i) => {
+                    return (
+                      <Fragment key={`card${cardId}-frag${i}`}>
+                        <span key={`card${cardId}-label${i}`}
+                          style={iconFilter}
+                        >
+                          {`${label}: ${modeColor[i]}`}
+                        </span>
+                        <input key={`card${cardId}-slider${i}`}
+                          id={`card${cardId}-slider${i}`}
+                          type="range" min="0" max={maxes[i]}
+                          defaultValue={modeColor[i]}
+                          onChange={(e) => handleSliderChange(e, i)}
+                        />
+                      </Fragment>
+                    );
+                  })
+                }
+              </form>
             </>
           }
         </div>
       </div>
       <SideCard side="Right"
-        isLight={isLight} onClick={handleInsertClick}
+        style={{
+          ...iconFilter,
+          display: insertDisplay,
+        }}
+        onClick={handleInsertClick}
       />
     </div>
   );
@@ -175,15 +192,12 @@ export default Card;
 
 
 // Other Components
-const SideCard = ({totalNum, side, isLight, onClick}) => {
+const SideCard = ({side, style, onClick}) => {
   return (
     <div className={css.sideCard}>
       <Icon type={`insert${side}`}
         className={`${side === "Right" ? css.insertRight : css.insertLeft}`}
-        style={{
-          filter: isLight ? "" : "invert(1)",
-          display: totalNum === 8 ? "none" : "",
-        }}
+        // style={style}
         events={[["click", () => onClick(side)]]}
       />
     </div>

@@ -5,7 +5,7 @@ import React, {
 import Header from "./components/Header";
 import Card from "./components/Card";
 import FavSidebar from "./components/FavColors";
-import styles from "./App.scss";
+import css from "./App.scss";
 import useFavColor from "./hooks/useFavColor.jsx";
 import useFavPlts from "./hooks/useFavPalettes.jsx";
 
@@ -130,7 +130,6 @@ const reducer = (prevStates, action) => {
           cardState.color = newColor;
         }
         cardState.hex = rgb2hex(cardState.color);
-        console.log(action.right)
         cards.splice(action.right, 0, cardState);
       }
       break;
@@ -254,7 +253,7 @@ const App = () => {
         isFavPlt={isFavPlt}
         favShowingChanged={favShowingChanged}
       />
-      <div className={styles.main}>
+      <div className={css.main}>
         {states.cards.map((state, i) => {
           return <Card
             key={`card${i}`} cardId={i} totalNum={states.cards.length}

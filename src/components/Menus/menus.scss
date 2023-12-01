@@ -1,6 +1,5 @@
 .dropdownMenu, .popupMenu {
   position: relative;
-  cursor: default;
 }
 
 .dropdownMenu:hover .menuContent {
@@ -11,13 +10,18 @@
   display: none;
   position: absolute;
   top: 100%;
-  width: min-content;
+  width: max-content;
   text-wrap: nowrap;
   background-color: #e5e5e5;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   transition: opacity .2s ease;
   z-index: 999;
   cursor: pointer;
+  
+  img:last-of-type {
+    margin-left: 3px;
+    vertical-align: middle;
+  }
 
   >* {
     font-weight: 600;

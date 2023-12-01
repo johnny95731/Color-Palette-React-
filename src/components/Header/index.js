@@ -1,6 +1,6 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useMemo} from "react";
 import Icon from "../Icons.jsx";
-import styles from "./index.scss";
+import css from "./index.scss";
 
 import {Menu} from "../Menus/Menus.jsx";
 
@@ -25,20 +25,20 @@ const Header = ({
   }, []);
 
   return (
-    <header className={styles.header}>
-      <h1 className={styles.title}>
+    <header className={css.header}>
+      <h1 className={css.title}>
         Color Palette
       </h1>
-      <div className={styles.menubar}>
+      <div className={css.menubar}>
         {/* Left */}
         <RefreshAll onClick={refresh} />
         <Sort sortCard={sortCard} />
         <Insert optionChanged={optionChanged} />
         <Edit optionChanged={optionChanged} />
         {/* Right */}
-        <Setting />
-        <Favorite onClick={favShowingChanged} />
-        <FavoritingPallete isFavPlt={isFavPlt} onClick={favoritingPlt} />
+        {/* <Setting /> */}
+        <Bookmarks onClick={favShowingChanged} />
+        <FavorPallete isFavPlt={isFavPlt} onClick={favoritingPlt} />
       </div>
     </header>
   );
@@ -49,7 +49,7 @@ export default Header;
 // Other components
 const RefreshAll = ({onClick}) => {
   return (
-    <span className={styles.btn} onClick={onClick}>
+    <span className={css.btn} onClick={onClick}>
       <Icon type="refresh" />
       All
     </span>
@@ -58,7 +58,7 @@ const RefreshAll = ({onClick}) => {
 
 const Sort = ({sortCard}) => {
   return (
-    <Menu className={styles.btn}
+    <Menu className={css.btn}
       iconType={"sort"}
       title="Sort"
       type="popup"
@@ -72,7 +72,7 @@ const Sort = ({sortCard}) => {
 
 const Insert = ({optionChanged}) => {
   return (
-    <Menu className={styles.btn}
+    <Menu className={css.btn}
       iconType={"insert"}
       title={"Insert"}
     >
@@ -93,7 +93,7 @@ const Insert = ({optionChanged}) => {
 
 const Edit = ({optionChanged}) => {
   return (
-    <Menu className={styles.btn}
+    <Menu className={css.btn}
       iconType={"edit"}
       title={"Edit"}
     >
@@ -112,21 +112,34 @@ const Edit = ({optionChanged}) => {
   );
 };
 
-
-const FavoritingPallete = ({isFavPlt, onClick}) => {
+const FavorPallete = ({isFavPlt, onClick}) => {
+  const state = useMemo(() => {
+    if (isFavPlt) {
+      return {
+        icon: "UnfavorPallete",
+        text: "Del",
+      };
+    } else {
+      return {
+        icon: "FavorPallete",
+        text: "Add",
+      };
+    }
+  }, [isFavPlt]);
   return (
-    <span className={`${styles.btn} ${styles.btnR}`}
+    <span className={`${css.btn} ${css.btnR}`}
       onClick={onClick}
+      style={{width: "55px"}}
     >
-      <Icon type={"FavorPallete"} />
-      {isFavPlt ? "Unfavor" : "Favor"} Pallete
+      <Icon type={state.icon} />
+      {state.text}
     </span>
   );
 };
 
-const Favorite = ({onClick}) => {
+const Bookmarks = ({onClick}) => {
   return (
-    <span className={`${styles.btn} ${styles.btnR}`}
+    <span className={`${css.btn} ${css.btnR}`}
       onClick={onClick}
     >
       <Icon type={"bookmark"} />
@@ -135,11 +148,11 @@ const Favorite = ({onClick}) => {
   );
 };
 
-const Setting = ({optionChanged}) => {
-  return (
-    <span className={`${styles.btn} ${styles.btnR}`}>
-      <Icon type={"gear"} />
-      Setting
-    </span>
-  );
-};
+// const Setting = ({optionChanged}) => {
+//   return (
+//     <span className={`${css.btn} ${css.btnR}`}>
+//       <Icon type={"gear"} />
+//       Setting
+//     </span>
+//   );
+// };

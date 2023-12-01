@@ -12,9 +12,9 @@ import SliderUrl from "../images/sliders.svg?url";
 import CopyUrl from "../images/copy.svg?url";
 import SortUrl from "../images/sort-down.svg?url";
 import InsertUrl from "../images/file-earmark-plus.svg?url";
-import insertRightUrl from "../images/arrow-bar-left.svg?url";
-import insertLeftUrl from "../images/arrow-bar-right.svg?url";
-import FavPalleteUrl from "../images/file-earmark-plus.svg?url";
+import AppendtUrl from "../images/arrows-expand-vertical.svg?url";
+import FavPalleteUrl from "../images/bookmark-plus.svg?url";
+import UnfavPalleteUrl from "../images/bookmark-dash.svg?url";
 import BookmarkUrl from "../images/bookmarks.svg?url";
 import GearUrl from "../images/gear.svg?url";
 
@@ -31,9 +31,10 @@ const urls = {
   copy: CopyUrl,
   sort: SortUrl,
   insert: InsertUrl,
-  insertRight: insertRightUrl,
-  insertLeft: insertLeftUrl,
+  insertRight: AppendtUrl,
+  insertLeft: AppendtUrl,
   FavorPallete: FavPalleteUrl,
+  UnfavorPallete: UnfavPalleteUrl,
   bookmark: BookmarkUrl,
   gear: GearUrl,
 };

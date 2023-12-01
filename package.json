@@ -7,7 +7,7 @@
     "dev": "webpack --watch",
     "build": "webpack",
     "start": "webpack-dev-server",
-    "deploy": "gh-pages -d dist"
+    "deploy": "webpack && gh-pages -d dist"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",
