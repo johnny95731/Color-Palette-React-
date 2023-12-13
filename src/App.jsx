@@ -1,9 +1,10 @@
 import React, {
-  useReducer, useRef, useState, useCallback, useEffect, useMemo,
+  useReducer, useRef, useState, useCallback, useMemo, useEffect,
 } from "react";
 
 import Header from "./components/Header";
 import Card from "./components/Card";
+import Icon from "./components/Icons.jsx";
 import FavSidebar from "./components/FavColors";
 import css from "./App.scss";
 import useFavColor from "./hooks/useFavColor.jsx";
@@ -82,8 +83,8 @@ const initialState = {
 };
 
 const reducer = (prevStates, action) => {
-  const {cards, ...option} = {...prevStates};
-  const n = cards.length - 1;
+  const {cards, ...options} = {...prevStates};
+  const cardNum = cards.length;
   switch (action.type) {
     case "lock":
       cards[action.idx].isLock = !cards[action.idx].isLock;
@@ -101,36 +102,42 @@ const reducer = (prevStates, action) => {
           }
         });
       }
-      option.sort = "random";
+      options.sort = "random";
       break;
     case "del":
-      if (n === 1) return prevStates;
+      if (cardNum === 2) return prevStates;
       cards.splice(action.idx, 1);
+      options.sort = "random";
       break;
     case "add":
-      if (n === 7) return prevStates;
+      if (cardNum === 8) return prevStates;
       else {
         const cardState = newCardState();
-        if (option.insert === 0) { // RGB Mean
+        const idx = action.idx;
+        if (options.insert === 0) { // RGB Mean
           let newColor;
-          if (action.right === 0) {
-            cardState.color = cards[action.right].color.map(
-                (val) => Math.round(val / 2));
-          } else if (action.right > n) {
-            cardState.color = cards[action.left].color.map(
+          if (idx === 0) {
+            // Add to the first. Default to be the mean of first card and black.
+            newColor = cards[idx].color.map((val) => Math.round(val / 2));
+          } else if (idx === cardNum) {
+            // Add to the last. Default to be the mean of last card and white.
+            newColor = cards[idx - 1].color.map(
                 (val) => Math.round((val + 255) / 2),
             );
           } else {
-            const leftColor = cards[action.left].color;
-            const rightColor = cards[action.right].color;
+            // Color of cards at left side and at right side, respectively.
+            // (before insert new card)
+            const leftColor = cards[idx - 1].color;
+            const rightColor = cards[idx].color;
             newColor = rightColor.map(
-                (val, i) => Math.round((val + leftColor[i]) / 2),
+                (val, i) => Math.floor((val + leftColor[i]) / 2),
             );
           }
           cardState.color = newColor;
         }
         cardState.hex = rgb2hex(cardState.color);
-        cards.splice(action.right, 0, cardState);
+        cards.splice(idx, 0, cardState);
+        options.sort = "random";
       }
       break;
     case "edit":
@@ -139,40 +146,47 @@ const reducer = (prevStates, action) => {
         cardState.color = action.color;
         cardState.hex = rgb2hex(action.color);
       }
+      options.sort = "random";
       break;
     case "sort":
       switch (action.sortBy) {
         case "gray":
-          if (option.sort === "gray") {
+          if (options.sort === "gray") {
             cards.sort((a, b) => rgb2gray(b.color) - rgb2gray(a.color));
-            option.sort = "grayInv";
+            options.sort = "grayInv";
           } else {
             cards.sort((a, b) => rgb2gray(a.color) - rgb2gray(b.color));
-            option.sort = "gray";
+            options.sort = "gray";
           }
           break;
         case "random":
           shuffle(cards);
-          option.sort = action.sortBy;
+          options.sort = action.sortBy;
           break;
         case "invert":
-          for (let i = 0; i < n / 2; i++) {
-            [cards[i], cards[n-i]] = [cards[n-i], cards[i]];
+          for (let i = 0; i < cardNum / 2; i++) {
+            [cards[i], cards[cardNum-i]] = [cards[cardNum-i], cards[i]];
           }
-          option.sort = action.sortBy;
+          options.sort = action.sortBy;
       }
       break;
+    case "exchange":
+      [cards[action.init], cards[action.final]] = [
+        cards[action.final], cards[action.init],
+      ];
+      options.sort = "random";
+      break;
     case "option":
-      option[action.option] = action.newOp;
+      options[action.option] = action.newOp;
       if (action.option === "mode") {
-        option.infos = getModeInfos(action.newOp);
+        options.infos = getModeInfos(action.newOp);
       }
       break;
     default:
       throw new Error();
   }
   return {
-    ...option, cards,
+    ...options, cards,
   };
 };
 
@@ -194,34 +208,9 @@ const App = () => {
   }, [favColors.length, plt]);
   const isFavPlt = useMemo(() => ckeckIsFavPlt(plt), [plt, favPlts.length]);
 
-  const lockCard = useCallback((idx) => {
-    dispatch({
-      type: "lock", idx,
-    });
-  }, []);
   const refresh = useCallback((idx) => {
     dispatch({
       type: "refresh", idx,
-    });
-  }, []);
-  const delCard = useCallback((idx) => {
-    dispatch({
-      type: "del", idx,
-    });
-  }, []);
-  /**
-   * Add a card between `left` and `right`.
-   * @param {Number} left Index of left card.
-   * @param {Number} right Index of right card.
-   */
-  const addCard = useCallback((left, right) => {
-    dispatch({
-      type: "add", left, right,
-    });
-  }, []);
-  const editCard = useCallback((idx, color) => {
-    dispatch({
-      type: "edit", idx, color,
     });
   }, []);
   const sortCard = useCallback((sortBy) => {
@@ -253,24 +242,12 @@ const App = () => {
         isFavPlt={isFavPlt}
         favShowingChanged={favShowingChanged}
       />
-      <div className={css.main}>
-        {states.cards.map((state, i) => {
-          return <Card
-            key={`card${i}`} cardId={i} totalNum={states.cards.length}
-            color={state.color} isLock={state.isLock}
-            cardState={state}
-            ifFav={cardsIsFav[i]}
-            delCard={() => delCard(i)}
-            lockCard={() => lockCard(i)}
-            favChanged={() => favColorChanged(states.cards[i].hex)}
-            refresh={() => refresh(i)}
-            addCard={addCard}
-            editCard={editCard}
-            editMode={states.mode}
-            infos={states.infos}
-          />;
-        })}
-      </div>
+      <Cards
+        dispatch={dispatch}
+        states={states}
+        cardsIsFav={cardsIsFav}
+        favColorChanged={favColorChanged}
+      />
       <FavSidebar
         favColors={favColors}
         favPlts={favPlts}
@@ -283,3 +260,178 @@ const App = () => {
   );
 };
 export default App;
+
+// Main region
+const Cards = ({
+  dispatch,
+  states,
+  cardsIsFav,
+  favColorChanged,
+}) => {
+  // States / consts
+  const cardRefs = useRef({});
+  const totalNum = states.cards.length;
+  const viewportWidth = window.innerWidth;
+  const [dir, totalLength, clientPos] = useMemo(() => {
+    const body = document.body;
+    if (viewportWidth > 900) { // Horizontal flow.
+      return ["left", body.clientWidth, "clientX"];
+    } else { // Vertical flow.
+      return ["top", body.clientHeight, "clientY"];
+    }
+  }, [viewportWidth]);
+
+  const cardsPos = useMemo(() => {
+    // Get card.getBoundingClientRect()[dir] for each card.
+    const step = totalLength / totalNum;
+    return Array.from({length: totalNum}, (_, i) => Math.floor(i * step));
+  }, [totalNum, totalLength]);
+
+  // Events
+  const lockCard = useCallback((idx) => {
+    dispatch({
+      type: "lock", idx,
+    });
+  }, []);
+  const refresh = useCallback((idx) => {
+    dispatch({
+      type: "refresh", idx,
+    });
+  }, []);
+  const delCard = useCallback((idx) => {
+    dispatch({
+      type: "del", idx,
+    });
+  }, []);
+  const editCard = useCallback((idx, color) => {
+    dispatch({
+      type: "edit", idx, color,
+    });
+  }, []);
+  const exchange = useCallback((init, final) => {
+    dispatch({
+      type: "exchange", init, final,
+    });
+  }, []);
+
+  /**
+   * The event is triggered when you are dragging the <-> icon.
+   */
+  const handleDragReorder = useCallback((e, cardId) => {
+    const initPos = e[clientPos]; // Cursor position when mouse down.
+    cardRefs.current.dragging = cardId;
+    const card = cardRefs.current[cardId];
+    card.classList.add(css.dragging);
+    card.style[dir] = `${initPos - cardsPos[cardId]}px`;
+  }, [totalNum]);
+
+  const handleMouseMove = useCallback((e) => {
+    const prevIdx = cardRefs.current.dragging;
+    if (prevIdx == null) return;
+    const nowPos = e[clientPos];
+    const card = cardRefs.current[prevIdx];
+    const cardLength = totalLength / totalNum;
+    card.style[dir] = `${nowPos - cardsPos[prevIdx]}px`;
+    // Index of card that cursor at.
+    const nowIdx = Math.floor(nowPos / cardLength);
+    if (prevIdx !== nowIdx) {
+      card.style[dir] = "";
+      card.classList.remove(css.dragging);
+      cardRefs.current.dragging = nowIdx;
+      cardRefs.current[nowIdx].classList.add(css.dragging);
+      cardRefs.current[nowIdx].style[dir] = `${nowPos - cardsPos[nowIdx]}px`;
+      exchange(prevIdx, nowIdx);
+    }
+  }, [totalNum, viewportWidth]);
+
+  const handleMouseUp = useCallback(() => {
+    const nowIdx = cardRefs.current.dragging;
+    if (nowIdx == null) return;
+    const card = cardRefs.current[nowIdx];
+    // Reset card position
+    card.style[dir] = "";
+    card.classList.remove(css.dragging);
+    cardRefs.current.dragging = null;
+  }, [viewportWidth]);
+
+  useEffect(() => {
+    const body = document.body;
+    body.addEventListener("mousemove", handleMouseMove);
+    body.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      body.removeEventListener("mousemove", handleMouseMove);
+      body.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
+  return (
+    <div className={css.main}>
+      {states.cards.map((state, i) => {
+        return <Card key={`card${i}`}
+          ref={(el) => cardRefs.current[i] = el}
+          cardId={i}
+          totalNum={states.cards.length}
+          color={state.color} isLock={state.isLock}
+          cardState={state}
+          ifFav={cardsIsFav[i]}
+          delCard={() => delCard(i)}
+          lockCard={() => lockCard(i)}
+          favChanged={() => favColorChanged(states.cards[i].hex)}
+          refresh={() => refresh(i)}
+          handleDragReorder={(e) => handleDragReorder(e, i)}
+          editCard={editCard}
+          editMode={states.mode}
+          infos={states.infos}
+        />;
+      })}
+      <InsertRegions
+        totalNum={states.cards.length}
+        dispatch={dispatch}
+      />
+    </div>
+  );
+};
+
+const InsertRegions = ({
+  totalNum, // total num of cards.
+  dispatch,
+}) => {
+  // States / consts
+  const viewportWidth = window.innerWidth;
+
+  const positions = useMemo(() => {
+    const step = 100 / totalNum;
+    const dir = viewportWidth > 900 ? "left" : "top";
+
+    return Array.from({length: totalNum + 1}, (_, i) => {
+      const style = {};
+      style[dir] = `${i * step}%`;
+      return style;
+    });
+  }, [totalNum, viewportWidth]);
+
+  // Events
+  const addCard = useCallback((idx) => {
+    dispatch({
+      type: "add", idx,
+    });
+  }, []);
+
+  return (
+    Array.from({length: totalNum + 1}, (_, i) => {
+      return (
+        <div className={css.insertContainer}
+          key={`insert${i}`}
+          style={positions[i]}
+        >
+          <div
+            onClick={() => addCard(i)}
+          >
+            <Icon type={"insertRight"}
+            />
+          </div>
+        </div>
+      );
+    })
+  );
+};

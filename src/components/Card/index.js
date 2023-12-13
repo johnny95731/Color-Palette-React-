@@ -1,5 +1,6 @@
 import React, {
-  Fragment, useState, useMemo, useEffect, useCallback} from "react";
+  Fragment, useState, useMemo, useEffect, useCallback, useRef, forwardRef
+} from "react";
 import Icon from "../Icons.jsx";
 import css from "./index.scss";
 
@@ -7,7 +8,7 @@ import {rgb2gray, rgb2hex, hex2rgb, isValidHex} from "../../utils/converter.js";
 import {hexTextEdited, copyHex} from "../../utils/helpers.js";
 
 // Main component
-const Card = ({
+const Card = forwardRef(({
   cardId,
   totalNum,
   cardState,
@@ -16,12 +17,12 @@ const Card = ({
   lockCard,
   favChanged,
   refresh,
-  addCard,
+  handleDragReorder,
   editCard,
   editMode,
   infos: {labels, maxes, converter, inverter},
-}) => {
-  // States
+}, ref) => {
+  // States / consts
   const [isEditing, setIsEditing] = useState(() => false);
 
   const [
@@ -34,14 +35,9 @@ const Card = ({
     ];
   }, [...cardState.color, editMode]);
 
-  const iconFilter = useMemo(() => {
+  const styleFilter = useMemo(() => {
     return {filter: isLight ? undefined : "invert(1)"};
   }, [isLight]);
-
-  const insertDisplay = useMemo(() => {
-    return totalNum === 8 ? "none" : undefined;
-  }, [totalNum]);
-
 
   // Events
   const handleHexBlur = useCallback((e) => {
@@ -74,11 +70,6 @@ const Card = ({
     textInput.value = rgb2hex(rgb);
   };
 
-  const handleInsertClick = (side) => {
-    if (side === "Left") addCard(cardId-1, cardId);
-    else addCard(cardId, cardId+1);
-  };
-
   useEffect(() => {
     if (isEditing) {
       let slider;
@@ -94,152 +85,139 @@ const Card = ({
       className={css.cardContainer}
       style={{
         backgroundColor: cardState.hex,
-        transition: "background-color .5s ease",
+        // transition: "background-color .5s ease",
       }}
+      ref={ref}
     >
-      <SideCard side="Left"
-        style={{
-          ...iconFilter,
-          display: insertDisplay,
-        }}
-        onClick={handleInsertClick}
+      <ToolBar
+        totalNum={totalNum}
+        hex={cardState.hex}
+        lockIcon={cardState.isLock ? "lock" : "unlock"}
+        favIcon={ifFav ? "fav" : "unfav"}
+        styleFilter={styleFilter}
+        handleDragReorder={handleDragReorder}
+        delCard={delCard}
+        lockCard={lockCard}
+        favChanged={favChanged}
+        refresh={refresh}
+        setIsEditing={setIsEditing}
       />
-      <div className={css.centerCard}>
-        <ToolBar
-          totalNum={totalNum}
-          hex={cardState.hex}
-          lockIcon={cardState.isLock ? "lock" : "unlock"}
-          favIcon={ifFav ? "fav" : "unfav"}
-          iconFilter={iconFilter}
-          delCard={delCard}
-          lockCard={lockCard}
-          favChanged={favChanged}
-          refresh={refresh}
-          setIsEditing={setIsEditing}
-        />
-        <div className={css.textRegion}>
-          {
-            !isEditing ?
-            <>
-              <div className={css.hexText}
-                onClick={copyHex}
-                style={iconFilter}
-              >
-                <Icon type="copy"
-                  style={{
-                    filter: iconFilter,
-                  }}
-                />
-                {cardState.hex}
-              </div>
-              <div className={css.rgbText}
-                style={iconFilter}
-                onClick={copyHex}
-              >
-                <Icon type="copy"
-                  style={{
-                    filter: iconFilter,
-                  }}
-                />
-                {`${editMode}(${modeColor.toString()})`}
-              </div>
-            </> : // Editing mode
-            <>
-              <input type="text" maxLength="7"
-                defaultValue={cardState.hex}
-                id={`card${cardId}-hex`}
-                className={css.hexInput}
-                onChange={hexTextEdited}
-                onBlur={handleHexBlur}
+      <div className={css.textRegion}>
+        {
+          !isEditing ?
+          <>
+            <div className={css.hexText}
+              onClick={copyHex}
+              style={styleFilter}
+            >
+              <Icon type="copy"
+                style={{
+                  filter: styleFilter,
+                }}
               />
-              <form className={css.sliders}
-              >
-                {
-                  labels.map((label, i) => {
-                    return (
-                      <Fragment key={`card${cardId}-frag${i}`}>
-                        <span key={`card${cardId}-label${i}`}
-                          style={iconFilter}
-                        >
-                          {`${label}: ${modeColor[i]}`}
-                        </span>
-                        <input key={`card${cardId}-slider${i}`}
-                          id={`card${cardId}-slider${i}`}
-                          type="range" min="0" max={maxes[i]}
-                          defaultValue={modeColor[i]}
-                          onChange={(e) => handleSliderChange(e, i)}
-                        />
-                      </Fragment>
-                    );
-                  })
-                }
-              </form>
-            </>
-          }
-        </div>
+              {cardState.hex}
+            </div>
+            <div className={css.rgbText}
+              style={styleFilter}
+              onClick={copyHex}
+            >
+              <Icon type="copy"
+                style={{
+                  filter: styleFilter,
+                }}
+              />
+              {`${editMode}(${modeColor.toString()})`}
+            </div>
+          </> : // Editing mode
+          <>
+            <input type="text" maxLength="7"
+              defaultValue={cardState.hex}
+              id={`card${cardId}-hex`}
+              className={css.hexInput}
+              onChange={hexTextEdited}
+              onBlur={handleHexBlur}
+            />
+            <form className={css.sliders}
+            >
+              {
+                labels.map((label, i) => {
+                  return (
+                    <Fragment key={`card${cardId}-frag${i}`}>
+                      <span key={`card${cardId}-label${i}`}
+                        style={styleFilter}
+                      >
+                        {`${label}: ${modeColor[i]}`}
+                      </span>
+                      <input key={`card${cardId}-slider${i}`}
+                        id={`card${cardId}-slider${i}`}
+                        type="range" min="0" max={maxes[i]}
+                        defaultValue={modeColor[i]}
+                        onChange={(e) => handleSliderChange(e, i)}
+                      />
+                    </Fragment>
+                  );
+                })
+              }
+            </form>
+          </>
+        }
       </div>
-      <SideCard side="Right"
-        style={{
-          ...iconFilter,
-          display: insertDisplay,
-        }}
-        onClick={handleInsertClick}
-      />
     </div>
   );
-};
+});
+Card.displayName = "Card";
 export default Card;
 
 
 // Other Components
-const SideCard = ({side, style, onClick}) => {
-  return (
-    <div className={css.sideCard}>
-      <Icon type={`insert${side}`}
-        className={`${side === "Right" ? css.insertRight : css.insertLeft}`}
-        // style={style}
-        events={[["click", () => onClick(side)]]}
-      />
-    </div>
-  );
-};
-
 const ToolBar = ({
   totalNum,
   hex,
   lockIcon,
   favIcon,
-  iconFilter,
+  styleFilter,
   delCard,
   lockCard,
   favChanged,
   refresh,
   setIsEditing,
+  handleDragReorder,
 }) => {
+  const [opacity, cursor] = useMemo(() => {
+    return totalNum === 2 ? ["0", "default"] : ["", "pointer"];
+  }, [totalNum]);
+
   return (
     <div className={css.toolContainer}>
       <Icon type="close"
         style={{
-          ...iconFilter,
-          opacity: totalNum === 2 && 0,
-          cursor: totalNum === 2 ? "default" : "pointer",
+          ...styleFilter,
+          opacity,
+          cursor,
         }}
         events={[["click", delCard]]}
       />
       <Icon type={lockIcon}
-        style={iconFilter}
+        style={styleFilter}
         events={[["click", lockCard]]}
       />
       <Icon type={favIcon}
-        style={iconFilter}
+        style={styleFilter}
         events={[["click", () => favChanged(hex)]]}
       />
+      <Icon type="move"
+        style={{
+          ...styleFilter,
+          cursor: "grab",
+        }}
+        events={[["mousedown", handleDragReorder]]}
+      />
       <Icon type="refresh"
-        style={iconFilter}
+        style={styleFilter}
         events={[["click", refresh]]}
       />
       <Icon type="edit"
-        style={iconFilter}
+        style={styleFilter}
         events={[["click", () => setIsEditing((prev) => !prev)]]}
       />
     </div>

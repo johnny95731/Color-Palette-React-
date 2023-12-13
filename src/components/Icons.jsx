@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useMemo} from "react";
+import React, {useRef, useEffect, useMemo, useCallback} from "react";
 import "./icons.scss";
 
 import CloseUrl from "../images/x-lg.svg?url";
@@ -7,6 +7,7 @@ import LockUrl from "../images/lock-fill.svg?url";
 import UnlockUrl from "../images/unlock-fill.svg?url";
 import FavUrl from "../images/star-fill.svg?url";
 import UnfavUrl from "../images/star.svg?url";
+import DrapUrl from "../images/arrows.svg?url";
 import RefreshUrl from "../images/arrow-clockwise.svg?url";
 import SliderUrl from "../images/sliders.svg?url";
 import CopyUrl from "../images/copy.svg?url";
@@ -26,6 +27,7 @@ const urls = {
   unlock: UnlockUrl,
   fav: FavUrl,
   unfav: UnfavUrl,
+  move: DrapUrl,
   refresh: RefreshUrl,
   edit: SliderUrl,
   copy: CopyUrl,
@@ -45,14 +47,14 @@ const Icon = ({
   style,
   events = [],
 }) => {
-  const domRef = useRef();
+  const imgRef = useRef();
   const _className = useMemo(() => (
     `icon ${typeof className === "string" ? className : ""}`
   ), [className]);
 
   // Connect events
   useEffect(() => {
-    const element = domRef.current;
+    const element = imgRef.current;
     events.forEach((ev) => {
       element.addEventListener(...ev);
     });
@@ -62,10 +64,12 @@ const Icon = ({
       });
     };
   }, []);
+
   return (
-    <img src={urls[type]} alt={type} ref={domRef}
+    <img src={urls[type]} alt={type} ref={imgRef}
       className={_className}
       style={style}
+      draggable="false"
     />
   );
 };

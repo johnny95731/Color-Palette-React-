@@ -1,64 +1,22 @@
 @import "../commons.scss";
 
 .cardContainer {
+  position: relative;
   flex: 1 1 auto;
   display: flex;
 
-  &:hover .toolContainer :global(.icon), &:hover .sideCard :global(.icon) {
+  &:hover .toolContainer :global(.icon) {
     visibility: visible;
   }
+  &:hover .sideCard :global(.icon) {
+    display: block;
+  }
 
-  @media only screen and (max-width: 1023px) {
+  @media only screen and (max-width: 900px) {
     align-items: center;
     flex-wrap: nowrap;
     flex-direction: column;
   }
-}
-
-.sideCard {
-  position: relative;
-  flex: 1 1;
-}
-
-%insertBtn {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  height: 30px;
-  visibility: hidden;
-  border-radius: 15px;
-  padding: 6px;
-  background-color: #ffffffc0;
-  cursor: pointer;
-
-  @media only screen and (max-width: 1023px) {
-    visibility: visible;
-  }
-
-  @media screen and (min-width: 1024px) and (max-width: 1440px) {
-    height: 27px;
-  }
-
-  @media screen and (min-width: 2559px) {
-    height: 45px;
-  }
-}
-
-.insertLeft {
-  @extend %insertBtn;
-}
-
-.insertRight {
-  @extend %insertBtn;
-  right: 0;
-  transform: translate(50%, -50%);
-}
-
-.centerCard {
-  position: relative;
-  flex: 0 0 65%;
-  display: flex;
-  align-items: center;
 }
 
 .toolContainer {
@@ -72,7 +30,7 @@
     height: 27px;
   }
 
-  @media only screen and (max-width: 1023px) {
+  @media only screen and (max-width: 900px) {
     position: static;
     display: inline;
     width: max-content;
@@ -103,7 +61,7 @@
 .textRegion {
   @extend %horizontalCenter;
   top: 63%;
-  width: 100%;
+  width: 50%;
   text-align: center;
   >div {
     cursor: pointer;
@@ -115,36 +73,39 @@
     }
   }
 
-  @media only screen and (max-width: 1023px) {
+  @media only screen and (max-width: 900px) {
     display: inline;
     position: static;
     width: 200px;
   }
 }
 
-$hexSize: 28px;
+$hexSize: 26px;
 $hexSize1024: 20px;
 $hexSize2560: 39px;
-@mixin colorDisplay($iconHeight, $iconMargin, $fontSize: 16px) {
+@mixin textDisplay($iconHeight, $iconMargin, $fontSize: 16px) {
   position: relative;
   left: 50%;
-  transform: translateX(calc(-50% - (#{$iconHeight} + #{$iconMargin}) / 2));
+  transform: translateX(-50%);
+  width: min-content;
   font-size: $fontSize;
   :global(.icon) {
+    position: absolute;
     height: $iconHeight;
-    margin-right: $iconMargin;
+    top: 50%;
+    transform: translateX(calc(-100% - #{$iconMargin})) translateY(-50%);
   }
 }
 
 .hexText {
-  @include colorDisplay(20px, 5px, $hexSize);
+  @include textDisplay(18px, 3px, $hexSize);
 }
 .rgbText {
   margin-top: 4px;
-  @include colorDisplay(11px, 3px, 14px);
+  @include textDisplay(10px, 2px, 15px);
 }
 
-@media only screen and (max-width: 1023px) {
+@media only screen and (max-width: 900px) {
   .hexText {
     font-size: 24px;
   }
@@ -155,20 +116,20 @@ $hexSize2560: 39px;
 
 @media only screen and (min-width: 1024px) and (max-width: 1440px) {
   .hexText {
-    @include colorDisplay(16px, 4px, $hexSize1024);
+    @include textDisplay(16px, 4px, $hexSize1024);
   }
   .rgbText {
     margin-top: 3px;
-    @include colorDisplay(9px, 3px, 11px);
+    @include textDisplay(9px, 3px, 11px);
   }
 }
 
 @media only screen and (min-width: 2559px) {
   .hexText {
-    @include colorDisplay(25px, 6px, $hexSize2560);
+    @include textDisplay(25px, 6px, $hexSize2560);
   }
   .rgbText {
-    @include colorDisplay(13px, 4px, 19px);
+    @include textDisplay(13px, 4px, 19px);
   }
 }
 
@@ -179,7 +140,7 @@ $hexSize2560: 39px;
   border-radius: 5px;
   border-width: 0;
   padding: 2px 10px;
-  margin: 0 auto 20px;
+  margin: 0 auto 10px;
   box-sizing: border-box;
   cursor: text;
   user-select: text;
