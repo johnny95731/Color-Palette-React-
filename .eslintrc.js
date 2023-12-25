@@ -7,32 +7,39 @@ module.exports = {
     "eslint:recommended",
     "google",
     "plugin:react/recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
   ],
-  "overrides": [
-    {
-      "env": {
-        "node": true,
-      },
-      "files": [
-        ".eslintrc.{js,cjs}",
-      ],
-      "parserOptions": {
-        "sourceType": "script",
-      },
-    },
-  ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
-    "sourceType": "module",
+    "project": "./tsconfig.json",
   },
   "plugins": [
-    "react",
+    "react", "@typescript-eslint",
   ],
   "rules": {
-    "quotes": [2, "double"],
-    "linebreak-style": 0,
-    "max-len": [2, {"code": 80}],
-    "semi": 2,
+    "quotes": ["error", "double"],
+    "linebreak-style": "off",
+    "max-len": ["error", {"code": 80}],
+    "semi": "error",
     "react/prop-types": "off",
+    "no-use-before-define": "off",
+    "valid-jsdoc": [
+      "error",
+      {
+        "requireReturn": false,
+        "requireParamType": false, 
+      }
+    ],
+    "require-jsdoc": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-use-before-define": [
+      "error",
+      {
+        "functions": false, "classes": true, "variables": true,
+        "typedefs": true,
+      },
+    ],
   },
 };

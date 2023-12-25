@@ -1,16 +1,17 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = {
-  mode: "production",
+  mode: "development",
   performance: {
     hints: false,
     maxEntrypointSize: 102400,
     maxAssetSize: 102400,
   },
-  entry: "./src/index",
+  entry: "./src/index.tsx",
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".jsx", ".json",],
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
   },
   output: {
     path: path.join(__dirname, "dist"),
@@ -19,18 +20,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(jsx?)$/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: [
-              "@babel/preset-env", "@babel/preset-react",
-            ],
-          },
-        },
-      },
-      {
-        test: /\.(tsx?)$/,
+        test: /\.(tsx?|jsx?)$/,
         use: {
           loader: "babel-loader",
           options: {
@@ -70,8 +60,12 @@ module.exports = {
     ], // rules end
   },
   plugins: [
+    new ForkTsCheckerWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: "index.css",
     }),
   ],
+  devServer: {
+    static: "./dist",
+  },
 };

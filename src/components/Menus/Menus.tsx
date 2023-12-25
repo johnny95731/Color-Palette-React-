@@ -1,15 +1,18 @@
 import React, {useMemo} from "react";
-import Icon from "../Icons.jsx";
-import menuCSS from "./menus.scss";
-
-import TriangleUrl from "../../images/triangle-down.svg?url";
+import Icon from "../Icons.tsx";
+import css from "./menus.scss";
 const {
   dropdownMenu, popupMenu, menuContent, menuContentL, menuContentR,
-} = menuCSS;
+} = css;
 
-const showPopupMenu = (e) => {
+import TriangleUrl from "../../../res/img/triangle-down.svg?url";
+
+
+const showPopupMenu = (
+    e: React.MouseEvent<HTMLSpanElement> | React.FocusEvent<HTMLSpanElement>,
+): void => {
   const target = e.currentTarget;
-  const content = target.lastChild;
+  const content = target.lastChild as HTMLDivElement;
   if (e.type === "blur") {
     content.style.display = "none";
     return;
@@ -25,8 +28,16 @@ export const Menu = ({
   title = "menu",
   type = "popup", // ["popup", "dropdown"]
   contentClass = menuContent,
-  contentAlign = "C", // ["C", "L", "R"]
-}) => {
+  contentAlign = "center", // ["center" | "left" | "right"]
+}: {
+  children: React.ReactNode;
+  className?: string;
+  iconType?: string;
+  title?: string;
+  type?: string;
+  contentClass?: string;
+  contentAlign?: "center" | "left" | "right";
+}): React.JSX.Element => {
   const menu = useMemo(() => {
     switch (type) {
       case "dropdown":
@@ -37,9 +48,9 @@ export const Menu = ({
   }, [type]);
   const align = useMemo(() => {
     switch (contentAlign) {
-      case "L":
+      case "left":
         return menuContentL;
-      case "R":
+      case "right":
         return menuContentR;
       default:
         return "";
@@ -47,7 +58,7 @@ export const Menu = ({
   }, [contentAlign]);
   return (
     <span className={`${className ? className : ""} ${menu}`}
-      tabIndex="-1"
+      tabIndex={-1}
       onClick={type === "popup" ? showPopupMenu : undefined}
       onBlur={type === "popup" ? showPopupMenu : undefined}
     >

@@ -6,14 +6,21 @@
   "scripts": {
     "dev": "webpack --watch",
     "build": "webpack",
-    "start": "webpack-dev-server",
-    "deploy": "webpack && gh-pages -d dist"
+    "start": "webpack-dev-server --config webpack.config.dev.js",
+    "deploy": "webpack && gh-pages -d dist",
+    "type-check": "npx tsc --watch"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",
     "@babel/preset-env": "^7.22.20",
     "@babel/preset-react": "^7.22.15",
+    "@babel/preset-typescript": "^7.23.3",
     "@svgr/webpack": "^8.1.0",
+    "@types/node-sass": "^4.11.7",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
     "autoprefixer": "^10.4.16",
     "babel-loader": "^8.3.0",
     "css-loader": "^6.8.1",
@@ -24,6 +31,7 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
     "gh-pages": "^6.0.0",
     "mini-css-extract-plugin": "^2.7.6",
     "node-sass": "^9.0.0",
@@ -37,8 +45,11 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.0.1",
     "idb-keyval": "^6.2.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.0.4",
+    "redux": "^5.0.0"
   }
 }

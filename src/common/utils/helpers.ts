@@ -1,0 +1,85 @@
+/**
+ * The modulo function. Equivalent to
+ *   `let a = n % m;
+ *   if (a < 0) a += m;`
+ * @param {Number} n Dividend.
+ * @param {Number} m Divisor.
+ * @return {Number} Signed remainder.
+ */
+export const mod = (n: number, m: number): number => {
+  return ((n % m) + m) % m;
+};
+
+// Sorting
+/**
+ * Shuffle an array by Fisher-Yates shuffle. The process will change the input
+ * array.
+ * @template T
+ * @param {Array<T>} arr The array be shuffled.
+ */
+export const shuffle = <T>(arr: Array<T>): void => {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+};
+
+/**
+ * Invert the order of an array. The process will change the input
+ * array.
+ * @template T
+ * @param {Array<T>} arr The array be inverted.
+ */
+export const inversion = <T>(arr: Array<T>): void => {
+  const lastIdx = arr.length - 1;
+  for (let i = 0; i < arr.length / 2; i++) {
+    [arr[i], arr[lastIdx - i]] = [arr[lastIdx - i], arr[i]];
+  }
+};
+
+/**
+ * Mixing two colors by evaluate their average.
+ * @param {number[]} color1 Numeric of a color.
+ * @param {number[]} color2 Numeric of a color.
+ * @returns {number[]} The mean value of color1 and color2.
+ */
+export const meanMixing = (color1: number[], color2: number[]): number[] => {
+  const newColor = [];
+  for (let i = 0; i < 3; i++) {
+    newColor.push(0.5 * (color1[i] + color2[i]));
+  }
+  return newColor;
+};
+
+
+// DOM
+/**
+ * Remove non-hex text and add "#" to first word.
+ * @param e Triggered mouse event.
+ */
+export const hexTextEdited = (e: React.ChangeEvent<HTMLInputElement>,
+): void => {
+  const textInput = e.currentTarget;
+  let text = (textInput.value).toUpperCase();
+  text = text.replace(/[^A-F0-9]/g, "");
+  textInput.value = `#${text}`;
+};
+/**
+ * Copy Hex text to clipboard (excludes "#").
+ * @param e Triggered mouse event.
+ */
+export const copyHex = (e: React.MouseEvent<HTMLDivElement | HTMLSpanElement>,
+): void => {
+  const target = e.currentTarget;
+  if (!target) return;
+  const text = target.innerText;
+  const brIdx = text.indexOf("\n"); // index of break.
+  const start = text.startsWith("#") ? 1 : 0;
+  let hex: string;
+  if (brIdx > -1) {
+    hex = text.slice(start, brIdx);
+  } else {
+    hex = text.slice(start);
+  }
+  navigator.clipboard.writeText(hex);
+};
