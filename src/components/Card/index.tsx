@@ -129,7 +129,7 @@ ref: Ref<HTMLDivElement>,
       rgb2gray(cardState.rgb) > 127,
       converter(cardState.rgb),
     ];
-  }, [cardState.hex, optionsState.editingMode]);
+  }, [...cardState.rgb, optionsState.editingMode]);
 
   const filterStyle = useMemo(() => {
     return {filter: isLight ? "" : "invert(1)"};
