@@ -1,6 +1,7 @@
+import {randRgbGen, rgb2hex} from "../../common/utils/converter.ts";
 
-export type sortType = "gray" | "random";
-export type sortActionType = "gray" | "inversion" | "random";
+export type SortingType = "gray" | "random";
+export type SortActionType = "gray" | "inversion" | "random";
 
 export type cardStateType = {
   /**
@@ -12,7 +13,26 @@ export type cardStateType = {
    */
   hex: string;
   /**
-   * The color is lock or not.
+   * The card is lock (can't refresh the card).
    */
   isLock: boolean;
+  /**
+   * The card is in editing mode.
+   */
+  isEditing: boolean;
+};
+
+/**
+ * Create a new state object.
+ * @param {number} order The order of this card in a group.
+ * @return {cardStateType} State object.
+ */
+export const newCardState = (): cardStateType => {
+  const rgb = randRgbGen();
+  return {
+    rgb,
+    hex: rgb2hex(rgb),
+    isLock: false,
+    isEditing: false,
+  };
 };

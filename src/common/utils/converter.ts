@@ -19,32 +19,6 @@ export const rgb2hex = (rgb: Array<number>): string => {
   }
   return hex6.toUpperCase();
 };
-/**
- * Conver RGB to luminance (L channel of HSL).
- * @param {Array<number>} rgb RGB color array.
- * @return {Number} Luminance (L channel of HSL).
- */
-// export const rgb2lum = (rgb) => {
-//   return Math.round((Math.max(...rgb) + Math.min(...rgb)) / 2);
-// };
-
-/**
- * Conver RGB to value (V channel of HSV).
- * @param {Array<number>} rgb RGB color array.
- * @return {Number} value
- */
-// export const rgb2val = (rgb) => {
-//   return Math.max(...rgb);
-// };
-
-/**
- * Conver Hex to black (k of cmyk).
- * @param {Array<number>} rgb RGB color array.
- * @return {Number} black
- */
-// export const rgb2k = (rgb) => {
-//   return Math.min(...rgb);
-// };
 
 const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
 /**
@@ -87,20 +61,30 @@ const rgb2hue = (rgb: Array<number>): Array<number> => {
 /**
  * Convert RGB to HSV.
  * @param {Array} rgb RGB color array.
+ * @param {boolean} [toInt=true] Rounding output value to int.
  * @return {Array} [hue, sat, val].
  */
-export const rgb2hsv = (rgb: Array<number>): Array<number> => {
+export const rgb2hsv = (
+    rgb: Array<number>, toInt: boolean = true,
+): Array<number> => {
   const [h, min, max] = rgb2hue(rgb);
   const s = max ? ((max - min) / max) * 255 : 0;
-  return [h, s, max].map((val)=> Math.round(val));
+  if (toInt) {
+    return [h, s, max].map((val)=> Math.round(val));
+  } else {
+    return [h, s, max];
+  }
 };
 
 /**
  * Convert RGB to HSL.
- * @param {Array} rgb RGB color array.
+ * @param {Array<number>} rgb RGB color array.
+ * @param {boolean} [toInt=true] Rounding output value to int.
  * @return {Array} [hue, sat, lum]
  */
-export const rgb2hsl = (rgb: Array<number>): Array<number> => {
+export const rgb2hsl = (
+    rgb: Array<number>, toInt: boolean = true,
+): Array<number> => {
   const [h, min, max] = rgb2hue(rgb);
   const l = (max + min) / 2;
   let s;
@@ -111,7 +95,11 @@ export const rgb2hsl = (rgb: Array<number>): Array<number> => {
   } else {
     s = 255 * (max-min) / (510-2*l);
   }
-  return [h, s, l].map((val)=> Math.round(val));
+  if (toInt) {
+    return [h, s, l].map((val)=> Math.round(val));
+  } else {
+    return [h, s, l];
+  }
 };
 
 /**
@@ -128,9 +116,12 @@ export const rgb2cmy = (rgb: Array<number>): Array<number> => {
 /**
  * Convert HSV to RGB.
  * @param  {Array<number>} hsv HSV color array.
+ * @param {boolean} [toInt=true] Rounding output value to int.
  * @return {Array<number>} RGB color array.
  */
-export const hsv2rgb = (hsv: Array<number>) => {
+export const hsv2rgb = (
+    hsv: Array<number>, toInt: boolean = true,
+): Array<number> => {
   if (hsv[1] === 0) {
     return hsv.map(() => hsv[2]);
   }
@@ -149,15 +140,22 @@ export const hsv2rgb = (hsv: Array<number>) => {
   else if (hsv[0] < 240) rgbPrime = [0, X, C];
   else if (hsv[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val) => Math.round(255 * (val+m)));
+  if (toInt) {
+    return rgbPrime.map((val) => Math.round(255 * (val+m)));
+  } else {
+    return rgbPrime.map((val) => 255 * (val+m));
+  }
 };
 
 /**
  * Convert HSL to RGB.
- * @param  {Array} hsl HSL array.
- * @return {Array} RGB color array.
+ * @param  {Array<number>} hsl HSL array.
+ * @param {boolean} [toInt=true] Rounding output value to int.
+ * @return {Array<number>} RGB color array.
  */
-export const hsl2rgb = (hsl: Array<number>) => {
+export const hsl2rgb = (
+    hsl: Array<number>, toInt: boolean = true,
+): Array<number> => {
   if (hsl[1] === 0) {
     return hsl.map(() => hsl[2]);
   }
@@ -176,15 +174,19 @@ export const hsl2rgb = (hsl: Array<number>) => {
   else if (hsl[0] < 240) rgbPrime = [0, X, C];
   else if (hsl[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val) => Math.round(255 * (val+m)));
+  if (toInt) {
+    return rgbPrime.map((val) => Math.round(255 * (val+m)));
+  } else {
+    return rgbPrime.map((val) => 255 * (val+m));
+  }
 };
 
 /**
  * Convert CMY to RGB.
- * @param  {Array} cmy CMY color array.
- * @return {Array} RGB color array.
+ * @param  {Array<number>} cmy CMY color array.
+ * @return {Array<number>} RGB color array.
  */
-export const cmy2rgb = (cmy: Array<number>) => {
+export const cmy2rgb = (cmy: Array<number>): Array<number> => {
   return rgb2cmy(cmy);
 };
 
@@ -226,17 +228,6 @@ export const randRgbGen = (): Array<number> => {
   }
   return rgb;
 };
-/**
- * Generate a Hex color.
- * @return {String} [R, G, B]
- */
-export const randHexGen = (): string => {
-  let hex6 = "#";
-  for (let i = 0; i < 6; i ++) {
-    hex6 += Math.floor(Math.random() * 16).toString(16);
-  }
-  return hex6.toUpperCase();
-};
 
 /**
  * Infomations about color space which will be used in edit mode.
@@ -255,13 +246,13 @@ type ColorSpaceInfo = {
    * @param x RGB values.
    * @returns specified color space values.
    */
-  converter: (x: number[]) => number[];
+  converter: (x: number[], toInt?: boolean) => number[];
   /**
    * The converter that convert specified color space to RGB space.
    * @param x specified color space values.
    * @returns RGB values.
    */
-  inverter: (x: number[]) => number[];
+  inverter: (x: number[], toInt?: boolean) => number[];
 }
 
 /**
@@ -305,7 +296,6 @@ export const getModeInfos = (
       throw Error(`Invalid colorMode: ${colorMode}`);
   }
 };
-
 
 // Validator
 /**

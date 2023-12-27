@@ -1,23 +1,13 @@
 import {createSlice} from "@reduxjs/toolkit";
 // Utils
-import {randRgbGen, rgb2gray, rgb2hex} from "../../common/utils/converter.ts";
+import {rgb2gray, rgb2hex, getModeInfos} from "../../common/utils/converter.ts";
 import {shuffle, inversion, meanMixing} from "../../common/utils/helpers.ts";
 // Types
-import {cardStateType, sortType, sortActionType} from "../types/cardType.ts";
+import {
+  newCardState, cardStateType, SortingType, SortActionType,
+} from "../types/cardType.ts";
+import {ColorSpacesType, MixingModeType} from "../types/optionsType.ts";
 
-
-/**
- * Create a new state object.
- * @return {cardStateType} State object.
- */
-const newCardState = (): cardStateType => {
-  const rgb = randRgbGen();
-  return {
-    rgb,
-    hex: rgb2hex(rgb),
-    isLock: false,
-  };
-};
 
 const INIT_NUM_OF_CARDS = 5;
 const initialState: {
@@ -29,11 +19,16 @@ const initialState: {
   /**
    * The order of cards.
    */
-  sortBy: sortType;
+  sortBy: SortingType;
+  /**
+   * The cards is reordering. `true` if and only if cursor dragging a card.
+   */
+  isReordering: boolean;
 } = {
   numOfCards: INIT_NUM_OF_CARDS,
   cards: Array.from({length: INIT_NUM_OF_CARDS}, () => newCardState()),
   sortBy: "random",
+  isReordering: false,
 };
 
 const cardSlice = createSlice({
@@ -43,12 +38,13 @@ const cardSlice = createSlice({
     addCard: (state, action: {
       payload: {
         idx: number;
-        mixingMode: string;
+        mixingMode: MixingModeType;
+        editingMode: ColorSpacesType;
       };
       type: string;
     }) => {
       if (state.numOfCards == 8) return state; // Maximum
-      const {idx, mixingMode} = action.payload;
+      const {idx, mixingMode, editingMode} = action.payload;
       const cards = state.cards;
       const cardState = newCardState();
       if (mixingMode === "mean") { // RGB Mean
@@ -63,8 +59,11 @@ const cardSlice = createSlice({
           // Add to the last. Default to be the mean of last card and white.
           rightColor = [255, 255, 255];
         }
-        const newColor = meanMixing(leftColor, rightColor);
-        cardState.rgb = newColor;
+        const {converter, inverter} = getModeInfos(editingMode);
+        const newColor = meanMixing(
+            converter(leftColor, false), converter(rightColor, false),
+        );
+        cardState.rgb = inverter(newColor);
       }
       cardState.hex = rgb2hex(cardState.rgb);
       state.cards.splice(idx, 0, cardState);
@@ -80,22 +79,6 @@ const cardSlice = createSlice({
       state.cards = cards;
       state.numOfCards = state.numOfCards - 1;
       return state;
-    },
-    lockCard: (state, action: {
-      payload: {idx: number;};
-      type: string;
-    }) => {
-      const {idx} = action.payload;
-      state.cards[idx].isLock = !state.cards[idx].isLock;
-    },
-    moveCard: (state, action: {
-      payload: {init: number; final: number};
-      type: string;
-    }) => {
-      const {init, final} = action.payload;
-      [state.cards[init], state.cards[final]] = [
-        state.cards[final], state.cards[init],
-      ];
     },
     refreshCard: (state, action: {
       payload: {idx: number;};
@@ -123,7 +106,7 @@ const cardSlice = createSlice({
       state.sortBy = "random";
     },
     sortCards: (state, action: {
-      payload: {sortBy: sortActionType};
+      payload: {sortBy: SortActionType};
       type: string;
     }) => {
       const {sortBy} = action.payload;
@@ -149,10 +132,40 @@ const cardSlice = createSlice({
           state.sortBy = "random";
       }
     },
+    setIsLock: (state, action: {
+      payload: {idx: number;};
+      type: string;
+    }) => {
+      const {idx} = action.payload;
+      state.cards[idx].isLock = !state.cards[idx].isLock;
+    },
+    setIsEditing: (state, action: {
+      payload: {idx: number;};
+      type: string;
+    }) => {
+      const {idx} = action.payload;
+      state.cards[idx].isEditing = !state.cards[idx].isEditing;
+    },
+    moveCard: (state, action: {
+      payload: {init: number; final: number};
+      type: string;
+    }) => {
+      const {init: init, final: final} = action.payload;
+      const card = state.cards.splice(init, 1)[0];
+      state.cards.splice(final, 0, card);
+    },
+    setIsReordering: (state, action: {
+      payload: {newVal: boolean;};
+      type: string;
+    }) => {
+      const {newVal} = action.payload;
+      state.isReordering = newVal;
+    },
   },
 });
 
 export const {
-  addCard, delCard, lockCard, moveCard, refreshCard, editCard, sortCards,
+  addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setIsEditing,
+  moveCard, setIsReordering,
 } = cardSlice.actions;
 export default cardSlice.reducer;

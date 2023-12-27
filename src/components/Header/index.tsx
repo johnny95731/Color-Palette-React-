@@ -1,11 +1,10 @@
-import React, {useEffect, useMemo} from "react";
+import React, {useMemo} from "react";
 import Icon from "../Icons.tsx";
 import css from "./index.scss";
 
 import {Menu} from "../Menus/Menus.tsx";
 // Redux-relate
 import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
-import {refreshCard, sortCards} from "../../features/slices/cardSlice.ts";
 import {
   editModeChanged, mixingModeChanged,
 } from "../../features/slices/optionsSlice.ts";
@@ -13,7 +12,7 @@ import {favPltsChanged} from "../../features/slices/favSlice.ts";
 import {selectCard, selectFavorites} from "../../features/store.ts";
 // types
 import {MouseEventHandler} from "../../common/types/eventHandler.ts";
-import {sortActionType} from "../../features/types/cardType.ts";
+import {SortActionType} from "../../features/types/cardType.ts";
 import {
   ColorSpacesList, ColorSpacesType, MixingModeList, MixingModeType,
 } from "../../features/types/optionsType.ts";
@@ -34,7 +33,7 @@ const RefreshAll = ({
 const Sort = ({
   handleSorting,
 }: {
-  handleSorting: (sortBy: sortActionType) => void
+  handleSorting: (sortBy: SortActionType) => void
 }) => {
   return (
     <Menu className={css.btn}
@@ -162,21 +161,19 @@ const Bookmarks = ({onClick}: {onClick: MouseEventHandler}) => {
 
 // Main component
 const Header = ({
+  refresh,
+  handleSorting,
   favShowingChanged,
 }: {
+  refresh: () => void;
+  handleSorting: (sortBy: SortActionType) => void;
   favShowingChanged: MouseEventHandler;
 }): React.JSX.Element => {
   const dispatch = useAppDispatch();
   const {
-    refresh, handleSorting, handleMixingModeChanged, handleEditModeChanged,
+    handleMixingModeChanged, handleEditModeChanged,
   } = useMemo(() => {
     return {
-      refresh: () => {
-        dispatch(refreshCard({idx: -1}));
-      },
-      handleSorting: (sortBy: sortActionType) => {
-        dispatch(sortCards({sortBy}));
-      },
       handleMixingModeChanged: (newMode: MixingModeType) => {
         dispatch(mixingModeChanged({newMode}));
       },
@@ -184,21 +181,6 @@ const Header = ({
         dispatch(editModeChanged({newMode}));
       },
     };
-  }, []);
-
-  // Connect refresh event to `space` button.
-  useEffect(() => {
-    const body = document.body;
-    const keypressEvent = (e: KeyboardEvent) => {
-      if (e.key === " ") refresh();
-      else if (e.key.toLowerCase() === "g") {
-        dispatch(sortCards({sortBy: "gray"}));
-      } else if (e.key.toLowerCase() === "r") {
-        dispatch(sortCards({sortBy: "random"}));
-      }
-    };
-    body.addEventListener("keypress", keypressEvent);
-    return () => body.removeEventListener("keypress", keypressEvent);
   }, []);
 
   return (

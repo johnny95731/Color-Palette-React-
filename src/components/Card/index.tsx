@@ -11,7 +11,7 @@ import {hexTextEdited, copyHex} from "../../common/utils/helpers.ts";
 // Redux-relate
 import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
 import {
-  delCard, lockCard, refreshCard, editCard,
+  delCard, refreshCard, editCard, setIsLock, setIsEditing,
 } from "../../features/slices/cardSlice.ts";
 import {favColorsChanged} from "../../features/slices/favSlice.ts";
 import {
@@ -105,20 +105,21 @@ const ToolBar = ({
 const Card = forwardRef(({
   cardId,
   cardState,
-  handleDragReorder,
+  handleDraggingCard,
 }: {
   cardId: number;
   cardState: cardStateType;
-  handleDragReorder: MouseEventHandler;
+  handleDraggingCard: MouseEventHandler;
 },
 ref: Ref<HTMLDivElement>,
 ) => {
   // States / consts
   const optionsState = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
-  const [isEditing, setIsEditing] = useState(() => false);
+  // const [isEditing, setIsEditing] = useState(() => false);
   const {labels, maxes, converter, inverter} = (
-    getModeInfos(optionsState.editMode));
+    getModeInfos(optionsState.editingMode)
+  );
 
   const [
     isLight,
@@ -128,10 +129,10 @@ ref: Ref<HTMLDivElement>,
       rgb2gray(cardState.rgb) > 127,
       converter(cardState.rgb),
     ];
-  }, [...cardState.rgb, optionsState.editMode]);
+  }, [cardState.hex, optionsState.editingMode]);
 
   const filterStyle = useMemo(() => {
-    return {filter: isLight ? undefined : "invert(1)"};
+    return {filter: isLight ? "" : "invert(1)"};
   }, [isLight]);
 
   const events = useMemo(() => {
@@ -139,14 +140,14 @@ ref: Ref<HTMLDivElement>,
       delCard: () => {
         dispatch(delCard({idx: cardId}));
       },
-      lockCard: () => {
-        dispatch(lockCard({idx: cardId}));
-      },
       refreshCard: () => {
         dispatch(refreshCard({idx: cardId}));
       },
+      isLockChanged: () => {
+        dispatch(setIsLock({idx: cardId}));
+      },
       isEditingChanged: () => {
-        setIsEditing((prev) => !prev);
+        dispatch(setIsEditing({idx: cardId}));
       },
     };
   }, [cardId]);
@@ -183,7 +184,7 @@ ref: Ref<HTMLDivElement>,
     const newModeColor = [...modeColor];
     newModeColor[idx] = Number(target.value);
     const rgb = inverter(newModeColor);
-    editCard({idx: cardId, color: rgb});
+    dispatch(editCard({idx: cardId, color: rgb}));
     // Edit input
     const textInput = (
       document.getElementById(`card${cardId}-hex`) as HTMLInputElement
@@ -192,7 +193,7 @@ ref: Ref<HTMLDivElement>,
   };
 
   useEffect(() => {
-    if (isEditing) {
+    if (cardState.isEditing) {
       let slider;
       for (let i = 0; i < 3; i++) {
         slider = (
@@ -202,11 +203,10 @@ ref: Ref<HTMLDivElement>,
         slider.value = String(modeColor[i]);
       }
     }
-  }, [optionsState.editMode]);
+  }, [optionsState.editingMode]);
 
   return (
-    <div
-      className={css.cardContainer}
+    <div className={css.cardContainer}
       style={{
         backgroundColor: cardState.hex,
         // transition: "background-color .5s ease",
@@ -218,11 +218,12 @@ ref: Ref<HTMLDivElement>,
         lockIcon={cardState.isLock ? "lock" : "unlock"}
         filterStyle={filterStyle}
         events={events}
-        handleDragReorder={handleDragReorder}
+        handleDragReorder={handleDraggingCard}
       />
-      <div className={css.textRegion}>
+      <div className={css.textRegion}
+      >
         {
-          !isEditing ?
+          !cardState.isEditing ?
           <>
             <div className={css.hexText}
               onClick={copyHex}
@@ -240,7 +241,7 @@ ref: Ref<HTMLDivElement>,
               <Icon type="copy"
                 style={filterStyle}
               />
-              {`${optionsState.editMode}(${modeColor.toString()})`}
+              {`${optionsState.editingMode}(${modeColor.toString()})`}
             </div>
           </> : // Editing mode
           <>

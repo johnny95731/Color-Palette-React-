@@ -12,17 +12,17 @@ import {
  *   when insert a new card.
  */
 const initialState: {
-  editMode: ColorSpacesType;
+  editingMode: ColorSpacesType;
   mixingMode: MixingModeType;
 } = {
   /**
    * Color space which will be display under hex code and be used in edit mode.
    */
-  editMode: "rgb",
+  editingMode: "rgb",
   /**
    * How to evaluate a new color when insert a new card.
    */
-  mixingMode: "random",
+  mixingMode: "mean",
 };
 
 const optionSlice = createSlice({
@@ -34,7 +34,7 @@ const optionSlice = createSlice({
       type: string;
     }) => {
       const {newMode: newVal} = action.payload;
-      state["editMode"] = newVal;
+      state["editingMode"] = newVal;
     },
     mixingModeChanged: (state, action: {
       payload: {newMode: MixingModeType;};
