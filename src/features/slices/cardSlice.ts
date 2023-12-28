@@ -71,20 +71,21 @@ const cardSlice = createSlice({
       return state;
     },
     delCard: (state, action: {
-      payload: {idx: number;};
+      payload: number;
       type: string;
     }) => {
+      const idx = action.payload;
       const [...cards] = state.cards;
-      cards.splice(action.payload.idx, 1);
+      cards.splice(idx, 1);
       state.cards = cards;
       state.numOfCards = state.numOfCards - 1;
       return state;
     },
     refreshCard: (state, action: {
-      payload: {idx: number;};
+      payload: number;
       type: string;
     }) => {
-      const {idx} = action.payload;
+      const idx = action.payload;
       if (idx >= 0) {
         if (state.cards[idx].isLock) return state;
         state.cards[idx] = newCardState();
@@ -106,10 +107,10 @@ const cardSlice = createSlice({
       state.sortBy = "random";
     },
     sortCards: (state, action: {
-      payload: {sortBy: SortActionType};
+      payload: SortActionType;
       type: string;
     }) => {
-      const {sortBy} = action.payload;
+      const sortBy = action.payload;
       switch (sortBy) {
         case "gray":
           if (state.sortBy === "gray") {
@@ -133,17 +134,17 @@ const cardSlice = createSlice({
       }
     },
     setIsLock: (state, action: {
-      payload: {idx: number;};
+      payload: number;
       type: string;
     }) => {
-      const {idx} = action.payload;
+      const idx = action.payload;
       state.cards[idx].isLock = !state.cards[idx].isLock;
     },
     setIsEditing: (state, action: {
-      payload: {idx: number;};
+      payload: number;
       type: string;
     }) => {
-      const {idx} = action.payload;
+      const idx = action.payload;
       state.cards[idx].isEditing = !state.cards[idx].isEditing;
     },
     moveCard: (state, action: {
@@ -155,10 +156,10 @@ const cardSlice = createSlice({
       state.cards.splice(final, 0, card);
     },
     setIsReordering: (state, action: {
-      payload: {newVal: boolean;};
+      payload: boolean;
       type: string;
     }) => {
-      const {newVal} = action.payload;
+      const newVal = action.payload;
       state.isReordering = newVal;
     },
   },

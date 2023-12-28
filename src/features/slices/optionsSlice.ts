@@ -30,17 +30,16 @@ const optionSlice = createSlice({
   initialState,
   reducers: {
     editModeChanged: (state, action: {
-      payload: {newMode: ColorSpacesType;};
+      payload: ColorSpacesType;
       type: string;
     }) => {
-      const {newMode: newVal} = action.payload;
-      state["editingMode"] = newVal;
+      state.editingMode = action.payload;
     },
     mixingModeChanged: (state, action: {
-      payload: {newMode: MixingModeType;};
+      payload: MixingModeType;
       type: string;
     }) => {
-      state.mixingMode = action.payload.newMode;
+      state.mixingMode = action.payload;
     },
   },
 });

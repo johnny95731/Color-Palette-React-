@@ -14,9 +14,7 @@ import {
   delCard, refreshCard, editCard, setIsLock, setIsEditing,
 } from "../../features/slices/cardSlice.ts";
 import {favColorsChanged} from "../../features/slices/favSlice.ts";
-import {
-  selectCard, selectOptions, selectFavorites,
-} from "../../features/store.ts";
+import {selectOptions, selectFavorites} from "../../features/store.ts";
 // types
 import {MouseEventHandler} from "../../common/types/eventHandler.ts";
 import type {cardStateType} from "../../features/types/cardType.ts";
@@ -24,12 +22,14 @@ import type {cardStateType} from "../../features/types/cardType.ts";
 
 // Other Components
 const ToolBar = ({
+  numOfCards,
   hex,
   lockIcon,
   filterStyle,
   events,
   handleDragReorder,
 }: {
+  numOfCards: number;
   hex: string;
   lockIcon: string;
   filterStyle: {filter: string | undefined};
@@ -40,19 +40,28 @@ const ToolBar = ({
 }) => {
   // States / consts
   const [isFav, setIsFav] = useState(() => false);
-  const cardState = useAppSelector(selectCard);
   const favState = useAppSelector(selectFavorites);
   const dispatch = useAppDispatch();
 
-  const [opacity, cursor] = useMemo(() => {
-    return cardState.numOfCards === 2 ? ["0", "default"] : ["", "pointer"];
-  }, [cardState.numOfCards]);
+  const {opacity, cursor} = useMemo(() => {
+    if (numOfCards === 2) {
+      return {
+        opacity: "0",
+        cursor: "default",
+      };
+    } else {
+      return {
+        opacity: "",
+        cursor: "pointer",
+      };
+    }
+  }, [numOfCards]);
 
   const ifFavIcon = isFav ? "fav" : "unfav";
 
   const handleFavClick = () => {
     setIsFav((prev) => !prev);
-    dispatch(favColorsChanged({targetHex: hex}));
+    dispatch(favColorsChanged(hex));
   };
 
   useEffect(() => { // When card color changed or fav list changed.
@@ -104,10 +113,12 @@ const ToolBar = ({
 // Main component
 const Card = forwardRef(({
   cardId,
+  numOfCards,
   cardState,
   handleDraggingCard,
 }: {
   cardId: number;
+  numOfCards: number;
   cardState: cardStateType;
   handleDraggingCard: MouseEventHandler;
 },
@@ -138,16 +149,16 @@ ref: Ref<HTMLDivElement>,
   const events = useMemo(() => {
     return {
       delCard: () => {
-        dispatch(delCard({idx: cardId}));
+        dispatch(delCard(cardId));
       },
       refreshCard: () => {
-        dispatch(refreshCard({idx: cardId}));
+        dispatch(refreshCard(cardId));
       },
       isLockChanged: () => {
-        dispatch(setIsLock({idx: cardId}));
+        dispatch(setIsLock(cardId));
       },
       isEditingChanged: () => {
-        dispatch(setIsEditing({idx: cardId}));
+        dispatch(setIsEditing(cardId));
       },
     };
   }, [cardId]);
@@ -214,6 +225,7 @@ ref: Ref<HTMLDivElement>,
       ref={ref}
     >
       <ToolBar
+        numOfCards={numOfCards}
         hex={cardState.hex}
         lockIcon={cardState.isLock ? "lock" : "unlock"}
         filterStyle={filterStyle}

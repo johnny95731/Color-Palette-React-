@@ -1,15 +1,15 @@
 import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
-import {get, update} from "idb-keyval";
+import {get, update, set} from "idb-keyval";
 
 import {
   favoritesDb, FAV_COLORS, FAV_PLTS,
 } from "../../common/utils/database.ts";
 
 export const initializeColors = createAsyncThunk("favorites/initializeColors",
-    () => get<string[] | undefined>(FAV_COLORS, favoritesDb),
+    () => get<string[]>(FAV_COLORS, favoritesDb),
 );
 export const initializePlts = createAsyncThunk("favorites/initializePlts",
-    () => get<string[] | undefined>(FAV_PLTS, favoritesDb),
+    () => get<string[]>(FAV_PLTS, favoritesDb),
 );
 
 
@@ -37,10 +37,10 @@ const favSlice = createSlice({
   initialState,
   reducers: {
     favColorsChanged: (state, action:{
-      payload: {targetHex: string;};
+      payload: string;
       type: string;
     }) => {
-      const {targetHex} = action.payload;
+      const targetHex = action.payload;
       const isIncluding = state.colors.includes(targetHex);
       // Update database
       update<string[]>(FAV_COLORS, (prev) => {
@@ -63,10 +63,10 @@ const favSlice = createSlice({
       }
     },
     favPltsChanged: (state, action:{
-      payload: {targetPlt: string;};
+      payload: string;
       type: string;
     }) => {
-      const {targetPlt} = action.payload;
+      const targetPlt = action.payload;
       // Update database
       update<string[]>(FAV_PLTS, (prev) => {
         if (!prev) return [];
@@ -94,7 +94,7 @@ const favSlice = createSlice({
         .addCase(initializeColors.fulfilled, (state, action) => {
           const colors = action.payload;
           if (!colors) { // First time enter this site.
-            update<string[]>(FAV_COLORS, () => [], favoritesDb);
+            set(FAV_COLORS, [], favoritesDb);
           } else {
             state.colors = colors;
           }
@@ -102,12 +102,13 @@ const favSlice = createSlice({
         })
         .addCase(initializeColors.rejected, (state, action) => {
           console.error(action.error.message);
+          state.isInitialized[0] = true;
         })
         // initializePlts
         .addCase(initializePlts.fulfilled, (state, action) => {
           const plts = action.payload;
           if (!plts) { // First time enter this site.
-            update<string[]>(FAV_PLTS, () => [], favoritesDb);
+            set(FAV_PLTS, [], favoritesDb);
           } else {
             state.plts = plts;
           }
@@ -116,6 +117,7 @@ const favSlice = createSlice({
         .addCase(initializePlts.rejected, (state, action) => {
           console.error(action.error.message);
           state.isInitialized[1] = false;
+          state.isInitialized[1] = true;
         });
   },
 });

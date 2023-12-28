@@ -28,9 +28,8 @@ const ColorBlock = ({
 
   // Events
   const removeFav = () => {
-    dispatch(favColorsChanged({targetHex: hex}));
+    dispatch(favColorsChanged(hex));
   };
-
   return (
     <li className={css.colorBlock}
       style={{
@@ -74,9 +73,8 @@ const PalleteBlock = ({
 
   // Events
   const removeFav = () => {
-    dispatch(favPltsChanged({targetPlt: plt}));
+    dispatch(favPltsChanged(plt));
   };
-
   return (
     <li className={css.palleteBlock}>
       <div style={{background: `linear-gradient(90deg, ${bgGrad})`}} />

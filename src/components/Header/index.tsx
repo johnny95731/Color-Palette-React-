@@ -103,15 +103,12 @@ const AddFavPlt = () => {
   const cards = useAppSelector(selectCard).cards;
   const plt = cards.map((state) => state.hex.slice(1)).join("-");
   const favPltList = useAppSelector(selectFavorites).plts;
+  const isFavPlt = favPltList.includes(plt);
   const dispatch = useAppDispatch();
-
-  const isFavPlt = useMemo(() => {
-    return favPltList.includes(plt);
-  }, [plt, favPltList.length]);
 
   // Events
   const removeFav = () => {
-    dispatch(favPltsChanged({targetPlt: plt}));
+    dispatch(favPltsChanged(plt));
   };
 
   const state = useMemo(() => {
@@ -175,10 +172,10 @@ const Header = ({
   } = useMemo(() => {
     return {
       handleMixingModeChanged: (newMode: MixingModeType) => {
-        dispatch(mixingModeChanged({newMode}));
+        dispatch(mixingModeChanged(newMode));
       },
       handleEditModeChanged: (newMode: ColorSpacesType) => {
-        dispatch(editModeChanged({newMode}));
+        dispatch(editModeChanged(newMode));
       },
     };
   }, []);

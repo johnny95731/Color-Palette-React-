@@ -43,7 +43,7 @@ const InsertRegions = ({
   }, [totalNum, viewportWidth]);
 
   // Events
-  const addCardWrapper = useCallback((idx: number) => {
+  const handleAddCard = useCallback((idx: number) => {
     dispatch(addCard({
       idx,
       mixingMode: optionsState.mixingMode,
@@ -59,7 +59,7 @@ const InsertRegions = ({
           style={positions[i]}
         >
           <div
-            onClick={() => addCardWrapper(i)}
+            onClick={() => handleAddCard(i)}
           >
             <Icon type={"insertRight"}
             />
@@ -78,31 +78,32 @@ const DisplayRegion = ({
   // States / consts
   const cardState = useAppSelector(selectCard);
   const cardRefs = useRef<{
-      initDragging: number | null;
       nowDragging: number | null;
       [key: number]: HTMLDivElement;
-    }>({initDragging: null, nowDragging: null});
-  const totalNum = cardState.numOfCards;
+    }>({nowDragging: null});
+  const numOfCards = cardState.numOfCards;
   const viewportWidth = window.innerWidth;
   const {dir, cardLength, clientPos} = useMemo(() => {
     const body = document.body;
     if (viewportWidth > 900) { // Horizontal flow.
       return {
         dir: "left", clientPos: "clientX",
-        cardLength: body.clientWidth / totalNum,
+        cardLength: body.clientWidth / numOfCards,
       } as const;
     } else { // Vertical flow.
       return {
         dir: "top", clientPos: "clientY",
-        cardLength: body.clientHeight / totalNum,
+        cardLength: body.clientHeight / numOfCards,
       } as const;
     }
-  }, [viewportWidth, totalNum]);
+  }, [viewportWidth, numOfCards]);
 
   const cardsPos = useMemo(() => {
     // Get card.getBoundingClientRect()[dir] for each card.
-    return Array.from({length: totalNum}, (_, i) => Math.floor(i * cardLength));
-  }, [viewportWidth, totalNum]);
+    return Array.from({length: numOfCards},
+        (_, i) => Math.floor(i * cardLength),
+    );
+  }, [viewportWidth, numOfCards]);
 
   // Events
   /**
@@ -116,13 +117,12 @@ const DisplayRegion = ({
   ) => {
     if (!cardRefs.current) return;
     const nowPos = e[clientPos]; // Cursor position when mouse down.
-    dispatch(setIsReordering({newVal: true})); // start
-    cardRefs.current.initDragging = cardId;
+    dispatch(setIsReordering(true)); // start
     cardRefs.current.nowDragging = cardId;
     const card = cardRefs.current[cardId];
     card.classList.add(css.dragging);
     card.style[dir] = `${nowPos - cardsPos[cardId]}px`;
-  }, [totalNum]);
+  }, [numOfCards]);
 
   /**
    * The event is triggered when the `<->` icon on a card is dragging and mouse
@@ -130,9 +130,8 @@ const DisplayRegion = ({
    * @param {MouseEvent} e Mouse move event.
    */
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    const initIdx = cardRefs.current.initDragging;
     const prevIdx = cardRefs.current.nowDragging;
-    if ((initIdx === null) || (prevIdx === null)) return;
+    if (prevIdx === null) return;
     const nowPos = e[clientPos];
     const card = cardRefs.current[prevIdx];
     // Index of card that cursor at.
@@ -149,8 +148,11 @@ const DisplayRegion = ({
     } else {
       card.style[dir] = `${nowPos - cardsPos[prevIdx]}px`;
     }
-  }, [totalNum, viewportWidth]);
+  }, [numOfCards, viewportWidth]);
 
+  /**
+   * The event is triggered when release left buton.
+   */
   const handleMouseUp = useCallback(() => {
     const nowIdx = cardRefs.current.nowDragging;
     if (nowIdx == null) return;
@@ -158,8 +160,7 @@ const DisplayRegion = ({
     // Reset dragging card.
     card.style[dir] = "";
     card.classList.remove(css.dragging);
-    dispatch(setIsReordering({newVal: false}));
-    cardRefs.current.initDragging = null;
+    dispatch(setIsReordering(false));
     cardRefs.current.nowDragging = null;
   }, []);
 
@@ -179,6 +180,7 @@ const DisplayRegion = ({
         return <Card key={`card${i}`}
           ref={(el) => cardRefs.current[i] = (el as HTMLDivElement)}
           cardId={i}
+          numOfCards={numOfCards}
           cardState={card}
           handleDraggingCard={
             ((e: React.MouseEvent<HTMLDivElement>) =>
@@ -209,10 +211,10 @@ const App = () => {
   } = useMemo(() => {
     return {
       refresh: () => {
-        dispatch(refreshCard({idx: -1}));
+        dispatch(refreshCard(-1));
       },
       handleSorting: (sortBy: SortActionType) => {
-        dispatch(sortCards({sortBy}));
+        dispatch(sortCards(sortBy));
       },
     };
   }, []);
