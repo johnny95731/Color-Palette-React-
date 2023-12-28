@@ -70,7 +70,7 @@ const InsertRegions = ({
   );
 };
 
-const Cards = ({
+const DisplayRegion = ({
   dispatch,
 }: {
   dispatch: AppDispatch;
@@ -253,7 +253,7 @@ const App = () => {
         handleSorting={handleSorting}
         favShowingChanged={favShowingChanged}
       />
-      <Cards dispatch={dispatch} />
+      <DisplayRegion dispatch={dispatch} />
       <FavSidebar
         isShowing={favShowing}
         favShowingChanged={favShowingChanged}
