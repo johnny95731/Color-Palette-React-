@@ -268,8 +268,14 @@ export const getModeInfos = (
       return {
         labels: ["Red", "Green", "Blue"],
         maxes: [255, 255, 255],
-        converter: (x: number[]) => x,
-        inverter: (x: number[]) => x,
+        converter: (x: number[], toInt = true) => {
+          if (toInt) return x.map((val) => Math.round(val));
+          else return x;
+        },
+        inverter: (x: number[], toInt = true) => {
+          if (toInt) return x.map((val) => Math.round(val));
+          else return x;
+        },
       };
     case "hsl":
       return {

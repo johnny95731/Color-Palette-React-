@@ -63,7 +63,7 @@ const cardSlice = createSlice({
         const newColor = meanMixing(
             converter(leftColor, false), converter(rightColor, false),
         );
-        cardState.rgb = inverter(newColor);
+        cardState.rgb = inverter(newColor, true);
       }
       cardState.hex = rgb2hex(cardState.rgb);
       state.cards.splice(idx, 0, cardState);
