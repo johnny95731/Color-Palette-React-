@@ -1,5 +1,6 @@
 import React, {
-  Fragment, useState, useMemo, useEffect, useCallback, forwardRef, Ref,
+  Fragment, useMemo, useEffect, useCallback, forwardRef, Ref, useRef,
+  useContext,
 } from "react";
 import css from "./index.scss";
 import Icon from "../Icons.tsx";
@@ -15,32 +16,33 @@ import {
 } from "../../features/slices/cardSlice.ts";
 import {favColorsChanged} from "../../features/slices/favSlice.ts";
 import {selectOptions, selectFavorites} from "../../features/store.ts";
+import MediaContext from "../../features/mediaContext.ts";
 // types
-import {MouseEventHandler} from "../../common/types/eventHandler.ts";
-import type {cardStateType} from "../../features/types/cardType.ts";
+import {MouseHandler} from "../../common/types/eventHandler.ts";
+import type {cardType} from "../../features/types/cardType.ts";
 
 
 // Other Components
 const ToolBar = ({
   numOfCards,
-  hex,
-  lockIcon,
+  card,
   filterStyle,
   events,
   handleDragReorder,
 }: {
   numOfCards: number;
-  hex: string;
-  lockIcon: string;
+  card: cardType;
   filterStyle: {filter: string | undefined};
   events: {
     [key: string]: () => void;
   }
-  handleDragReorder: MouseEventHandler;
+  handleDragReorder: MouseHandler;
 }) => {
   // States / consts
-  const [isFav, setIsFav] = useState(() => false);
   const favState = useAppSelector(selectFavorites);
+  const isFav = useMemo(() => {
+    return favState.colors.includes(card.hex);
+  }, [card.hex, favState.colors.length, favState.isInitialized[0]]);
   const dispatch = useAppDispatch();
 
   const {opacity, cursor} = useMemo(() => {
@@ -60,17 +62,8 @@ const ToolBar = ({
   const ifFavIcon = isFav ? "fav" : "unfav";
 
   const handleFavClick = () => {
-    setIsFav((prev) => !prev);
-    dispatch(favColorsChanged(hex));
+    dispatch(favColorsChanged(card.hex));
   };
-
-  useEffect(() => { // When card color changed or fav list changed.
-    setIsFav(favState.colors.includes(hex));
-  }, [hex, favState.colors.length]);
-
-  useEffect(() => { // After favState initialized.
-    setIsFav(favState.colors.includes(hex));
-  }, [favState.isInitialized[0]]);
 
   return (
     <div className={css.toolContainer}>
@@ -82,9 +75,9 @@ const ToolBar = ({
         }}
         events={[["click", events.delCard]]}
       />
-      <Icon type={lockIcon}
+      <Icon type={card.isLock ? "lock" : "unlock"}
         style={filterStyle}
-        events={[["click", events.lockCard]]}
+        events={[["click", events.isLockChanged]]}
       />
       <Icon type={ifFavIcon}
         style={filterStyle}
@@ -109,64 +102,38 @@ const ToolBar = ({
   );
 };
 
-
-// Main component
-const Card = forwardRef(({
+const EditingWindow = forwardRef<HTMLDivElement, any>(({
+  isSmall,
   cardId,
-  numOfCards,
-  cardState,
-  handleDraggingCard,
+  card,
+  modeColor,
+  isEditingChanged,
 }: {
+  isSmall: boolean;
   cardId: number;
-  numOfCards: number;
-  cardState: cardStateType;
-  handleDraggingCard: MouseEventHandler;
-},
-ref: Ref<HTMLDivElement>,
+  card: cardType;
+  modeColor: number[];
+  isEditingChanged: () => void;
+}, ref,
 ) => {
-  // States / consts
   const optionsState = useAppSelector(selectOptions);
+  const {windowSize} = useContext(MediaContext);
   const dispatch = useAppDispatch();
-  // const [isEditing, setIsEditing] = useState(() => false);
   const {labels, maxes, converter, inverter} = (
     getModeInfos(optionsState.editingMode)
   );
 
-  const [
-    isLight,
-    modeColor,
-  ] = useMemo(() => {
-    return [
-      rgb2gray(cardState.rgb) > 127,
-      converter(cardState.rgb),
-    ];
-  }, [...cardState.rgb, optionsState.editingMode]);
-
-  const filterStyle = useMemo(() => {
-    return {filter: isLight ? "" : "invert(1)"};
-  }, [isLight]);
-
-  const events = useMemo(() => {
-    return {
-      delCard: () => {
-        dispatch(delCard(cardId));
-      },
-      refreshCard: () => {
-        dispatch(refreshCard(cardId));
-      },
-      isLockChanged: () => {
-        dispatch(setIsLock(cardId));
-      },
-      isEditingChanged: () => {
-        dispatch(setIsEditing(cardId));
-      },
-    };
-  }, [cardId]);
-
-  const handleHexBlur = useCallback((
-      e: React.FocusEvent<HTMLInputElement>,
+  /**
+   * Finish Hex editing when input is blurred or press "Enter"
+   */
+  const handleHexEditingFinished = useCallback((
+      e: React.FocusEvent<HTMLInputElement>
+         | React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    const textInput = e.target;
+    if (e.type === "keydown" && (e as React.KeyboardEvent).key !== "Enter") {
+      return;
+    }
+    const textInput = e.currentTarget;
     const text = textInput.value;
     if (isValidHex(text)) {
       const rgb = hex2rgb(text);
@@ -186,7 +153,7 @@ ref: Ref<HTMLDivElement>,
         textInput.value = hex6;
       }
     }
-  }, []);
+  }, [optionsState.editingMode]);
 
   const handleSliderChange = (
       e: React.ChangeEvent<HTMLInputElement>,
@@ -203,8 +170,145 @@ ref: Ref<HTMLDivElement>,
     textInput.value = rgb2hex(rgb);
   };
 
+  const handleWindowBlurred = useCallback((
+      e: React.FocusEvent<HTMLInputElement>,
+  ) => {
+    if (card.isEditing && e.relatedTarget === null) {
+      handleHexEditingFinished(e);
+      isEditingChanged();
+    }
+  }, [card.isEditing]);
+
+  // Check container is out of window or not.
+  // @ts-expect-error ref === React.MutableRefObject.
+  const rect = ref.current?.getBoundingClientRect();
   useEffect(() => {
-    if (cardState.isEditing) {
+    // @ts-expect-error ref === React.MutableRefObject.
+    const rect = ref.current.getBoundingClientRect();
+    if (rect.x <= 0) {
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.transform = "none";
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.left = "0";
+    } else if ((rect.x + rect.width) >= windowSize[1]) {
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.transform = "none";
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.left = "auto";
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.right = "0";
+    } else {
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.transform = "";
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.left = "";
+      // @ts-expect-error ref === React.MutableRefObject.
+      ref.current.style.right = "";
+    }
+  }, [card.isEditing, rect?.x]);
+
+  return (
+    <div className={css.editing} ref={ref}
+      tabIndex={-1}
+      onBlur={handleWindowBlurred}
+    >
+      <div style={{backgroundColor: card.hex}}>
+      </div>
+      <input type="text" maxLength={7}
+        defaultValue={card.hex}
+        id={`card${cardId}-hex`}
+        className={css.hexInput}
+        onChange={hexTextEdited}
+        onBlur={handleHexEditingFinished}
+        onKeyDown={handleHexEditingFinished}
+      />
+      <form className={css.sliders} >
+        {
+          labels.map((label, i) => {
+            return (
+              <Fragment key={`card${cardId}-frag${i}`}>
+                <span key={`card${cardId}-label${i}`}
+                  // style={filterStyle}
+                >
+                  {`${label}: ${modeColor[i]}`}
+                </span>
+                <input key={`card${cardId}-slider${i}`}
+                  id={`card${cardId}-slider${i}`}
+                  type="range" min="0" max={maxes[i]}
+                  defaultValue={modeColor[i]}
+                  onChange={(e) => handleSliderChange(e, i)}
+                />
+              </Fragment>
+            );
+          })
+        }
+      </form>
+    </div>
+  );
+});
+EditingWindow.displayName = "EditingWindow";
+
+
+// Main component
+const Card = forwardRef(({
+  cardId,
+  numOfCards,
+  card,
+  isSmall,
+  handleDraggingCard,
+}: {
+  cardId: number;
+  numOfCards: number;
+  card: cardType;
+  isSmall: boolean;
+  handleDraggingCard: MouseHandler;
+},
+ref: Ref<HTMLDivElement>,
+) => {
+  // States / consts
+  const optionsState = useAppSelector(selectOptions);
+  const dispatch = useAppDispatch();
+  const {converter} = (
+    getModeInfos(optionsState.editingMode)
+  );
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [
+    isLight,
+    modeColor,
+  ] = useMemo(() => {
+    return [
+      rgb2gray(card.rgb) > 127,
+      converter(card.rgb),
+    ];
+  }, [...card.rgb, optionsState.editingMode]);
+
+  const filterStyle = useMemo(() => {
+    return {filter: isLight ? "" : "invert(1)"};
+  }, [isLight]);
+
+  /**
+   * Toolbar events.
+   */
+  const events = useMemo(() => {
+    return {
+      delCard: () => {
+        dispatch(delCard(cardId));
+      },
+      refreshCard: () => {
+        dispatch(refreshCard(cardId));
+      },
+      isLockChanged: () => {
+        dispatch(setIsLock(cardId));
+      },
+      isEditingChanged: () => {
+        dispatch(setIsEditing(cardId));
+      },
+    };
+  }, [cardId]);
+
+  useEffect(() => {
+    if (card.isEditing) {
       let slider;
       for (let i = 0; i < 3; i++) {
         slider = (
@@ -219,76 +323,48 @@ ref: Ref<HTMLDivElement>,
   return (
     <div className={css.cardContainer}
       style={{
-        backgroundColor: cardState.hex,
+        backgroundColor: card.hex,
         // transition: "background-color .5s ease",
       }}
       ref={ref}
     >
       <ToolBar
         numOfCards={numOfCards}
-        hex={cardState.hex}
-        lockIcon={cardState.isLock ? "lock" : "unlock"}
+        card={card}
         filterStyle={filterStyle}
         events={events}
         handleDragReorder={handleDraggingCard}
       />
-      <div className={css.textRegion}
-      >
-        {
-          !cardState.isEditing ?
-          <>
-            <div className={css.hexText}
-              onClick={copyHex}
-              style={filterStyle}
-            >
-              <Icon type="copy"
-                style={filterStyle}
-              />
-              {cardState.hex}
-            </div>
-            <div className={css.rgbText}
-              style={filterStyle}
-              onClick={copyHex}
-            >
-              <Icon type="copy"
-                style={filterStyle}
-              />
-              {`${optionsState.editingMode}(${modeColor.toString()})`}
-            </div>
-          </> : // Editing mode
-          <>
-            <input type="text" maxLength={7}
-              defaultValue={cardState.hex}
-              id={`card${cardId}-hex`}
-              className={css.hexInput}
-              onChange={hexTextEdited}
-              onBlur={handleHexBlur}
-            />
-            <form className={css.sliders}
-            >
-              {
-                labels.map((label, i) => {
-                  return (
-                    <Fragment key={`card${cardId}-frag${i}`}>
-                      <span key={`card${cardId}-label${i}`}
-                        style={filterStyle}
-                      >
-                        {`${label}: ${modeColor[i]}`}
-                      </span>
-                      <input key={`card${cardId}-slider${i}`}
-                        id={`card${cardId}-slider${i}`}
-                        type="range" min="0" max={maxes[i]}
-                        defaultValue={modeColor[i]}
-                        onChange={(e) => handleSliderChange(e, i)}
-                      />
-                    </Fragment>
-                  );
-                })
-              }
-            </form>
-          </>
-        }
+      <div className={css.textDisplay}>
+        <div className={css.hexText}
+          onClick={copyHex}
+          style={filterStyle}
+        >
+          <Icon type="copy"
+            style={filterStyle}
+          />
+          {card.hex}
+        </div>
+        <div className={css.rgbText}
+          style={filterStyle}
+          onClick={copyHex}
+        >
+          <Icon type="copy"
+            style={filterStyle}
+          />
+          {`${optionsState.editingMode}(${modeColor.toString()})`}
+        </div>
       </div>
+      {
+        card.isEditing &&
+        <EditingWindow ref={containerRef}
+          isSmall={isSmall}
+          cardId={cardId}
+          card={card}
+          modeColor={modeColor}
+          isEditingChanged={events.isEditingChanged}
+        />
+      }
     </div>
   );
 });

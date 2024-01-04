@@ -1,0 +1,84 @@
+@import "../commons.scss";
+
+.popupMenu {
+  position: relative;
+  cursor: pointer;
+  &:focus {
+    border-radius: 8px 8px 0 0;
+  }
+  @media only screen and (max-width: $smallSize) {
+    &:focus .menuTitle {
+      padding-bottom: 5px;
+    }
+  }
+}
+
+.menuTitle {
+  font-size: 16px;
+}
+
+.triangle {
+  margin-left: 3px;
+  vertical-align: middle;
+}
+
+%menuContent {
+  display: none;
+  position: absolute;
+  top: 100%;
+  min-width: 100%;
+  text-wrap: nowrap;
+  background-color: inherit;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  z-index: 1;
+  cursor: pointer;
+
+  >* {
+    height: 12px + $defaultFontSize;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-width: 1px 0;
+    background-color: $color1;
+    text-align: center;
+    box-sizing: border-box;
+    &:hover {
+      background-color: $color3;
+    }
+  }
+  
+  @media only screen and (max-width: $smallSize) {
+    margin-top: 0;
+    background-color: $color1;
+    overflow: visible;
+    &:hover {
+      background-color: $color2;
+    }
+  }
+}
+
+.menuContent { // Align center
+  @extend %menuContent;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  
+  @media only screen and (max-width: $smallSize) {
+    position: relative;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+  }
+}
+
+.menuContentR { // Align right.
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.mobileMenuContent {
+  @extend %menuContent;
+  width: 100vw;
+  top: 100%;
+}

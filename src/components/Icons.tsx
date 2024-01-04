@@ -18,12 +18,13 @@ import FavPalleteUrl from "../../res/img/bookmark-plus.svg?url";
 import UnfavPalleteUrl from "../../res/img/bookmark-dash.svg?url";
 import BookmarkUrl from "../../res/img/bookmarks.svg?url";
 import GearUrl from "../../res/img/gear.svg?url";
+import ListUrl from "../../res/img/list.svg?url";
 
 interface EventCallback {
   (e: any): void | boolean
 }
 
-const urls: {[key: string]: string;} = {
+const urls = {
   close: CloseUrl,
   del: DelUrl,
   lock: LockUrl,
@@ -38,11 +39,15 @@ const urls: {[key: string]: string;} = {
   mixing: InsertUrl,
   insertRight: AppendtUrl,
   insertLeft: AppendtUrl,
-  FavorPallete: FavPalleteUrl,
-  UnfavorPallete: UnfavPalleteUrl,
+  favorPallete: FavPalleteUrl,
+  unfavorPallete: UnfavPalleteUrl,
   bookmark: BookmarkUrl,
   gear: GearUrl,
+  list: ListUrl,
 } as const;
+
+export type iconType = keyof typeof urls;
+
 
 const Icon = ({
   type,
@@ -50,7 +55,7 @@ const Icon = ({
   style,
   events = [],
 }: {
-  type: string;
+  type: iconType;
   className?: string;
   style?: object;
   events?: Array<[string, EventCallback]>;
@@ -71,7 +76,7 @@ const Icon = ({
         element.removeEventListener(...ev);
       });
     };
-  }, []);
+  }, [events]);
 
   return (
     <img src={urls[type]} alt={type} ref={imgRef}

@@ -1,27 +1,32 @@
-import React, {useMemo} from "react";
+import React, {useContext, useEffect, useMemo, useRef} from "react";
 import Icon from "../Icons.tsx";
+import {Menu, showPopupMenu} from "./Menus.tsx";
 import css from "./index.scss";
-
-import {Menu} from "../Menus/Menus.tsx";
-// Redux-relate
-import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
+import menuCss from "./menus.scss";
+// Redux / Context
+import {useAppDispatch} from "../../common/hooks/storeHooks.ts";
 import {
   editModeChanged, mixingModeChanged,
 } from "../../features/slices/optionsSlice.ts";
-import {favPltsChanged} from "../../features/slices/favSlice.ts";
-import {selectCard, selectFavorites} from "../../features/store.ts";
+import MediaContext from "../../features/mediaContext.ts";
 // types
-import {MouseEventHandler} from "../../common/types/eventHandler.ts";
-import {SortActionType} from "../../features/types/cardType.ts";
+import {MouseHandler} from "../../common/types/eventHandler.ts";
+import {sortAction, SortActionType} from "../../features/types/cardType.ts";
 import {
   ColorSpacesList, ColorSpacesType, MixingModeList, MixingModeType,
 } from "../../features/types/optionsType.ts";
 
+const preventDefault = (e: MouseEvent) => {
+  e.preventDefault();
+  return false;
+};
 
 // Other components
 const RefreshAll = ({
   onClick: haldleClick,
-}: {onClick: () => void}) => {
+}: {
+  onClick: () => void;
+}) => {
   return (
     <span className={css.btn} onClick={haldleClick}>
       <Icon type="refresh" />
@@ -39,11 +44,20 @@ const Sort = ({
     <Menu className={css.btn}
       iconType={"sort"}
       title="Sort"
-      type="popup"
     >
-      <div onClick={() => handleSorting("gray")}>Gray (g)</div>
-      <div onClick={() => handleSorting("random")}>Random (r)</div>
-      <div onClick={() => handleSorting("inversion")}>Invert</div>
+      {
+        sortAction.map((val) => (
+          <div key={`sortBy${val}`}
+            // onTouchStart={isSmall ? () => handleSorting(val) : undefined}
+            // onClick={isSmall ? undefined : () => handleSorting(val)}
+            onClick={() => handleSorting(val)}
+          >
+            {`${val}${
+              ["gray", "random"].includes(val) ? ` (${val.slice(0, 1)})` : ""
+            }`}
+          </div>
+        ))
+      }
     </Menu>
   );
 };
@@ -51,6 +65,7 @@ const Sort = ({
 const Mixing = ({
   optionChanged,
 }: {
+  isSmall?: boolean,
   optionChanged: (newMode: MixingModeType) => void
 }) => {
   return (
@@ -98,46 +113,15 @@ const Edit = ({
   );
 };
 
-const AddFavPlt = () => {
-  // States / consts
-  const cards = useAppSelector(selectCard).cards;
-  const plt = cards.map((state) => state.hex.slice(1)).join("-");
-  const favPltList = useAppSelector(selectFavorites).plts;
-  const isFavPlt = favPltList.includes(plt);
-  const dispatch = useAppDispatch();
-
-  // Events
-  const removeFav = () => {
-    dispatch(favPltsChanged(plt));
-  };
-
-  const state = useMemo(() => {
-    if (isFavPlt) {
-      return {
-        icon: "UnfavorPallete",
-        text: "Del",
-      };
-    } else {
-      return {
-        icon: "FavorPallete",
-        text: "Add",
-      };
-    }
-  }, [isFavPlt]);
+const Bookmarks = ({
+  isSmall,
+  onClick,
+}: {
+  isSmall?: boolean,
+  onClick: () => void;
+}) => {
   return (
-    <span className={`${css.btn} ${css.btnR}`}
-      onClick={removeFav}
-      style={{width: "55px"}}
-    >
-      <Icon type={state.icon} />
-      {state.text}
-    </span>
-  );
-};
-
-const Bookmarks = ({onClick}: {onClick: MouseEventHandler}) => {
-  return (
-    <span className={`${css.btn} ${css.btnR}`}
+    <span className={`${css.btn} ${isSmall ? "" : css.btnR}`}
       onClick={onClick}
     >
       <Icon type={"bookmark"} />
@@ -145,16 +129,6 @@ const Bookmarks = ({onClick}: {onClick: MouseEventHandler}) => {
     </span>
   );
 };
-
-// const Setting = ({optionChanged}) => {
-//   return (
-//     <span className={`${css.btn} ${css.btnR}`}>
-//       <Icon type={"gear"} />
-//       Setting
-//     </span>
-//   );
-// };
-
 
 // Main component
 const Header = ({
@@ -164,20 +138,54 @@ const Header = ({
 }: {
   refresh: () => void;
   handleSorting: (sortBy: SortActionType) => void;
-  favShowingChanged: MouseEventHandler;
-}): React.JSX.Element => {
+  favShowingChanged: () => void;
+}) => {
+  // Consts
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuContentRef = useRef<HTMLDivElement>(null);
+  const {isSmall} = useContext(MediaContext);
   const dispatch = useAppDispatch();
+
+  // Events
   const {
     handleMixingModeChanged, handleEditModeChanged,
   } = useMemo(() => {
     return {
-      handleMixingModeChanged: (newMode: MixingModeType) => {
+      handleMixingModeChanged: (
+          newMode: MixingModeType,
+      ) => {
         dispatch(mixingModeChanged(newMode));
       },
-      handleEditModeChanged: (newMode: ColorSpacesType) => {
+      handleEditModeChanged: (
+          newMode: ColorSpacesType,
+      ) => {
         dispatch(editModeChanged(newMode));
       },
     };
+  }, []);
+
+  useEffect(() => {
+    if (isSmall) {
+      menuRef.current?.classList.add(menuCss.popupMenu);
+      menuContentRef.current?.classList.add(menuCss.mobileMenuContent);
+      menuContentRef.current?.classList.add(menuCss.menuContentR);
+    } else {
+      menuRef.current?.classList.remove(menuCss.popupMenu);
+      if (menuContentRef.current) {
+        menuContentRef.current.classList.remove(menuCss.mobileMenuContent);
+        menuContentRef.current.classList.remove(menuCss.menuContentR);
+        menuContentRef.current.style.display = "";
+      }
+    }
+  }, [isSmall]);
+
+  useEffect(() => {
+    menuRef.current?.addEventListener(
+        "contextmenu", preventDefault,
+    );
+    return () => menuRef.current?.addEventListener(
+        "contextmenu", preventDefault,
+    );
   }, []);
 
   return (
@@ -185,16 +193,22 @@ const Header = ({
       <h1 className={css.title}>
         Color Palette
       </h1>
-      <div className={css.menubar}>
-        {/* Left */}
-        <RefreshAll onClick={refresh} />
-        <Sort handleSorting={handleSorting} />
-        <Mixing optionChanged={handleMixingModeChanged} />
-        <Edit optionChanged={handleEditModeChanged} />
-        {/* Right */}
-        {/* <Setting /> */}
-        <Bookmarks onClick={favShowingChanged} />
-        <AddFavPlt />
+      <div className={css.menubar} ref={menuRef}
+        onClick={isSmall ? (showPopupMenu as MouseHandler) : undefined}
+      >
+        {
+          isSmall &&
+          <Icon type={"list"} />
+        }
+        <div ref={menuContentRef}>
+          {/* Float left */}
+          <RefreshAll onClick={refresh} />
+          <Sort handleSorting={handleSorting} />
+          <Mixing optionChanged={handleMixingModeChanged} />
+          <Edit optionChanged={handleEditModeChanged} />
+          {/* Float right */}
+          <Bookmarks onClick={favShowingChanged} />
+        </div>
       </div>
     </header>
   );

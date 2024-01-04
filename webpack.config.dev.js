@@ -38,7 +38,7 @@ module.exports = {
             loader: "css-loader",
             options: {
               modules: {
-                localIdentName: "[path][local]___[hash:base64:5]",
+                localIdentName: "[path][name]_[local]___[hash:base64:5]",
               },
             },
           },
@@ -60,7 +60,7 @@ module.exports = {
     ], // rules end
   },
   plugins: [
-    new ForkTsCheckerWebpackPlugin(),
+    // new ForkTsCheckerWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: "index.css",
     }),

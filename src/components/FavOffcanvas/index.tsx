@@ -4,15 +4,14 @@ import css from "./index.scss";
 // utils
 import {rgb2gray, hex2rgb} from "../../common/utils/converter.ts";
 import {copyHex} from "../../common/utils/helpers.ts";
-// Redux-relate
+// Redux / Context
 import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
 import {
   favColorsChanged, favPltsChanged,
 } from "../../features/slices/favSlice.ts";
-import {selectFavorites} from "../../features/store.ts";
+import {selectCard, selectFavorites} from "../../features/store.ts";
 // types
-import {MouseEventHandler} from "../../common/types/eventHandler.ts";
-
+import {MouseHandler} from "../../common/types/eventHandler.ts";
 
 // Other Components
 const ColorBlock = ({
@@ -34,14 +33,13 @@ const ColorBlock = ({
     <li className={css.colorBlock}
       style={{
         backgroundColor: hex,
-        color: isLight ? "black" : "white",
-        // border: `1px solid ${isLight ? "#0008" : "#fff8"}`,
+        color: isLight ? "#000" : "#fff",
       }}
     >
       <div onClick={copyHex}>
         <Icon type="copy"
           style={{
-            filter: isLight ? "none" : "invert(1)",
+            filter: isLight ? "" : "invert(1)",
           }}
         />
         {hex}
@@ -50,6 +48,50 @@ const ColorBlock = ({
         <Icon type="del" events={[["click", removeFav]]} />
       </span>
     </li>
+  );
+};
+
+const AddFavPlt = ({
+  changePage,
+}: {
+  /**
+   * setPage(1)
+   */
+  changePage: () => void;
+}) => {
+  // States / consts
+  const cards = useAppSelector(selectCard).cards;
+  const plt = cards.map((state) => state.hex.slice(1)).join("-");
+  const favPltList = useAppSelector(selectFavorites).plts;
+  const isFavPlt = favPltList.includes(plt);
+  const dispatch = useAppDispatch();
+
+  // Events
+  const removeFav = () => {
+    dispatch(favPltsChanged(plt));
+    changePage();
+  };
+
+  const state = useMemo(() => {
+    if (isFavPlt) {
+      return {
+        icon: "unfavorPallete",
+        text: "Remove Pallete",
+      } as const;
+    } else {
+      return {
+        icon: "favorPallete",
+        text: "Append Pallete",
+      } as const;
+    }
+  }, [isFavPlt]);
+  return (
+    <span className={css.appendPlt}
+      onClick={removeFav}
+    >
+      <Icon type={state.icon} />
+      {state.text}
+    </span>
   );
 };
 
@@ -95,27 +137,36 @@ const FavSidebar = ({
   favShowingChanged,
 }: {
   isShowing: boolean;
-  favShowingChanged: MouseEventHandler,
+  favShowingChanged: MouseHandler,
 }) => {
   // States / consts
   const favoritesState = useAppSelector(selectFavorites);
   const [page, setPage] = useState<number>(() => 0);
 
-  return isShowing ? (
-    <>
+  return (
+    <div id={css.favContainer}
+      style={{
+        left: isShowing ? "auto" : "100%",
+        right: isShowing ? "0" : "auto",
+      }}
+    >
       <div className={css.blank}
         onClick={favShowingChanged}
+        style={{
+          display: isShowing ? undefined : "none",
+        }}
       />
-      <div className={css.favColors}>
+      <div className={css.favOffcanvas}
+        style={{
+          right: isShowing ? undefined : `-${css.favOffcanvasWidth}`,
+        }}
+      >
         <nav className={css.menuBar}>
           {
             pageLabels.map((label, i) => {
               return (
                 <span key={`page ${label}`}
-                  style={{
-                    textDecoration: i === page ? "underline solid 2px" : "none",
-                    backgroundColor: i === page ? "#fff" : undefined,
-                  }}
+                  className={i === page ? css.focusButton : undefined}
                   onClick={() => setPage(i)}
                 >
                   {label}
@@ -141,8 +192,9 @@ const FavSidebar = ({
             })
           }
         </ul>
+        <AddFavPlt changePage={() => setPage(1)}/>
       </div>
-    </>
-  ) : "";
+    </div>
+  );
 };
 export default FavSidebar;

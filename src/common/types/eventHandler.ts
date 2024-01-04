@@ -1,9 +1,20 @@
 import React from "react";
 
-export interface ChangeEventHandler {
-  (e?: React.ChangeEvent<HTMLInputElement>): void | boolean;
-}
-
-export type MouseEventHandler = {
-  (e: React.MouseEvent<HTMLElement>): any | (() => any);
-}
+/**
+ * React mouse event handler. For connecting to JSX element.
+ */
+export type MouseHandler = {
+  (e: React.MouseEvent<HTMLElement>): any;
+};
+/**
+ * React focus event handler. For connecting to JSX element.
+ */
+export type FocusHandler = {
+  (e: React.FocusEvent<HTMLElement>): any;
+};
+/**
+ * Native focus event handler. For connecting with addEventListener.
+ */
+export type NFocusHandler = {
+  (e: FocusEvent): any;
+};

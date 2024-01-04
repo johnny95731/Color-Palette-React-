@@ -1,13 +1,13 @@
 import React, {
-  useRef, useState, useCallback, useMemo, useEffect,
+  useRef, useState, useCallback, useMemo, useEffect, useContext,
 } from "react";
 
 import Header from "./components/Header";
 import Card from "./components/Card";
-import FavSidebar from "./components/FavColors";
+import FavSidebar from "./components/FavOffcanvas/index.tsx";
 import Icon from "./components/Icons";
 import css from "./App.scss";
-// Redux-related
+// Redux / Context
 import {useAppDispatch, useAppSelector} from "./common/hooks/storeHooks.ts";
 import {selectCard, selectOptions} from "./features/store.ts";
 import type {AppDispatch} from "./features/store.ts";
@@ -15,32 +15,34 @@ import {
   addCard, moveCard, refreshCard, setIsReordering, sortCards,
 } from "./features/slices/cardSlice.ts";
 import {initializeColors, initializePlts} from "./features/slices/favSlice.ts";
+import MediaProvider from "./features/MediaProvider.tsx";
+import MediaContext from "./features/mediaContext.ts";
 // Types
-import {MouseEventHandler} from "./common/types/eventHandler.ts";
+import {MouseHandler} from "./common/types/eventHandler.ts";
 import {SortActionType} from "./features/types/cardType.ts";
 
 
 // Other components
 const InsertRegions = ({
-  totalNum, // total num of cards.
+  numOfCards,
 }: {
-  totalNum: number;
+  numOfCards: number;
 }) => {
   // States / consts
   const optionsState = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
-  const viewportWidth = window.innerWidth;
+  const {isSmall} = useContext(MediaContext);
 
   const positions = useMemo(() => {
-    const step = 100 / totalNum;
-    const dir = viewportWidth > 900 ? "left" : "top";
+    const step = 100 / numOfCards;
+    const dir = isSmall ? "top" : "left";
 
-    return Array.from({length: totalNum + 1}, (_, i) => {
+    return Array.from({length: numOfCards + 1}, (_, i) => {
       const style: {[key: string]: string} = {};
       style[dir] = `${i * step}%`;
       return style;
     });
-  }, [totalNum, viewportWidth]);
+  }, [numOfCards, isSmall]);
 
   // Events
   const handleAddCard = useCallback((idx: number) => {
@@ -52,7 +54,7 @@ const InsertRegions = ({
   }, [optionsState.mixingMode, optionsState.editingMode]);
 
   return (
-    Array.from({length: totalNum + 1}, (_, i) => {
+    Array.from({length: numOfCards + 1}, (_, i) => {
       return (
         <div className={css.insertContainer}
           key={`insert${i}`}
@@ -82,28 +84,28 @@ const DisplayRegion = ({
       [key: number]: HTMLDivElement;
     }>({nowDragging: null});
   const numOfCards = cardState.numOfCards;
-  const viewportWidth = window.innerWidth;
+  const {windowSize, isSmall} = useContext(MediaContext);
+
   const {dir, cardLength, clientPos} = useMemo(() => {
-    const body = document.body;
-    if (viewportWidth > 900) { // Horizontal flow.
-      return {
-        dir: "left", clientPos: "clientX",
-        cardLength: body.clientWidth / numOfCards,
-      } as const;
-    } else { // Vertical flow.
+    if (isSmall) { // Vertical flow.
       return {
         dir: "top", clientPos: "clientY",
-        cardLength: body.clientHeight / numOfCards,
+        cardLength: windowSize[0] / numOfCards,
+      } as const;
+    } else { // Horizontal flow.
+      return {
+        dir: "left", clientPos: "clientX",
+        cardLength: windowSize[1] / numOfCards,
       } as const;
     }
-  }, [viewportWidth, numOfCards]);
+  }, [windowSize[1], numOfCards]);
 
   const cardsPos = useMemo(() => {
     // Get card.getBoundingClientRect()[dir] for each card.
     return Array.from({length: numOfCards},
         (_, i) => Math.floor(i * cardLength),
     );
-  }, [viewportWidth, numOfCards]);
+  }, [windowSize[1], numOfCards]);
 
   // Events
   /**
@@ -148,7 +150,7 @@ const DisplayRegion = ({
     } else {
       card.style[dir] = `${nowPos - cardsPos[prevIdx]}px`;
     }
-  }, [numOfCards, viewportWidth]);
+  }, [numOfCards, windowSize[1]]);
 
   /**
    * The event is triggered when release left buton.
@@ -181,14 +183,15 @@ const DisplayRegion = ({
           ref={(el) => cardRefs.current[i] = (el as HTMLDivElement)}
           cardId={i}
           numOfCards={numOfCards}
-          cardState={card}
+          card={card}
+          isSmall={isSmall}
           handleDraggingCard={
             ((e: React.MouseEvent<HTMLDivElement>) =>
-              handleDraggingCard(e, i)) as MouseEventHandler
+              handleDraggingCard(e, i)) as MouseHandler
           }
         />;
       })}
-      <InsertRegions totalNum={cardState.numOfCards} />
+      <InsertRegions numOfCards={cardState.numOfCards} />
     </div>
   );
 };
@@ -249,7 +252,7 @@ const App = () => {
   }, [someCardIsEditing]);
 
   return (
-    <>
+    <MediaProvider>
       <Header
         refresh={refresh}
         handleSorting={handleSorting}
@@ -260,7 +263,7 @@ const App = () => {
         isShowing={favShowing}
         favShowingChanged={favShowingChanged}
       />
-    </>
+    </MediaProvider>
   );
 };
 export default App;

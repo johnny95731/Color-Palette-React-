@@ -1,9 +1,17 @@
 import {randRgbGen, rgb2hex} from "../../common/utils/converter.ts";
 
-export type SortingType = "gray" | "random";
-export type SortActionType = "gray" | "inversion" | "random";
+/**
+ * The current order of cards.
+ */
+export type orderStateType = "gray" | "random";
 
-export type cardStateType = {
+/**
+ * Action argument.
+ */
+export const sortAction = ["gray", "random", "inversion"] as const;
+export type SortActionType = typeof sortAction[number];
+
+export type cardType = {
   /**
    * RGB sapce value, [red, green, blue].
    */
@@ -17,6 +25,10 @@ export type cardStateType = {
    */
   isLock: boolean;
   /**
+   * The card is in bookmarks.
+   */
+  isFav: boolean;
+  /**
    * The card is in editing mode.
    */
   isEditing: boolean;
@@ -25,14 +37,15 @@ export type cardStateType = {
 /**
  * Create a new state object.
  * @param {number} order The order of this card in a group.
- * @return {cardStateType} State object.
+ * @return {cardType} State object.
  */
-export const newCardState = (): cardStateType => {
+export const newCard = (): cardType => {
   const rgb = randRgbGen();
   return {
     rgb,
     hex: rgb2hex(rgb),
     isLock: false,
-    isEditing: false,
+    isFav: false,
+    isEditing: true,
   };
 };

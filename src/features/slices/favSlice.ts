@@ -6,7 +6,17 @@ import {
 } from "../../common/utils/database.ts";
 
 export const initializeColors = createAsyncThunk("favorites/initializeColors",
-    () => get<string[]>(FAV_COLORS, favoritesDb),
+    () => get<string[]>(FAV_COLORS, favoritesDb)
+        .then((vals) => {
+          if (!vals) return;
+          const unique: string[] = [];
+          for (const target of vals) {
+            if (!unique.includes(target)) {
+              unique.push(target);
+            }
+          }
+          return unique;
+        }),
 );
 export const initializePlts = createAsyncThunk("favorites/initializePlts",
     () => get<string[]>(FAV_PLTS, favoritesDb),
@@ -42,6 +52,7 @@ const favSlice = createSlice({
     }) => {
       const targetHex = action.payload;
       const isIncluding = state.colors.includes(targetHex);
+      console.log(targetHex, isIncluding, state.colors.length);
       // Update database
       update<string[]>(FAV_COLORS, (prev) => {
         if (!prev) return [];
@@ -61,6 +72,8 @@ const favSlice = createSlice({
       } else { // Non-Favoriting => Favoriting
         state.colors.push(targetHex);
       }
+      console.log(targetHex, state.colors.includes(targetHex),
+          state.colors.length);
     },
     favPltsChanged: (state, action:{
       payload: string;

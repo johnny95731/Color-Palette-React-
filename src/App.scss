@@ -7,8 +7,9 @@
   height: calc(100% - 60px);
   overflow: hidden;
 
-  @media only screen and (max-width: 900px) {
+  @media only screen and (max-width: $smallSize) {
     flex-direction: column;
+    height: calc(100% - 40px);
   }
 }
 
@@ -32,6 +33,21 @@
   &:hover >div {
     display: block;
   }
+  
+  @media only screen and (max-width: $smallSize) {
+    height: 40px;
+    width: 100%;
+    transform: translateY(-50%);
+    >div {
+      display: block;
+      height: 17px;
+      padding: 7px;
+      border-radius: 10px;
+      :global(.icon) {
+        transform: rotate(90deg);
+      }
+    }
+  }
 }
 
 .dragging {
@@ -43,7 +59,7 @@
   transform: translateX(-50%);
   z-index: 1;
 
-  @media only screen and (max-width: 900px) {
+  @media only screen and (max-width: $smallSize) {
     transform: translateY(-50%);
   }
 }

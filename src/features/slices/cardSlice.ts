@@ -4,7 +4,7 @@ import {rgb2gray, rgb2hex, getModeInfos} from "../../common/utils/converter.ts";
 import {shuffle, inversion, meanMixing} from "../../common/utils/helpers.ts";
 // Types
 import {
-  newCardState, cardStateType, SortingType, SortActionType,
+  newCard, cardType, orderStateType, SortActionType,
 } from "../types/cardType.ts";
 import {ColorSpacesType, MixingModeType} from "../types/optionsType.ts";
 
@@ -15,18 +15,18 @@ const initialState: {
    * Total number of cards.
    */
   numOfCards: number;
-  cards: cardStateType[];
+  cards: cardType[];
   /**
    * The order of cards.
    */
-  sortBy: SortingType;
+  sortBy: orderStateType;
   /**
    * The cards is reordering. `true` if and only if cursor dragging a card.
    */
   isReordering: boolean;
 } = {
   numOfCards: INIT_NUM_OF_CARDS,
-  cards: Array.from({length: INIT_NUM_OF_CARDS}, () => newCardState()),
+  cards: Array.from({length: INIT_NUM_OF_CARDS}, () => newCard()),
   sortBy: "random",
   isReordering: false,
 };
@@ -46,7 +46,7 @@ const cardSlice = createSlice({
       if (state.numOfCards == 8) return state; // Maximum
       const {idx, mixingMode, editingMode} = action.payload;
       const cards = state.cards;
-      const cardState = newCardState();
+      const cardState = newCard();
       if (mixingMode === "mean") { // RGB Mean
         // Color of cards at left side and at right side, respectively.
         // (before insert new card)
@@ -88,11 +88,11 @@ const cardSlice = createSlice({
       const idx = action.payload;
       if (idx >= 0) {
         if (state.cards[idx].isLock) return state;
-        state.cards[idx] = newCardState();
+        state.cards[idx] = newCard();
       } else if (idx === -1) {
         for (let i = 0; i < state.numOfCards; i++) {
           if (state.cards[i].isLock) continue;
-          state.cards[i] = newCardState();
+          state.cards[i] = newCard();
         }
       }
       state.sortBy = "random";

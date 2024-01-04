@@ -12,28 +12,40 @@
     display: block;
   }
 
-  @media only screen and (max-width: 900px) {
+  @include small {
     align-items: center;
-    flex-wrap: nowrap;
-    flex-direction: column;
   }
 }
 
 .toolContainer {
   @extend %horizontalCenter;
   bottom: 37%;
-  
   :global(.icon) {
-    display: block;
     visibility: hidden;
+    display: block;
     margin: 27px auto;
     height: 27px;
   }
-
-  @media only screen and (max-width: 900px) {
+  @include desktop {
+    bottom: 38%;
+    :global(.icon) {
+      margin: 48px auto;
+      height: 40px;
+    }
+  }
+  @include laptop {
+    margin-bottom: 25px;
+    :global(.icon) {
+      margin: 20px auto 0;
+      height: 20px;
+    }
+  }
+  @include small {
     position: static;
     display: inline;
     width: max-content;
+    margin-left: 50px;
+    transform: none;
     :global(.icon) {
       visibility: visible;
       display: inline;
@@ -41,24 +53,9 @@
       margin: auto 10px;
     }
   }
-
-  @media only screen and (min-width: 1024px) and (max-width: 1440px) {
-    :global(.icon) {
-      margin: 25px auto;
-      height: 23px;
-    }
-  }
-
-  @media screen and(min-width: 2559px) {
-    bottom: 38%;
-    :global(.icon) {
-      margin: 48px auto;
-      height: 40px;
-    }
-  }
 }
 
-.textRegion {
+.textDisplay {
   @extend %horizontalCenter;
   top: 63%;
   width: 50%;
@@ -73,95 +70,130 @@
     }
   }
 
-  @media only screen and (max-width: 900px) {
-    display: inline;
-    position: static;
-    width: 200px;
+  @include small {
+    position: relative;
+    display: block;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin-left: 30px;
   }
 }
 
-$hexSize: 26px;
-$hexSize1024: 20px;
+$hexSize: 20px;
+$rgbSize: 12px;
+$hexSize1024: 18px;
+$rgbSize1024: 12px;
 $hexSize2560: 39px;
-@mixin textDisplay($iconHeight, $iconMargin, $fontSize: 16px) {
+$rgbSize2560: 19px;
+
+%textPosition {
   position: relative;
   left: 50%;
   transform: translateX(-50%);
   width: min-content;
-  font-size: $fontSize;
   :global(.icon) {
     position: absolute;
-    height: $iconHeight;
     top: 50%;
+  }
+}
+@mixin textSize($iconHeight, $iconMargin, $fontSize: 16px) {
+  font-size: $fontSize;
+  :global(.icon) {
+    height: $iconHeight;
     transform: translateX(calc(-100% - #{$iconMargin})) translateY(-50%);
   }
 }
 
 .hexText {
-  @include textDisplay(18px, 3px, $hexSize);
+  @extend %textPosition;
+  @include textSize($hexSize - 4px, 3px, $hexSize);
+
+  @include desktop {
+    @include textSize(25px, 6px, $hexSize2560);
+  }
+  @include laptop {
+    @include textSize(16px, 4px, $hexSize1024);
+  }
+  @include small {
+    @include textSize(16px, 4px, $hexSize1024);
+  }
 }
+
 .rgbText {
+  @extend %textPosition;
+  @include textSize(10px, 2px, $rgbSize);
   margin-top: 4px;
-  @include textDisplay(10px, 2px, 15px);
-}
 
-@media only screen and (max-width: 900px) {
-  .hexText {
-    font-size: 24px;
+  @include desktop {
+    @include textSize(13px, 4px, $rgbSize2560);
   }
-  .rgbText {
-    font-size: 14px;
+  @include laptop {
+    @include textSize(9px, 3px, $rgbSize1024);
   }
-}
-
-@media only screen and (min-width: 1024px) and (max-width: 1440px) {
-  .hexText {
-    @include textDisplay(16px, 4px, $hexSize1024);
-  }
-  .rgbText {
-    margin-top: 3px;
-    @include textDisplay(9px, 3px, 11px);
+  @include small {
+    @include textSize(9px, 3px, $rgbSize1024);
   }
 }
 
-@media only screen and (min-width: 2559px) {
-  .hexText {
-    @include textDisplay(25px, 6px, $hexSize2560);
-  }
-  .rgbText {
-    @include textDisplay(13px, 4px, 19px);
+.editing {
+  @extend %horizontalCenter;
+  position: absolute;
+  top: 63%;
+  width: 150px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background-color: $color1;
+  box-sizing: border-box;
+  z-index: 1;
+  >div {
+    height: 25px;
+    width: 100%;
+    border-radius: 7px;
+    margin-bottom: 7px;
   }
 }
 
 .hexInput {
-  display: block;
+  display: inline;
   font-size: $hexSize;
   width: 100%;
-  border-radius: 5px;
-  border-width: 0;
-  padding: 2px 10px;
-  margin: 0 auto 10px;
+  border-radius: 7px;
+  padding: 0px 8px;
+  margin: 0 auto 15px;
   box-sizing: border-box;
   cursor: text;
   user-select: text;
 
-  @media only screen and (min-width: 1023px) and (max-width: 1440px) {
-    font-size: $hexSize * 0.8;
+  @include desktop {
+    font-size: $hexSize;
   }
-  @media only screen and (min-width: 2559px) {
-    font-size: $hexSize * 1.4;
+  @include laptop {
+    font-size: $hexSize1024;
+  }
+  @include small {
+    width: 110px;
+    margin: 0;
+    bottom: auto;
+    font-size: $hexSize1024;
   }
 }
 
 .sliders {
+  font-size: $rgbSize;
   >input {
     width: 100%;
+    margin-bottom: 10px;
   }
-
-  @media only screen and (min-width: 1023px) and (max-width: 1440px) {
+  
+  @include desktop {
+    font-size: 25px;
+  }
+  @include laptop {
     font-size: 11px;
   }
-  @media only screen and (min-width: 2559px) {
-    font-size: 25px;
+  @include small {
+    display: inline-block;
+    height: min-content;
   }
 }

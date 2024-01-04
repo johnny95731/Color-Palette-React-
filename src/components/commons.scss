@@ -1,3 +1,6 @@
+$defaultFontSize: 14px;
+$smallSize: 900px;
+
 %verticalCenter {
   position: absolute;
   top: 50%;
@@ -13,4 +16,37 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+// media
+@mixin desktop {
+  @media(min-width: 1960px) {
+    @content;
+  }
+}
+@mixin laptop {
+  @media(max-width: 1440px) {
+    @content;
+  }
+}
+@mixin small {
+  @media(max-width: $smallSize) {
+    @content;
+  }
+}
+@mixin mobile {
+  @media(max-width: 425px){
+    @content;
+  }
+}
+
+// Pallete
+$color1: #FAFAFA;
+$color2: #EAEAEA;
+$color3: #DDD;
+$color4: #D5D5D5;
+$color5: #1D1D57;
+
+:export {
+  smallSize: $smallSize;
 }
