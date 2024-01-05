@@ -141,11 +141,15 @@ const cardSlice = createSlice({
       state.cards[idx].isLock = !state.cards[idx].isLock;
     },
     setIsEditing: (state, action: {
-      payload: number;
+      payload: {idx: number; newVal?: boolean};
       type: string;
     }) => {
-      const idx = action.payload;
-      state.cards[idx].isEditing = !state.cards[idx].isEditing;
+      const {idx, newVal} = action.payload;
+      if (typeof newVal === "boolean") {
+        state.cards[idx].isEditing = newVal;
+      } else {
+        state.cards[idx].isEditing = !state.cards[idx].isEditing;
+      }
     },
     moveCard: (state, action: {
       payload: {init: number; final: number};

@@ -36,7 +36,6 @@ export type cardType = {
 
 /**
  * Create a new state object.
- * @param {number} order The order of this card in a group.
  * @return {cardType} State object.
  */
 export const newCard = (): cardType => {
@@ -46,6 +45,6 @@ export const newCard = (): cardType => {
     hex: rgb2hex(rgb),
     isLock: false,
     isFav: false,
-    isEditing: true,
+    isEditing: false,
   };
 };

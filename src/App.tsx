@@ -56,15 +56,15 @@ const InsertRegions = ({
   return (
     Array.from({length: numOfCards + 1}, (_, i) => {
       return (
-        <div className={css.insertContainer}
-          key={`insert${i}`}
+        <div key={`insert${i}`}
+          tabIndex={-1}
+          className={css.insertContainer}
           style={positions[i]}
         >
           <div
             onClick={() => handleAddCard(i)}
           >
-            <Icon type={"insertRight"}
-            />
+            <Icon type={"insertRight"} />
           </div>
         </div>
       );
@@ -84,30 +84,19 @@ const DisplayRegion = ({
       [key: number]: HTMLDivElement;
     }>({nowDragging: null});
   const numOfCards = cardState.numOfCards;
-  const {windowSize, isSmall} = useContext(MediaContext);
+  const {windowSize, isSmall, pos, clientPos} = useContext(MediaContext);
 
-  const {dir, cardLength, clientPos} = useMemo(() => {
-    if (isSmall) { // Vertical flow.
-      return {
-        dir: "top", clientPos: "clientY",
-        cardLength: windowSize[0] / numOfCards,
-      } as const;
-    } else { // Horizontal flow.
-      return {
-        dir: "left", clientPos: "clientX",
-        cardLength: windowSize[1] / numOfCards,
-      } as const;
-    }
-  }, [windowSize[1], numOfCards]);
+  const {cardLength, cardsPos} = useMemo(() => {
+    const cardLength = (isSmall ? windowSize[0] : windowSize[1]) / numOfCards;
+    return {
+      cardLength,
+      cardsPos: Array.from({length: numOfCards},
+          (_, i) => Math.floor(i * cardLength),
+      ),
+    };
+  }, [...windowSize, numOfCards]);
 
-  const cardsPos = useMemo(() => {
-    // Get card.getBoundingClientRect()[dir] for each card.
-    return Array.from({length: numOfCards},
-        (_, i) => Math.floor(i * cardLength),
-    );
-  }, [windowSize[1], numOfCards]);
-
-  // Events
+  // Drag events
   /**
    * The event is triggered when the `<->` icon on a card is dragging.
    * @param {React.MouseEvent<HTMLDivElement>} e Mouse down event.
@@ -123,7 +112,7 @@ const DisplayRegion = ({
     cardRefs.current.nowDragging = cardId;
     const card = cardRefs.current[cardId];
     card.classList.add(css.dragging);
-    card.style[dir] = `${nowPos - cardsPos[cardId]}px`;
+    card.style[pos] = `${nowPos - cardsPos[cardId]}px`;
   }, [numOfCards]);
 
   /**
@@ -140,15 +129,15 @@ const DisplayRegion = ({
     const nowIdx = Math.floor(nowPos / cardLength);
     if (prevIdx !== nowIdx) {
       // Reset prev dragging card.
-      card.style[dir] = "";
+      card.style[pos] = "";
       card.classList.remove(css.dragging);
       // Set current dragging card.
       cardRefs.current.nowDragging = nowIdx;
       cardRefs.current[nowIdx].classList.add(css.dragging);
-      cardRefs.current[nowIdx].style[dir] = `${nowPos - cardsPos[nowIdx]}px`;
+      cardRefs.current[nowIdx].style[pos] = `${nowPos - cardsPos[nowIdx]}px`;
       dispatch(moveCard({init: prevIdx, final: nowIdx}));
     } else {
-      card.style[dir] = `${nowPos - cardsPos[prevIdx]}px`;
+      card.style[pos] = `${nowPos - cardsPos[prevIdx]}px`;
     }
   }, [numOfCards, windowSize[1]]);
 
@@ -160,11 +149,12 @@ const DisplayRegion = ({
     if (nowIdx == null) return;
     const card = cardRefs.current[nowIdx];
     // Reset dragging card.
-    card.style[dir] = "";
+    card.style[pos] = "";
     card.classList.remove(css.dragging);
     dispatch(setIsReordering(false));
     cardRefs.current.nowDragging = null;
   }, []);
+  // Drag events
 
   useEffect(() => {
     const body = document.body;
@@ -184,7 +174,6 @@ const DisplayRegion = ({
           cardId={i}
           numOfCards={numOfCards}
           card={card}
-          isSmall={isSmall}
           handleDraggingCard={
             ((e: React.MouseEvent<HTMLDivElement>) =>
               handleDraggingCard(e, i)) as MouseHandler

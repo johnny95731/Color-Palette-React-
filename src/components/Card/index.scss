@@ -3,16 +3,13 @@
 .cardContainer {
   position: relative;
   flex: 1 1 auto;
-  display: flex;
 
   &:hover .toolContainer :global(.icon) {
     visibility: visible;
   }
-  &:hover .sideCard :global(.icon) {
-    display: block;
-  }
 
   @include small {
+    display: flex;
     align-items: center;
   }
 }
@@ -41,16 +38,23 @@
     }
   }
   @include small {
+    flex: 1 0 240px; // Total icon width + margin
     position: static;
-    display: inline;
-    width: max-content;
-    margin-left: 50px;
+    margin-bottom: 0;
+    margin-left: 20px;
     transform: none;
     :global(.icon) {
       visibility: visible;
       display: inline;
       height: 20px;
-      margin: auto 10px;
+      margin: 5px 10px;
+    }
+  }
+  @include mobile {
+    flex: 0 0 111px;
+    :global(.icon) {
+      height: 17px;
+      margin: 10px;
     }
   }
 }
@@ -71,12 +75,11 @@
   }
 
   @include small {
+    flex: 1 1 auto;
     position: relative;
-    display: block;
     top: auto;
     left: auto;
     transform: none;
-    margin-left: 30px;
   }
 }
 
@@ -138,7 +141,6 @@ $rgbSize2560: 19px;
 
 .editing {
   @extend %horizontalCenter;
-  position: absolute;
   top: 63%;
   width: 150px;
   padding: 5px 10px;
@@ -152,6 +154,17 @@ $rgbSize2560: 19px;
     border-radius: 7px;
     margin-bottom: 7px;
   }
+  @include small {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-width: 500px;;
+    >div {
+      height: 30px;
+      margin-bottom: 10px;
+    }
+  }
 }
 
 .hexInput {
@@ -159,6 +172,7 @@ $rgbSize2560: 19px;
   font-size: $hexSize;
   width: 100%;
   border-radius: 7px;
+  border-width: 1px;
   padding: 0px 8px;
   margin: 0 auto 15px;
   box-sizing: border-box;
@@ -172,8 +186,7 @@ $rgbSize2560: 19px;
     font-size: $hexSize1024;
   }
   @include small {
-    width: 110px;
-    margin: 0;
+    margin: 0 auto 7px;
     bottom: auto;
     font-size: $hexSize1024;
   }
@@ -193,7 +206,8 @@ $rgbSize2560: 19px;
     font-size: 11px;
   }
   @include small {
-    display: inline-block;
-    height: min-content;
+    >input {
+      margin-bottom: 5px;
+    }
   }
 }

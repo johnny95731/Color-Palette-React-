@@ -3,6 +3,9 @@ import {MediaContextType} from "./types/mediaType";
 
 const MediaContext = createContext<MediaContextType>({
   windowSize: [1, 1],
+  headerHeight: 1,
   isSmall: true,
+  pos: "left",
+  clientPos: "clientX",
 });
 export default MediaContext;

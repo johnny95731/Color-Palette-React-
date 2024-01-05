@@ -60,7 +60,7 @@ module.exports = {
     ], // rules end
   },
   plugins: [
-    // new ForkTsCheckerWebpackPlugin(),
+    new ForkTsCheckerWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: "index.css",
     }),

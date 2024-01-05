@@ -45,7 +45,7 @@ const ColorBlock = ({
         {hex}
       </div>
       <span className={css.delRegion}>
-        <Icon type="del" events={[["click", removeFav]]} />
+        <Icon type="del" onClick={removeFav} />
       </span>
     </li>
   );
@@ -122,7 +122,7 @@ const PalleteBlock = ({
       <div style={{background: `linear-gradient(90deg, ${bgGrad})`}} />
       <span className={css.delRegion}>
         <Icon type="del"
-          events={[["click", removeFav]]}
+          onClick={removeFav}
         />
       </span>
       <div onClick={copyHex}>{plt}</div>
@@ -174,7 +174,8 @@ const FavSidebar = ({
               );
             })
           }
-          <Icon type="close" events={[["click", favShowingChanged]]}
+          <Icon type="close"
+            onClick={favShowingChanged as (e:React.MouseEvent) => void}
           />
         </nav>
         {/* Page content */}

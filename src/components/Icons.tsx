@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useMemo} from "react";
+import React, {useMemo} from "react";
 import "./icons.scss";
 
 import CloseUrl from "../../res/img/x-lg.svg?url";
@@ -20,9 +20,6 @@ import BookmarkUrl from "../../res/img/bookmarks.svg?url";
 import GearUrl from "../../res/img/gear.svg?url";
 import ListUrl from "../../res/img/list.svg?url";
 
-interface EventCallback {
-  (e: any): void | boolean
-}
 
 const urls = {
   close: CloseUrl,
@@ -53,36 +50,29 @@ const Icon = ({
   type,
   className,
   style,
-  events = [],
+  onClick,
+  onMouseDown,
+  onTouchStart,
 }: {
   type: iconType;
   className?: string;
   style?: object;
-  events?: Array<[string, EventCallback]>;
-}): React.JSX.Element => {
-  const imgRef = useRef<HTMLImageElement>(null);
+  onClick?: (e: React.MouseEvent) => void;
+  onMouseDown?: (e: React.MouseEvent) => void;
+  onTouchStart?: (e: React.TouchEvent) => void;
+}) => {
   const _className = useMemo(() => (
     `icon ${typeof className === "string" ? className : ""}`
   ), [className]);
 
-  // Connect events
-  useEffect(() => {
-    const element = imgRef.current as HTMLImageElement;
-    events.forEach((ev) => {
-      element.addEventListener(...ev);
-    });
-    return () => {
-      events.forEach((ev) => {
-        element.removeEventListener(...ev);
-      });
-    };
-  }, [events]);
-
   return (
-    <img src={urls[type]} alt={type} ref={imgRef}
+    <img src={urls[type]} alt={type}
       className={_className}
       style={style}
       draggable="false"
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
     />
   );
 };

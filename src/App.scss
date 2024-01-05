@@ -34,15 +34,29 @@
     display: block;
   }
   
-  @media only screen and (max-width: $smallSize) {
-    height: 40px;
+  @include small {
+    height: 35px;
     width: 100%;
     transform: translateY(-50%);
     >div {
       display: block;
-      height: 17px;
+      height: 13px;
       padding: 7px;
       border-radius: 10px;
+      background-color: #fff;
+      opacity: 0.6;
+      :global(.icon) {
+        transform: rotate(90deg);
+      }
+    }
+    &:focus >div {
+      opacity: 1;
+    }
+  }
+  @include mobile {
+    height: 30px;
+    >div {
+      padding: 7px;
       :global(.icon) {
         transform: rotate(90deg);
       }
@@ -59,7 +73,7 @@
   transform: translateX(-50%);
   z-index: 1;
 
-  @media only screen and (max-width: $smallSize) {
+  @include small {
     transform: translateY(-50%);
   }
 }

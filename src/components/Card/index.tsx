@@ -73,54 +73,49 @@ const ToolBar = ({
           opacity,
           cursor,
         }}
-        events={[["click", events.delCard]]}
+        onClick={events.delCard}
       />
       <Icon type={card.isLock ? "lock" : "unlock"}
         style={filterStyle}
-        events={[["click", events.isLockChanged]]}
+        onClick={events.isLockChanged}
       />
       <Icon type={ifFavIcon}
         style={filterStyle}
-        events={[["click", handleFavClick]]}
+        onClick={handleFavClick}
       />
       <Icon type="move"
         style={{
           ...filterStyle,
           cursor: "grab",
         }}
-        events={[["mousedown", handleDragReorder]]}
+        onMouseDown={handleDragReorder as (e:React.MouseEvent) => void}
       />
       <Icon type="refresh"
         style={filterStyle}
-        events={[["click", events.refreshCard]]}
+        onClick={events.refreshCard}
       />
       <Icon type="edit"
         style={filterStyle}
-        events={[["click", events.isEditingChanged]]}
+        onClick={events.isEditingChanged}
       />
     </div>
   );
 };
 
-const EditingWindow = forwardRef<HTMLDivElement, any>(({
-  isSmall,
+const EditingDialog = forwardRef<HTMLDivElement, any>(({
   cardId,
   card,
   modeColor,
-  isEditingChanged,
 }: {
-  isSmall: boolean;
   cardId: number;
   card: cardType;
   modeColor: number[];
-  isEditingChanged: () => void;
 }, ref,
 ) => {
-  const optionsState = useAppSelector(selectOptions);
-  const {windowSize} = useContext(MediaContext);
+  const {editingMode} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
   const {labels, maxes, converter, inverter} = (
-    getModeInfos(optionsState.editingMode)
+    getModeInfos(editingMode)
   );
 
   /**
@@ -153,7 +148,7 @@ const EditingWindow = forwardRef<HTMLDivElement, any>(({
         textInput.value = hex6;
       }
     }
-  }, [optionsState.editingMode]);
+  }, [editingMode]);
 
   const handleSliderChange = (
       e: React.ChangeEvent<HTMLInputElement>,
@@ -170,47 +165,62 @@ const EditingWindow = forwardRef<HTMLDivElement, any>(({
     textInput.value = rgb2hex(rgb);
   };
 
-  const handleWindowBlurred = useCallback((
+  const handleDialogBlurred = useCallback((
       e: React.FocusEvent<HTMLInputElement>,
   ) => {
     if (card.isEditing && e.relatedTarget === null) {
       handleHexEditingFinished(e);
-      isEditingChanged();
+      dispatch(setIsEditing({idx: cardId, newVal: false}));
     }
   }, [card.isEditing]);
 
+
+  const {windowSize, headerHeight, isSmall, pos} = useContext(MediaContext);
+  const {endPos, resetPos, startBound, endBound} = useMemo(() => {
+    if (isSmall) {
+      return {
+        endPos: "bottom",
+        resetPos: ["left", "right"],
+        startBound: headerHeight,
+        endBound: windowSize[1],
+      } as const;
+    } else {
+      return {
+        endPos: "right",
+        resetPos: ["top", "bottom"],
+        startBound: 0,
+        endBound: windowSize[0],
+      } as const;
+    }
+  }, [pos, ...windowSize]);
   // Check container is out of window or not.
-  // @ts-expect-error ref === React.MutableRefObject.
-  const rect = ref.current?.getBoundingClientRect();
   useEffect(() => {
     // @ts-expect-error ref === React.MutableRefObject.
-    const rect = ref.current.getBoundingClientRect();
-    if (rect.x <= 0) {
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.transform = "none";
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.left = "0";
-    } else if ((rect.x + rect.width) >= windowSize[1]) {
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.transform = "none";
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.left = "auto";
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.right = "0";
+    const container = ref.current as HTMLDivElement;
+    const rect = container.getBoundingClientRect();
+    // Reset style
+    container.style[resetPos[0]] = "";
+    container.style[resetPos[1]] = "";
+    if (isSmall) return;
+    // Adjust pos if container is out of window.
+    if (rect[pos] <= startBound) {
+      container.style.transform = "none";
+      container.style[pos] = "0";
+    } else if ((rect[endPos]) >= endBound) {
+      container.style.transform = "none";
+      container.style[pos] = "auto";
+      container.style[endPos] = "0";
     } else {
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.transform = "";
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.left = "";
-      // @ts-expect-error ref === React.MutableRefObject.
-      ref.current.style.right = "";
+      container.style.transform = "";
+      container.style[pos] = "";
+      container.style[endPos] = "";
     }
-  }, [card.isEditing, rect?.x]);
+  }, [card.isEditing, windowSize[1]]);
 
   return (
     <div className={css.editing} ref={ref}
       tabIndex={-1}
-      onBlur={handleWindowBlurred}
+      onBlur={handleDialogBlurred}
     >
       <div style={{backgroundColor: card.hex}}>
       </div>
@@ -246,7 +256,7 @@ const EditingWindow = forwardRef<HTMLDivElement, any>(({
     </div>
   );
 });
-EditingWindow.displayName = "EditingWindow";
+EditingDialog.displayName = "EditingWindow";
 
 
 // Main component
@@ -254,13 +264,11 @@ const Card = forwardRef(({
   cardId,
   numOfCards,
   card,
-  isSmall,
   handleDraggingCard,
 }: {
   cardId: number;
   numOfCards: number;
   card: cardType;
-  isSmall: boolean;
   handleDraggingCard: MouseHandler;
 },
 ref: Ref<HTMLDivElement>,
@@ -302,10 +310,10 @@ ref: Ref<HTMLDivElement>,
         dispatch(setIsLock(cardId));
       },
       isEditingChanged: () => {
-        dispatch(setIsEditing(cardId));
+        dispatch(setIsEditing({idx: cardId}));
       },
     };
-  }, [cardId]);
+  }, [cardId, card.isEditing]);
 
   useEffect(() => {
     if (card.isEditing) {
@@ -319,6 +327,10 @@ ref: Ref<HTMLDivElement>,
       }
     }
   }, [optionsState.editingMode]);
+
+  useEffect(() => {
+    if (card.isEditing) containerRef.current?.focus();
+  }, [card.isEditing]);
 
   return (
     <div className={css.cardContainer}
@@ -335,30 +347,33 @@ ref: Ref<HTMLDivElement>,
         events={events}
         handleDragReorder={handleDraggingCard}
       />
-      <div className={css.textDisplay}>
-        <div className={css.hexText}
-          onClick={copyHex}
-          style={filterStyle}
+      {
+        <div className={css.textDisplay}
+          style={{opacity: card.isEditing ? "0" : ""}}
         >
-          <Icon type="copy"
+          <div className={css.hexText}
+            onClick={copyHex}
             style={filterStyle}
-          />
-          {card.hex}
-        </div>
-        <div className={css.rgbText}
-          style={filterStyle}
-          onClick={copyHex}
-        >
-          <Icon type="copy"
+          >
+            <Icon type="copy"
+              style={filterStyle}
+            />
+            {card.hex}
+          </div>
+          <div className={css.rgbText}
             style={filterStyle}
-          />
-          {`${optionsState.editingMode}(${modeColor.toString()})`}
+            onClick={copyHex}
+          >
+            <Icon type="copy"
+              style={filterStyle}
+            />
+            {`${optionsState.editingMode}(${modeColor.toString()})`}
+          </div>
         </div>
-      </div>
+      }
       {
         card.isEditing &&
-        <EditingWindow ref={containerRef}
-          isSmall={isSmall}
+        <EditingDialog ref={containerRef}
           cardId={cardId}
           card={card}
           modeColor={modeColor}

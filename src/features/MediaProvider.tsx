@@ -8,11 +8,6 @@ import {MediaContextType} from "./types/mediaType.ts";
  */
 const maxSmallSize = Number(commonCss.smallSize.slice(0, -2));
 
-/**
- * A provider that provide window(broser) size and a boolean the device is
- * small or not.
- * @returns {React.JSX.Element} s
- */
 const MediaProvider = ({
   children,
 }: {
@@ -25,9 +20,17 @@ const MediaProvider = ({
   });
 
   const context = useMemo<MediaContextType>(() => {
+    const isSmall = windowSize[1] <= maxSmallSize;
     return {
       windowSize,
-      isSmall: windowSize[1] <= maxSmallSize,
+      headerHeight: Number( // Get var(--headerHeight) in css.
+          getComputedStyle(document.documentElement)
+              .getPropertyValue("--headerHeight")
+              .slice(0, -2),
+      ),
+      isSmall,
+      pos: isSmall ? "top" : "left",
+      clientPos: isSmall ? "clientY" : "clientX",
     };
   }, [windowSize[0], windowSize[1]]);
 
