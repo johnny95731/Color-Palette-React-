@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack --watch",
-    "build": "webpack",
-    "prebuild": "webpack --config webpack.config.dev.js",
+    "build": "webpack --config webpack.config.js",
+    "devbuild": "webpack --config webpack.config.dev.js",
     "start": "webpack-dev-server --config webpack.config.dev.js",
     "deploy": "webpack && gh-pages -d dist",
     "type-check": "npx tsc --watch"
