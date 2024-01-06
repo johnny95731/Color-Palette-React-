@@ -64,7 +64,7 @@ const InsertRegions = ({
           <div
             onClick={() => handleAddCard(i)}
           >
-            <Icon type={"insertRight"} />
+            <Icon type={"insert"} />
           </div>
         </div>
       );
@@ -84,10 +84,12 @@ const DisplayRegion = ({
       [key: number]: HTMLDivElement;
     }>({nowDragging: null});
   const numOfCards = cardState.numOfCards;
-  const {windowSize, isSmall, pos, clientPos} = useContext(MediaContext);
+  const {windowSize, isSmall, pos, clientPos, bound} = useContext(MediaContext);
 
   const {cardLength, cardsPos} = useMemo(() => {
-    const cardLength = (isSmall ? windowSize[0] : windowSize[1]) / numOfCards;
+    const cardLength = (
+      ((isSmall ? windowSize[0] : windowSize[1]) - bound[0]) / numOfCards
+    );
     return {
       cardLength,
       cardsPos: Array.from({length: numOfCards},
@@ -96,50 +98,56 @@ const DisplayRegion = ({
     };
   }, [...windowSize, numOfCards]);
 
-  // Drag events
+  // Drag events start
   /**
    * The event is triggered when the `<->` icon on a card is dragging.
-   * @param {React.MouseEvent<HTMLDivElement>} e Mouse down event.
    * @param {number} cardId The n-th card.
    */
   const handleDraggingCard = useCallback((
-      e: React.MouseEvent<HTMLDivElement>,
+      e: React.MouseEvent | React.TouchEvent,
       cardId: number,
   ) => {
+    console.log(e);
     if (!cardRefs.current) return;
-    const nowPos = e[clientPos]; // Cursor position when mouse down.
-    dispatch(setIsReordering(true)); // start
+    // Cursor position when mouse down.
+    const nowPos = (
+      (e as React.MouseEvent)[clientPos] ||
+      (e as React.TouchEvent).touches[0][clientPos]
+    );
+    dispatch(setIsReordering(true));
     cardRefs.current.nowDragging = cardId;
     const card = cardRefs.current[cardId];
     card.classList.add(css.dragging);
     card.style[pos] = `${nowPos - cardsPos[cardId]}px`;
-  }, [numOfCards]);
+  }, [numOfCards, isSmall]);
 
   /**
    * The event is triggered when the `<->` icon on a card is dragging and mouse
    * is moving.
-   * @param {MouseEvent} e Mouse move event.
    */
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
     const prevIdx = cardRefs.current.nowDragging;
     if (prevIdx === null) return;
-    const nowPos = e[clientPos];
-    const card = cardRefs.current[prevIdx];
+    const nowPos = e.type === "touchmove" ?
+        (e as TouchEvent).touches[0][clientPos] :
+        (e as MouseEvent)[clientPos];
+    // Mouse is not in range.
+    if (nowPos < bound[0] || nowPos > bound[1]) return;
+    let card = cardRefs.current[prevIdx];
     // Index of card that cursor at.
-    const nowIdx = Math.floor(nowPos / cardLength);
+    const nowIdx = Math.floor((nowPos - bound[0]) / cardLength);
     if (prevIdx !== nowIdx) {
       // Reset prev dragging card.
       card.style[pos] = "";
       card.classList.remove(css.dragging);
       // Set current dragging card.
+      card = cardRefs.current[nowIdx];
       cardRefs.current.nowDragging = nowIdx;
-      cardRefs.current[nowIdx].classList.add(css.dragging);
-      cardRefs.current[nowIdx].style[pos] = `${nowPos - cardsPos[nowIdx]}px`;
+      card.classList.add(css.dragging);
       dispatch(moveCard({init: prevIdx, final: nowIdx}));
-    } else {
-      card.style[pos] = `${nowPos - cardsPos[prevIdx]}px`;
     }
-  }, [numOfCards, windowSize[1]]);
+    card.style[pos] = `${nowPos - cardsPos[nowIdx]}px`;
+  }, [numOfCards, cardLength, isSmall]);
 
   /**
    * The event is triggered when release left buton.
@@ -153,18 +161,22 @@ const DisplayRegion = ({
     card.classList.remove(css.dragging);
     dispatch(setIsReordering(false));
     cardRefs.current.nowDragging = null;
-  }, []);
-  // Drag events
+  }, [isSmall]); // pos depends on isSmall.
 
   useEffect(() => {
     const body = document.body;
     body.addEventListener("mousemove", handleMouseMove);
     body.addEventListener("mouseup", handleMouseUp);
+    body.addEventListener("touchmove", handleMouseMove);
+    body.addEventListener("touchend", handleMouseUp);
     return () => {
       body.removeEventListener("mousemove", handleMouseMove);
       body.removeEventListener("mouseup", handleMouseUp);
+      body.removeEventListener("touchmove", handleMouseMove);
+      body.removeEventListener("touchend", handleMouseUp);
     };
   }, [handleMouseMove, handleMouseUp]);
+  // Drag events end
 
   return (
     <div className={css.main}>

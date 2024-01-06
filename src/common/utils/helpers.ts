@@ -81,5 +81,9 @@ export const copyHex = (e: React.MouseEvent<HTMLDivElement | HTMLSpanElement>,
   } else {
     hex = text.slice(start);
   }
-  navigator.clipboard.writeText(hex);
+  try {
+    navigator.clipboard.writeText(hex);
+  } catch (e) {
+    console.log(e);
+  }
 };

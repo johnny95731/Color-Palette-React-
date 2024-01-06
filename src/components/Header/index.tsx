@@ -70,8 +70,8 @@ const Mixing = ({
 }) => {
   return (
     <Menu className={css.btn}
-      iconType={"mixing"}
-      title={"Mixing"}
+      iconType={"blend"}
+      title={"Blend"}
     >
       {
         MixingModeList.map((val, i) => {
@@ -96,7 +96,7 @@ const Edit = ({
   return (
     <Menu className={css.btn}
       iconType={"edit"}
-      title={"Edit"}
+      title={"Space"}
     >
       {
         ColorSpacesList.map((val, i) => {

@@ -21,16 +21,18 @@ const MediaProvider = ({
 
   const context = useMemo<MediaContextType>(() => {
     const isSmall = windowSize[1] <= maxSmallSize;
+    const headerHeight = Number( // Get var(--headerHeight) in css.
+        getComputedStyle(document.documentElement)
+            .getPropertyValue("--headerHeight")
+            .slice(0, -2),
+    );
     return {
       windowSize,
-      headerHeight: Number( // Get var(--headerHeight) in css.
-          getComputedStyle(document.documentElement)
-              .getPropertyValue("--headerHeight")
-              .slice(0, -2),
-      ),
+      headerHeight,
       isSmall,
       pos: isSmall ? "top" : "left",
       clientPos: isSmall ? "clientY" : "clientX",
+      bound: isSmall ? [headerHeight, windowSize[0]] : [0, windowSize[1]],
     };
   }, [windowSize[0], windowSize[1]]);
 

@@ -17,8 +17,8 @@ import AppendtUrl from "../../res/img/arrows-expand-vertical.svg?url";
 import FavPalleteUrl from "../../res/img/bookmark-plus.svg?url";
 import UnfavPalleteUrl from "../../res/img/bookmark-dash.svg?url";
 import BookmarkUrl from "../../res/img/bookmarks.svg?url";
-import GearUrl from "../../res/img/gear.svg?url";
 import ListUrl from "../../res/img/list.svg?url";
+import {MouseHandler, TouchHandler} from "../common/types/eventHandler";
 
 
 const urls = {
@@ -33,13 +33,11 @@ const urls = {
   edit: SliderUrl,
   copy: CopyUrl,
   sort: SortUrl,
-  mixing: InsertUrl,
-  insertRight: AppendtUrl,
-  insertLeft: AppendtUrl,
+  blend: InsertUrl,
+  insert: AppendtUrl,
   favorPallete: FavPalleteUrl,
   unfavorPallete: UnfavPalleteUrl,
   bookmark: BookmarkUrl,
-  gear: GearUrl,
   list: ListUrl,
 } as const;
 
@@ -57,9 +55,9 @@ const Icon = ({
   type: iconType;
   className?: string;
   style?: object;
-  onClick?: (e: React.MouseEvent) => void;
-  onMouseDown?: (e: React.MouseEvent) => void;
-  onTouchStart?: (e: React.TouchEvent) => void;
+  onClick?: MouseHandler | undefined;
+  onMouseDown?: MouseHandler | undefined;
+  onTouchStart?: TouchHandler | undefined;
 }) => {
   const _className = useMemo(() => (
     `icon ${typeof className === "string" ? className : ""}`

@@ -74,6 +74,7 @@
   z-index: 1;
 
   @include small {
+    border-width: 1px 0px;
     transform: translateY(-50%);
   }
 }

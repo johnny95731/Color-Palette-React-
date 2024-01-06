@@ -13,6 +13,13 @@ export type FocusHandler = {
   (e: React.FocusEvent<HTMLElement>): any;
 };
 /**
+ * React focus event handler. For connecting to JSX element.
+ */
+export type TouchHandler = {
+  (e: React.TouchEvent<HTMLElement>): any;
+};
+
+/**
  * Native focus event handler. For connecting with addEventListener.
  */
 export type NFocusHandler = {

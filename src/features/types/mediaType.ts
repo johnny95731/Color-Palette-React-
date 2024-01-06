@@ -13,11 +13,16 @@ export type MediaContextType = {
    */
   isSmall: boolean;
   /**
-   * Card pos along flow direction.
+   * Card pos along flow direction. For getting data from event.
    */
-  pos: "left" | "top",
+  pos: "left" | "top";
   /**
-   * Cursor pos along flow direction.
+   * Cursor pos direction along flow direction. For getting data from event.
    */
-  clientPos: "clientX" | "clientY"
+  clientPos: "clientX" | "clientY";
+  /**
+   * Main region boundary. For adjusting DOM position or varifying cursor
+   * position.
+   */
+  bound: [number, number];
 }

@@ -145,10 +145,9 @@ const FavSidebar = ({
 
   return (
     <div id={css.favContainer}
-      style={{
-        left: isShowing ? "auto" : "100%",
-        right: isShowing ? "0" : "auto",
-      }}
+      style={isShowing ? {
+        width: isShowing ? "100%" : "min-content",
+      } : undefined}
     >
       <div className={css.blank}
         onClick={favShowingChanged}

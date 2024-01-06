@@ -18,7 +18,7 @@ import {favColorsChanged} from "../../features/slices/favSlice.ts";
 import {selectOptions, selectFavorites} from "../../features/store.ts";
 import MediaContext from "../../features/mediaContext.ts";
 // types
-import {MouseHandler} from "../../common/types/eventHandler.ts";
+import {MouseHandler, TouchHandler} from "../../common/types/eventHandler.ts";
 import type {cardType} from "../../features/types/cardType.ts";
 
 
@@ -36,7 +36,7 @@ const ToolBar = ({
   events: {
     [key: string]: () => void;
   }
-  handleDragReorder: MouseHandler;
+  handleDragReorder: MouseHandler | TouchHandler;
 }) => {
   // States / consts
   const favState = useAppSelector(selectFavorites);
@@ -88,7 +88,8 @@ const ToolBar = ({
           ...filterStyle,
           cursor: "grab",
         }}
-        onMouseDown={handleDragReorder as (e:React.MouseEvent) => void}
+        onMouseDown={handleDragReorder as MouseHandler}
+        onTouchStart={handleDragReorder as TouchHandler}
       />
       <Icon type="refresh"
         style={filterStyle}
@@ -175,21 +176,19 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   }, [card.isEditing]);
 
 
-  const {windowSize, headerHeight, isSmall, pos} = useContext(MediaContext);
-  const {endPos, resetPos, startBound, endBound} = useMemo(() => {
+  const {
+    windowSize, isSmall, pos, bound,
+  } = useContext(MediaContext);
+  const {endPos, resetPos} = useMemo(() => {
     if (isSmall) {
       return {
         endPos: "bottom",
         resetPos: ["left", "right"],
-        startBound: headerHeight,
-        endBound: windowSize[1],
       } as const;
     } else {
       return {
         endPos: "right",
         resetPos: ["top", "bottom"],
-        startBound: 0,
-        endBound: windowSize[0],
       } as const;
     }
   }, [pos, ...windowSize]);
@@ -203,10 +202,10 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
     container.style[resetPos[1]] = "";
     if (isSmall) return;
     // Adjust pos if container is out of window.
-    if (rect[pos] <= startBound) {
+    if (rect[pos] <= bound[0]) {
       container.style.transform = "none";
       container.style[pos] = "0";
-    } else if ((rect[endPos]) >= endBound) {
+    } else if ((rect[endPos]) >= bound[1]) {
       container.style.transform = "none";
       container.style[pos] = "auto";
       container.style[endPos] = "0";
@@ -215,7 +214,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       container.style[pos] = "";
       container.style[endPos] = "";
     }
-  }, [card.isEditing, windowSize[1]]);
+  }, [card.isEditing, ...windowSize]);
 
   return (
     <div className={css.editing} ref={ref}

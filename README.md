@@ -10,10 +10,10 @@
 - ### ![](res/img/file-earmark-plus.svg) Sort (排序)
   排序色塊。三種方法為「依照亮度(Gray, 快捷鍵: `g`)」、「隨機排序(Random, 快捷鍵: `r`)」、「反轉左右順序(Invert)」。
   
-- ### ![](res/img/file-earmark-plus.svg)  Mixing (插入色塊算法)
-  插入色塊的方法。兩種方法為「平均值（Mean，預設）」、「隨機(Random)」。
+- ### ![](res/img/file-earmark-plus.svg)  Blend (混色方法)
+  混色方法，提供「平均值（Mean，預設）」、「隨機(Random)」。平均值以Space選取值計算。
   
-- ### ![](res/img/sliders.svg)  Edit (色彩空間)
+- ### ![](res/img/sliders.svg)  Space (色彩空間)
   顯示模式及編輯模式中，使用的色彩空間。提供「RGB（預設）」、「HSB」、「HSL」、「CMY」。
   
 - ### ![](res/img/bookmark-plus.svg) Add / ![](res/img/bookmark-dash.svg) Del (調色盤加入書籤)
