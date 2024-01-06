@@ -14,12 +14,10 @@ export const showPopupMenu: MouseHandler | FocusHandler = (
 ) => {
   const target = e.currentTarget;
   const content = target.lastChild as HTMLElement;
-  console.log("menu", e.eventPhase, e.type, target, e.target, content);
   if ((e as React.FocusEvent).type === "blur") {
-    content.style.display = "";
+    content.style.maxHeight = "";
     return;
   }
-  console.log(content.contains(e.target as Node));
   /**
    * For small size device, menu has 2 layers. The outer mune content contains
    * menu (inner menu) and non-menu (button). And both layers' menu connet to
@@ -35,12 +33,19 @@ export const showPopupMenu: MouseHandler | FocusHandler = (
   if (!content.contains(e.target as Node)) {
     e.stopPropagation();
   }
-  const display = content.style.display;
-  if (display === "block") {
-    content.style.display = "";
-    target.blur();
+  // const display = content.style.display;
+  // if (display === "block") {
+  //   content.style.display = "";
+  //   target.blur();
+  // } else {
+  //   content.style.display = "block";
+  // }
+  const height = content.style.maxHeight;
+  if (height === "") {
+    content.style.maxHeight = "100vh";
   } else {
-    content.style.display = "block";
+    content.style.maxHeight = "";
+    target.blur();
   }
 };
 

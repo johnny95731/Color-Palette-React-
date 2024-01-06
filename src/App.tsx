@@ -107,7 +107,6 @@ const DisplayRegion = ({
       e: React.MouseEvent | React.TouchEvent,
       cardId: number,
   ) => {
-    console.log(e);
     if (!cardRefs.current) return;
     // Cursor position when mouse down.
     const nowPos = (

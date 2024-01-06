@@ -9,12 +9,14 @@
   @include small {
     &:focus .menuTitle {
       padding-bottom: 5px;
+      transition: padding-bottom 200ms ease-in-out;
     }
   }
 }
 
 .menuTitle {
   font-size: 16px;
+  transition: padding-bottom .9s ease-in-out;
 }
 
 .triangle {
@@ -23,19 +25,20 @@
 }
 
 %menuContent {
-  display: none;
   position: absolute;
   top: 100%;
+  height: fit-content;
+  max-height: 0;
   min-width: 100%;
   text-wrap: nowrap;
-  background-color: inherit;
   border-radius: 0 0 8px 8px;
-  overflow: hidden;
   z-index: 1;
   cursor: pointer;
+  overflow: hidden;
+  transition: max-height .5s ease-in-out;
 
   >* {
-    height: max-content;
+    height: fit-content;
     font-weight: 600;
     padding: 5px 10px;
     border-width: 1px 0;
@@ -48,12 +51,7 @@
   }
   
   @include small {
-    margin-top: 0;
     background-color: $color1;
-    overflow: visible;
-    &:hover {
-      background-color: $color2;
-    }
     >* {
       padding: 10px 10px;
     }
@@ -83,5 +81,4 @@
 .mobileMenuContent {
   @extend %menuContent;
   width: 100vw;
-  top: 100%;
 }

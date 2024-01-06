@@ -86,12 +86,12 @@ const AddFavPlt = ({
     }
   }, [isFavPlt]);
   return (
-    <span className={css.appendPlt}
+    <div className={css.appendPlt}
       onClick={removeFav}
     >
       <Icon type={state.icon} />
       {state.text}
-    </span>
+    </div>
   );
 };
 
@@ -144,11 +144,7 @@ const FavSidebar = ({
   const [page, setPage] = useState<number>(() => 0);
 
   return (
-    <div id={css.favContainer}
-      style={isShowing ? {
-        width: isShowing ? "100%" : "min-content",
-      } : undefined}
-    >
+    <div id={css.favContainer}>
       <div className={css.blank}
         onClick={favShowingChanged}
         style={{
@@ -157,7 +153,7 @@ const FavSidebar = ({
       />
       <div className={css.favOffcanvas}
         style={{
-          right: isShowing ? undefined : `-${css.favOffcanvasWidth}`,
+          transform: isShowing ? "translateX(-100%)" : "",
         }}
       >
         <nav className={css.menuBar}>
