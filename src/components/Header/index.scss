@@ -5,15 +5,15 @@
   align-items: center;
   width: 100%;
   height: var(--headerHeight);
-  padding: 0 50px 0 80px;
+  padding: 0 50px 0 60px;
   box-sizing: border-box;
   background-color: $color2;
   user-select: none;
 
-  @media only screen and (max-width: $smallSize) {
-    display: block;
+  @include small {
     height: 40px;
-    padding: 0;
+    padding: 0 0 0 10px;
+    justify-content: space-between;
   }
 }
 
@@ -22,31 +22,27 @@ $titleFontSize: 24px;
   font-size: $titleFontSize;
   font-weight: 900;
   color: $color5;
-  @media only screen and (max-width: $smallSize) {
-    position: absolute;
-    width: max-content;
-    margin-top: 0;
-    margin-bottom: 0;
-    margin-left: 50px;
-    top: 50%;
-    transform: translateY(-50%);
+  margin: 0;
+  @include small {
+    display: inline-block;
+    font-size: 20px;
   }
 }
 
 .menubar {
-  flex: 1 1 auto;
   display: table;
   align-content: center;
   color: $color5;
   margin: auto 10px auto 20px;
 
-  @media only screen and (max-width: $smallSize) {
-    background-color: $color3;
-    display: block;
+  @include small {
     position: relative;
-    float: right;
-    margin: 0;
+    display: inline-block;
     height: 40px;
+    width: min-content;
+    margin: 0;
+    float: right;
+    background-color: $color3;
   }
 }
 
@@ -65,11 +61,11 @@ $titleFontSize: 24px;
   &:hover, &:focus {
     background-color: $color1;
   }
-  @media only screen and (max-width: $smallSize) {
+  @include small {
     position: relative;
     min-height: 30px;
     width: 100%;
-    padding: 5px 0 0;
+    padding: 7px 0;
     box-sizing: border-box;
     &:hover, &:focus {
       background-color: $color3;

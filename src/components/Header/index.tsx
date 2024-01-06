@@ -62,7 +62,7 @@ const Sort = ({
   );
 };
 
-const Mixing = ({
+const Blend = ({
   optionChanged,
 }: {
   isSmall?: boolean,
@@ -148,7 +148,7 @@ const Header = ({
 
   // Events
   const {
-    handleMixingModeChanged, handleEditModeChanged,
+    handleMixingModeChanged: handleBlendChanged, handleEditModeChanged,
   } = useMemo(() => {
     return {
       handleMixingModeChanged: (
@@ -204,7 +204,7 @@ const Header = ({
           {/* Float left */}
           <RefreshAll onClick={refresh} />
           <Sort handleSorting={handleSorting} />
-          <Mixing optionChanged={handleMixingModeChanged} />
+          <Blend optionChanged={handleBlendChanged} />
           <Edit optionChanged={handleEditModeChanged} />
           {/* Float right */}
           <Bookmarks onClick={favShowingChanged} />

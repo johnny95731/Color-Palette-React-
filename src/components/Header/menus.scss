@@ -6,7 +6,7 @@
   &:focus {
     border-radius: 8px 8px 0 0;
   }
-  @media only screen and (max-width: $smallSize) {
+  @include small {
     &:focus .menuTitle {
       padding-bottom: 5px;
     }
@@ -37,7 +37,7 @@
   >* {
     height: max-content;
     font-weight: 600;
-    padding: 10px 10px;
+    padding: 5px 10px;
     border-width: 1px 0;
     background-color: $color1;
     text-align: center;
@@ -47,12 +47,15 @@
     }
   }
   
-  @media only screen and (max-width: $smallSize) {
+  @include small {
     margin-top: 0;
     background-color: $color1;
     overflow: visible;
     &:hover {
       background-color: $color2;
+    }
+    >* {
+      padding: 10px 10px;
     }
   }
 }
@@ -63,7 +66,7 @@
   transform: translateX(-50%);
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   
-  @media only screen and (max-width: $smallSize) {
+  @include small {
     position: relative;
     top: 0;
     width: 100%;

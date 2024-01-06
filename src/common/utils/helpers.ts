@@ -51,6 +51,20 @@ export const meanMixing = (color1: number[], color2: number[]): number[] => {
   return newColor;
 };
 
+/**
+ * Mixing two colors by evaluate their root mean square.
+ * @param {number[]} color1 Numeric of a color.
+ * @param {number[]} color2 Numeric of a color.
+ * @returns {number[]} The mean value of color1 and color2.
+ */
+export const rmsMixing = (color1: number[], color2: number[]): number[] => {
+  const newColor = [];
+  for (let i = 0; i < 3; i++) {
+    newColor.push(Math.sqrt(0.5 * (color1[i]**2 + color2[i]**2)));
+  }
+  return newColor;
+};
+
 
 // DOM
 /**

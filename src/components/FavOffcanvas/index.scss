@@ -30,6 +30,7 @@ $favOffcanvasWidth: 300px;
   background-color: $color2;
   border-left: 2px solid $color3;
   transition: right 0.3s ease-in-out;
+  box-sizing: border-box;
 }
 :export{
   favOffcanvasWidth: $favOffcanvasWidth;
