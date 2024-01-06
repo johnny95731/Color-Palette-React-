@@ -30,7 +30,6 @@
   height: fit-content;
   max-height: 0;
   min-width: 100%;
-  text-wrap: nowrap;
   border-radius: 0 0 8px 8px;
   z-index: 1;
   cursor: pointer;
@@ -48,6 +47,11 @@
     &:hover {
       background-color: $color3;
     }
+  }
+  :global(.icon) {
+    position: absolute;
+    transform: translateX(-100%);
+    z-index: 10;
   }
   
   @include small {

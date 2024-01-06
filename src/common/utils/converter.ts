@@ -1,5 +1,12 @@
 import {mod} from "./helpers";
-import {ColorSpacesType} from "../../features/types/optionsType.ts";
+import {
+  ColorSpacesType, spaceResolutions, getMaxesFromRes,
+} from "../../features/types/optionsType.ts";
+
+// Maximums
+const HSL_MAXES = getMaxesFromRes(spaceResolutions["hsl"]);
+const HSB_MAXES = getMaxesFromRes(spaceResolutions["hsb"]);
+
 
 // From RGB.
 /**
@@ -30,6 +37,7 @@ export const rgb2gray = (rgb: Array<number>): number => {
   return rgb.reduce((cummul, val, i) => cummul += val * RGB_2_GRAY_COEFF[i], 0);
 };
 
+
 /**
  * Calculate hue (H channel of HSL/HSV) from rgb. Also, returns minimum and
  * maximum of rgb.
@@ -59,24 +67,6 @@ const rgb2hue = (rgb: Array<number>): Array<number> => {
 };
 
 /**
- * Convert RGB to HSV.
- * @param {Array} rgb RGB color array.
- * @param {boolean} [toInt=true] Rounding output value to int.
- * @return {Array} [hue, sat, val].
- */
-export const rgb2hsv = (
-    rgb: Array<number>, toInt: boolean = true,
-): Array<number> => {
-  const [h, min, max] = rgb2hue(rgb);
-  const s = max ? ((max - min) / max) * 255 : 0;
-  if (toInt) {
-    return [h, s, max].map((val)=> Math.round(val));
-  } else {
-    return [h, s, max];
-  }
-};
-
-/**
  * Convert RGB to HSL.
  * @param {Array<number>} rgb RGB color array.
  * @param {boolean} [toInt=true] Rounding output value to int.
@@ -91,14 +81,32 @@ export const rgb2hsl = (
   if ((max === 0) || (max === min)) {
     s = 0;
   } else if (l <= 127.5) {
-    s = 255 * (max-min) / (2*l);
+    s = HSL_MAXES[1] * (max - min) / (2 * l);
   } else {
-    s = 255 * (max-min) / (510-2*l);
+    s = HSL_MAXES[1] * (max - min) / (510 - 2 * l);
   }
   if (toInt) {
-    return [h, s, l].map((val)=> Math.round(val));
+    return [h, s, l].map((val)=> Math.floor(val));
   } else {
     return [h, s, l];
+  }
+};
+
+/**
+ * Convert RGB to HSB.
+ * @param {Array} rgb RGB color array.
+ * @param {boolean} [toInt=true] Rounding output value to int.
+ * @return {Array} [hue, sat, brightness].
+ */
+export const rgb2hsb = (
+    rgb: Array<number>, toInt: boolean = true,
+): Array<number> => {
+  const [h, min, max] = rgb2hue(rgb);
+  const s = max ? ((max - min) / max) * HSB_MAXES[1] : 0;
+  if (toInt) {
+    return [h, s, max].map((val)=> Math.floor(val));
+  } else {
+    return [h, s, max];
   }
 };
 
@@ -141,7 +149,7 @@ export const hsv2rgb = (
   else if (hsv[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
   if (toInt) {
-    return rgbPrime.map((val) => Math.round(255 * (val+m)));
+    return rgbPrime.map((val) => Math.floor(255 * (val+m)));
   } else {
     return rgbPrime.map((val) => 255 * (val+m));
   }
@@ -175,7 +183,7 @@ export const hsl2rgb = (
   else if (hsl[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
   if (toInt) {
-    return rgbPrime.map((val) => Math.round(255 * (val+m)));
+    return rgbPrime.map((val) => Math.floor(255 * (val+m)));
   } else {
     return rgbPrime.map((val) => 255 * (val+m));
   }
@@ -261,13 +269,12 @@ type ColorSpaceInfo = {
  * @param {String} colorMode Color space.
  * @return {ColorSpaceInfo} ColorSpaceInfo
  */
-export const getModeInfos = (
-    colorMode: ColorSpacesType): ColorSpaceInfo => {
+export const getModeInfos = (colorMode: ColorSpacesType): ColorSpaceInfo => {
+  let infos: {[key: string]: any};
   switch (colorMode) {
     case "rgb":
-      return {
+      infos = {
         labels: ["Red", "Green", "Blue"],
-        maxes: [255, 255, 255],
         converter: (x: number[], toInt = true) => {
           if (toInt) return x.map((val) => Math.round(val));
           else return x;
@@ -277,30 +284,31 @@ export const getModeInfos = (
           else return x;
         },
       };
+      break;
     case "hsl":
-      return {
+      infos = {
         labels: ["Hue", "Saturation", "Luminance"],
-        maxes: [359, 255, 255],
         converter: rgb2hsl,
         inverter: hsl2rgb,
       };
+      break;
     case "hsb": // hsb = hsv
-      return {
+      infos = {
         labels: ["Hue", "Saturation", "Brightness"],
-        maxes: [359, 255, 255],
-        converter: rgb2hsv,
+        converter: rgb2hsb,
         inverter: hsv2rgb,
       };
+      break;
     case "cmy":
-      return {
+      infos = {
         labels: ["Cyan", "Magenta", "Yellow"],
-        maxes: [255, 255, 255],
         converter: rgb2cmy,
         inverter: cmy2rgb,
       };
-    default:
-      throw Error(`Invalid colorMode: ${colorMode}`);
+      break;
   }
+  infos.maxes = getMaxesFromRes(spaceResolutions[colorMode]);
+  return infos as ColorSpaceInfo;
 };
 
 // Validator

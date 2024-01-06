@@ -37,41 +37,80 @@ export const inversion = <T>(arr: Array<T>): void => {
   }
 };
 
+// Blending
+type blend = (c1: number[], c2: number[]) => number[];
 /**
- * Mixing two colors by evaluate their average.
- * @param {number[]} color1 Numeric of a color.
- * @param {number[]} color2 Numeric of a color.
- * @returns {number[]} The mean value of color1 and color2.
+ * Blending two colors by evaluate their average.
+ * @param color1 Numeric of a color.
+ * @param color2 Numeric of a color.
+ * @returns The mean value of color1 and color2.
  */
-export const meanMixing = (color1: number[], color2: number[]): number[] => {
-  const newColor = [];
-  for (let i = 0; i < 3; i++) {
-    newColor.push(0.5 * (color1[i] + color2[i]));
+export const meanBlend: blend = (color1, color2) => {
+  const newColor = new Array(color1.length);
+  for (let i = 0; i < color1.length; i++) {
+    newColor[i] = 0.5 * (color1[i] + color2[i]);
   }
   return newColor;
 };
 
+const GAMMA_CONST = 2**(- 2 / 255);
 /**
- * Mixing two colors by evaluate their root mean square.
- * @param {number[]} color1 Numeric of a color.
- * @param {number[]} color2 Numeric of a color.
- * @returns {number[]} The mean value of color1 and color2.
+ * Blending two colors by  illusions.hu's Soft Light formula.
+ * @param color1 Numeric of a color.
+ * @param color2 Numeric of a color.
+ * @returns The mean value of color1 and color2.
  */
-export const rmsMixing = (color1: number[], color2: number[]): number[] => {
-  const newColor = [];
-  for (let i = 0; i < 3; i++) {
-    newColor.push(Math.sqrt(0.5 * (color1[i]**2 + color2[i]**2)));
+export const softLightBlend: blend = (color1, color2) => {
+  const newColor = new Array(color1.length);
+  for (let i = 0; i < color1.length; i++) {
+    newColor[i] = 255 * (color1[i] / 255) ** (2 * GAMMA_CONST**color2[i]);
+  }
+  console.log(newColor);
+  return newColor;
+};
+
+/**
+ * Blending two colors by evaluate their root mean square.
+ * @param color1 Numeric of a color.
+ * @param color2 Numeric of a color.
+ * @returns The mean value of color1 and color2.
+ */
+export const rmsBlend: blend = (color1, color2) => {
+  const newColor = new Array(color1.length);
+  for (let i = 0; i < color1.length; i++) {
+    newColor[i] = Math.sqrt(0.5 * (color1[i]**2 + color2[i]**2));
   }
   return newColor;
 };
 
+// /**
+//  * Blending two colors by evaluate their Logarithmic mean.
+//  * @param {number[]} color1 Numeric of a color.
+//  * @param {number[]} color2 Numeric of a color.
+//  * @returns {number[]} The mean value of color1 and color2.
+//  */
+// export const logBlend = (color1: number[], color2: number[]): number[] => {
+//   const newColor = [];
+//   for (let i = 0; i < 3; i++) {
+//     if (!color1[i] || !color2[i]) newColor.push(0);
+//     else if (color1[i] === color2[i]) newColor.push(color1[i]);
+//     else {
+//       newColor.push(
+//           (color1[i] - color2[i]) / Math.log(color1[i] / color2[i]),
+//       );
+//     }
+//   }
+//   return newColor;
+// };
 
-// DOM
+
+// Events
 /**
  * Remove non-hex text and add "#" to first word.
  * @param e Triggered mouse event.
  */
-export const hexTextEdited = (e: React.ChangeEvent<HTMLInputElement>,
+export const hexTextEdited = (
+    e: React.ChangeEvent<HTMLInputElement>,
 ): void => {
   const textInput = e.currentTarget;
   let text = (textInput.value).toUpperCase();
@@ -82,7 +121,8 @@ export const hexTextEdited = (e: React.ChangeEvent<HTMLInputElement>,
  * Copy Hex text to clipboard (excludes "#").
  * @param e Triggered mouse event.
  */
-export const copyHex = (e: React.MouseEvent<HTMLDivElement | HTMLSpanElement>,
+export const copyHex = (
+    e: React.MouseEvent<HTMLDivElement | HTMLSpanElement>,
 ): void => {
   const target = e.currentTarget;
   if (!target) return;

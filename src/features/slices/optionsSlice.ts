@@ -1,7 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit";
 // Types
 import {
-  ColorSpacesType, MixingModeType,
+  ColorSpacesType, BlendingType,
 } from "../types/optionsType.ts";
 
 /**
@@ -13,7 +13,7 @@ import {
  */
 const initialState: {
   editingMode: ColorSpacesType;
-  mixingMode: MixingModeType;
+  mixingMode: BlendingType;
 } = {
   /**
    * Color space which will be display under hex code and be used in edit mode.
@@ -36,7 +36,7 @@ const optionSlice = createSlice({
       state.editingMode = action.payload;
     },
     mixingModeChanged: (state, action: {
-      payload: MixingModeType;
+      payload: BlendingType;
       type: string;
     }) => {
       state.mixingMode = action.payload;

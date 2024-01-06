@@ -17,6 +17,7 @@
 .toolContainer {
   @extend %horizontalCenter;
   bottom: 37%;
+  user-select: none;
   :global(.icon) {
     visibility: hidden;
     display: block;

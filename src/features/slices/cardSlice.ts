@@ -1,12 +1,16 @@
 import {createSlice} from "@reduxjs/toolkit";
 // Utils
 import {rgb2gray, rgb2hex, getModeInfos} from "../../common/utils/converter.ts";
-import {shuffle, inversion, meanMixing} from "../../common/utils/helpers.ts";
+import {
+  shuffle, inversion, meanBlend,
+  rmsBlend,
+  softLightBlend,
+} from "../../common/utils/helpers.ts";
 // Types
 import {
   newCard, cardType, orderStateType, SortActionType,
 } from "../types/cardType.ts";
-import {ColorSpacesType, MixingModeType} from "../types/optionsType.ts";
+import {ColorSpacesType, BlendingType} from "../types/optionsType.ts";
 
 
 const INIT_NUM_OF_CARDS = 5;
@@ -38,7 +42,7 @@ const cardSlice = createSlice({
     addCard: (state, action: {
       payload: {
         idx: number;
-        mixingMode: MixingModeType;
+        mixingMode: BlendingType;
         editingMode: ColorSpacesType;
       };
       type: string;
@@ -47,23 +51,41 @@ const cardSlice = createSlice({
       const {idx, mixingMode, editingMode} = action.payload;
       const cards = state.cards;
       const cardState = newCard();
-      if (mixingMode === "mean") { // RGB Mean
+      if (mixingMode !== "random") { // RGB Mean
         // Color of cards at left side and at right side, respectively.
         // (before insert new card)
         let leftColor = cards[idx - 1]?.rgb;
         let rightColor = cards[idx]?.rgb;
         if (idx === 0) {
-          // Add to the first. Default to be the mean of first card and black.
+          // Add to the first. Blending the first card and black.
           leftColor = [0, 0, 0];
         } else if (idx === state.numOfCards) {
-          // Add to the last. Default to be the mean of last card and white.
+          // Add to the last. Blending the last card and white.
           rightColor = [255, 255, 255];
         }
-        const {converter, inverter} = getModeInfos(editingMode);
-        const newColor = meanMixing(
-            converter(leftColor, false), converter(rightColor, false),
-        );
-        cardState.rgb = inverter(newColor, true);
+        if (mixingMode === "mean") {
+          const {converter, inverter} = getModeInfos(editingMode);
+          const newColor = meanBlend(
+              converter(leftColor, false), converter(rightColor, false),
+          );
+          cardState.rgb = inverter(newColor, true);
+        } else if (mixingMode === "brighter") {
+          /**
+           * Hue = The hue of mean(leftColor, rightColor).
+           * Saturation and brightness = root mean square (rms) of
+           * hsl(leftColor) and hsl(rightColor). rms is more larger than mean.
+           */
+          const {converter, inverter} = getModeInfos("hsl");
+          const mean = meanBlend(leftColor, rightColor);
+          const hue = converter(mean, false)[0];
+          const [s, b] = rmsBlend(
+              converter(leftColor, false), converter(rightColor, false),
+          );
+          cardState.rgb = inverter([hue, s, b], true);
+        } else if (mixingMode === "soft light") {
+          cardState.rgb = softLightBlend(leftColor, rightColor)
+              .map((val) => Math.round(val));
+        }
       }
       cardState.hex = rgb2hex(cardState.rgb);
       state.cards.splice(idx, 0, cardState);

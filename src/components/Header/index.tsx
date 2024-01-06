@@ -4,16 +4,17 @@ import {Menu, showPopupMenu} from "./Menus.tsx";
 import css from "./index.scss";
 import menuCss from "./menus.scss";
 // Redux / Context
-import {useAppDispatch} from "../../common/hooks/storeHooks.ts";
+import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
 import {
   editModeChanged, mixingModeChanged,
 } from "../../features/slices/optionsSlice.ts";
 import MediaContext from "../../features/mediaContext.ts";
+import {selectCard, selectOptions} from "../../features/store.ts";
 // types
 import {MouseHandler} from "../../common/types/eventHandler.ts";
 import {sortAction, SortActionType} from "../../features/types/cardType.ts";
 import {
-  ColorSpacesList, ColorSpacesType, MixingModeList, MixingModeType,
+  ColorSpacesList, ColorSpacesType, BlendModeList, BlendingType,
 } from "../../features/types/optionsType.ts";
 
 const preventDefault = (e: MouseEvent) => {
@@ -36,8 +37,10 @@ const RefreshAll = ({
 };
 
 const Sort = ({
+  sortBy,
   handleSorting,
 }: {
+  sortBy: SortActionType,
   handleSorting: (sortBy: SortActionType) => void
 }) => {
   return (
@@ -48,12 +51,13 @@ const Sort = ({
       {
         sortAction.map((val) => (
           <div key={`sortBy${val}`}
-            // onTouchStart={isSmall ? () => handleSorting(val) : undefined}
-            // onClick={isSmall ? undefined : () => handleSorting(val)}
+            style={{
+              fontWeight: val === sortBy ? "800" : "",
+            }}
             onClick={() => handleSorting(val)}
           >
             {`${val}${
-              ["gray", "random"].includes(val) ? ` (${val.slice(0, 1)})` : ""
+              ["gray", "random"].includes(val) && ` (${val.slice(0, 1)})`
             }`}
           </div>
         ))
@@ -63,10 +67,11 @@ const Sort = ({
 };
 
 const Blend = ({
+  mixingMode,
   optionChanged,
 }: {
-  isSmall?: boolean,
-  optionChanged: (newMode: MixingModeType) => void
+  mixingMode: BlendingType,
+  optionChanged: (newMode: BlendingType) => void
 }) => {
   return (
     <Menu className={css.btn}
@@ -74,9 +79,12 @@ const Blend = ({
       title={"Blend"}
     >
       {
-        MixingModeList.map((val, i) => {
+        BlendModeList.map((val, i) => {
           return (
-            <div key={`mode${i}`}
+            <div key={`BlendBy${i}`}
+              style={{
+                fontWeight: val === mixingMode ? "800" : "",
+              }}
               onClick={() => optionChanged(val)}
             >
               {val}
@@ -88,9 +96,11 @@ const Blend = ({
   );
 };
 
-const Edit = ({
+const Space = ({
+  editingMode,
   optionChanged,
 }: {
+  editingMode: ColorSpacesType
   optionChanged: (newMode: ColorSpacesType) => void;
 }) => {
   return (
@@ -101,10 +111,13 @@ const Edit = ({
       {
         ColorSpacesList.map((val, i) => {
           return (
-            <div key={`mode${i}`}
+            <div key={`Space${i}`}
+              style={{
+                fontWeight: val === editingMode ? "800" : "",
+              }}
               onClick={() => optionChanged(val)}
             >
-              {val.toUpperCase()}
+              {`${val.toUpperCase()}`}
             </div>
           );
         })
@@ -144,6 +157,8 @@ const Header = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuContentRef = useRef<HTMLDivElement>(null);
   const {isSmall} = useContext(MediaContext);
+  const {sortBy} = useAppSelector(selectCard);
+  const {mixingMode, editingMode} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
 
   // Events
@@ -152,7 +167,7 @@ const Header = ({
   } = useMemo(() => {
     return {
       handleMixingModeChanged: (
-          newMode: MixingModeType,
+          newMode: BlendingType,
       ) => {
         dispatch(mixingModeChanged(newMode));
       },
@@ -203,9 +218,11 @@ const Header = ({
         <div ref={menuContentRef}>
           {/* Float left */}
           <RefreshAll onClick={refresh} />
-          <Sort handleSorting={handleSorting} />
-          <Blend optionChanged={handleBlendChanged} />
-          <Edit optionChanged={handleEditModeChanged} />
+          <Sort sortBy={sortBy} handleSorting={handleSorting} />
+          <Blend mixingMode={mixingMode} optionChanged={handleBlendChanged} />
+          <Space
+            editingMode={editingMode} optionChanged={handleEditModeChanged}
+          />
           {/* Float right */}
           <Bookmarks onClick={favShowingChanged} />
         </div>
