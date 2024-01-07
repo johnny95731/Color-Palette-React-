@@ -199,7 +199,7 @@ const Header = ({
           />
           {/* Float right */}
           <Bookmarks onClick={favShowingChanged} />
-          <Pallete onClick={favShowingChanged} />
+          {/* <Pallete onClick={favShowingChanged} /> */}
         </div>
       </div>
     </header>
