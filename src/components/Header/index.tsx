@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useMemo, useRef} from "react";
-import Icon from "../Icons.tsx";
+import Icon, {iconType} from "../Icons.tsx";
 import {Menu, showPopupMenu} from "./Menus.tsx";
 import css from "./index.scss";
 import menuCss from "./menus.scss";
@@ -36,91 +36,41 @@ const RefreshAll = ({
   );
 };
 
-const Sort = ({
-  sortBy,
-  handleSorting,
+const SettingMenu = ({
+  iconType,
+  title,
+  contents,
+  currentVal,
+  hotkeys = [],
+  handleClick,
 }: {
-  sortBy: SortActionType,
-  handleSorting: (sortBy: SortActionType) => void
+  iconType: iconType;
+  title?: string;
+  contents: readonly string[];
+  currentVal: typeof contents[number];
+  hotkeys?: Array<string | undefined>;
+  handleClick: (option: typeof contents[number]) => void
 }) => {
   return (
     <Menu className={css.btn}
-      iconType={"sort"}
-      title="Sort"
+      iconType={iconType}
+      title={
+        title ? title : `${iconType[0].toUpperCase()}${iconType.slice(1)}`
+      }
     >
       {
-        sortAction.map((val) => (
-          <div key={`sortBy${val}`}
+        contents.map((val, i) => (
+          <div key={`${iconType}${val}`}
             style={{
-              fontWeight: val === sortBy ? "800" : "",
+              fontWeight: val === currentVal ? "800" : "",
             }}
-            onClick={() => handleSorting(val)}
+            onClick={() => handleClick(val)}
           >
             {`${val}${
-              ["gray", "random"].includes(val) && ` (${val.slice(0, 1)})`
+              hotkeys[i] ? ` (${hotkeys[i]})` : ""
             }`}
           </div>
         ))
-      }
-    </Menu>
-  );
-};
-
-const Blend = ({
-  mixingMode,
-  optionChanged,
-}: {
-  mixingMode: BlendingType,
-  optionChanged: (newMode: BlendingType) => void
-}) => {
-  return (
-    <Menu className={css.btn}
-      iconType={"blend"}
-      title={"Blend"}
-    >
-      {
-        BlendModeList.map((val, i) => {
-          return (
-            <div key={`BlendBy${i}`}
-              style={{
-                fontWeight: val === mixingMode ? "800" : "",
-              }}
-              onClick={() => optionChanged(val)}
-            >
-              {val}
-            </div>
-          );
-        })
-      }
-    </Menu>
-  );
-};
-
-const Space = ({
-  editingMode,
-  optionChanged,
-}: {
-  editingMode: ColorSpacesType
-  optionChanged: (newMode: ColorSpacesType) => void;
-}) => {
-  return (
-    <Menu className={css.btn}
-      iconType={"edit"}
-      title={"Space"}
-    >
-      {
-        ColorSpacesList.map((val, i) => {
-          return (
-            <div key={`Space${i}`}
-              style={{
-                fontWeight: val === editingMode ? "800" : "",
-              }}
-              onClick={() => optionChanged(val)}
-            >
-              {`${val.toUpperCase()}`}
-            </div>
-          );
-        })
       }
     </Menu>
   );
@@ -158,7 +108,7 @@ const Header = ({
   const menuContentRef = useRef<HTMLDivElement>(null);
   const {isSmall} = useContext(MediaContext);
   const {sortBy} = useAppSelector(selectCard);
-  const {mixingMode, editingMode} = useAppSelector(selectOptions);
+  const {blendMode, colorSpace} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
 
   // Events
@@ -180,17 +130,16 @@ const Header = ({
   }, []);
 
   useEffect(() => {
+    const content = menuContentRef.current as HTMLDivElement;
     if (isSmall) {
       menuRef.current?.classList.add(menuCss.popupMenu);
-      menuContentRef.current?.classList.add(menuCss.mobileMenuContent);
-      menuContentRef.current?.classList.add(menuCss.menuContentR);
+      content.classList.add(menuCss.mobileMenuContent);
+      content.classList.add(menuCss.menuContentR);
     } else {
       menuRef.current?.classList.remove(menuCss.popupMenu);
-      if (menuContentRef.current) {
-        menuContentRef.current.classList.remove(menuCss.mobileMenuContent);
-        menuContentRef.current.classList.remove(menuCss.menuContentR);
-        menuContentRef.current.style.display = "";
-      }
+      content.classList.remove(menuCss.mobileMenuContent);
+      content.classList.remove(menuCss.menuContentR);
+      content.style.display = "";
     }
   }, [isSmall]);
 
@@ -218,10 +167,18 @@ const Header = ({
         <div ref={menuContentRef}>
           {/* Float left */}
           <RefreshAll onClick={refresh} />
-          <Sort sortBy={sortBy} handleSorting={handleSorting} />
-          <Blend mixingMode={mixingMode} optionChanged={handleBlendChanged} />
-          <Space
-            editingMode={editingMode} optionChanged={handleEditModeChanged}
+          <SettingMenu iconType="sort"
+            contents={sortAction} currentVal={sortBy}
+            hotkeys={sortAction.map((str) => str[0])}
+            handleClick={handleSorting as (option: string) => void}
+          />
+          <SettingMenu iconType="blend"
+            contents={BlendModeList} currentVal={blendMode}
+            handleClick={handleBlendChanged as (option: string) => void}
+          />
+          <SettingMenu iconType="edit" title="Space"
+            contents={ColorSpacesList} currentVal={colorSpace}
+            handleClick={handleEditModeChanged as (option: string) => void}
           />
           {/* Float right */}
           <Bookmarks onClick={favShowingChanged} />

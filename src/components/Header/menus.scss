@@ -9,14 +9,14 @@
   @include small {
     &:focus .menuTitle {
       padding-bottom: 5px;
-      transition: padding-bottom 200ms ease-in-out;
+      transition: padding-bottom .2s ease-in-out;
     }
   }
 }
 
 .menuTitle {
   font-size: 16px;
-  transition: padding-bottom .9s ease-in-out;
+  transition: padding-bottom .2s ease-in-out;
 }
 
 .triangle {
@@ -28,21 +28,25 @@
   position: absolute;
   top: 100%;
   height: fit-content;
+  width: max-content;
   max-height: 0;
   min-width: 100%;
   border-radius: 0 0 8px 8px;
+  background-color: $color1;
   z-index: 1;
   cursor: pointer;
   overflow: hidden;
-  transition: max-height .5s ease-in-out;
+  transition: max-height .3s ease-in-out;
 
   >* {
     height: fit-content;
+    width: 100%;
     font-weight: 600;
     padding: 5px 10px;
     border-width: 1px 0;
     background-color: $color1;
     text-align: center;
+    text-wrap: no-wrap;
     box-sizing: border-box;
     &:hover {
       background-color: $color3;

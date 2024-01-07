@@ -6,8 +6,8 @@ import css from "./index.scss";
 import Icon from "../Icons.tsx";
 // utils
 import {
-  rgb2gray, rgb2hex, hex2rgb, isValidHex, getModeInfos,
-} from "../../common/utils/converter.ts";
+  rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos,
+} from "../../common/utils/colors.ts";
 import {hexTextEdited, copyHex} from "../../common/utils/helpers.ts";
 // Redux-relate
 import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
@@ -19,7 +19,8 @@ import {selectOptions, selectFavorites} from "../../features/store.ts";
 import MediaContext from "../../features/mediaContext.ts";
 // types
 import {MouseHandler, TouchHandler} from "../../common/types/eventHandler.ts";
-import type {cardType} from "../../features/types/cardType.ts";
+import {cardType} from "../../features/types/cardType.ts";
+import {ColorSpacesType} from "src/features/types/optionsType.ts";
 
 
 // Other Components
@@ -106,17 +107,19 @@ const ToolBar = ({
 const EditingDialog = forwardRef<HTMLDivElement, any>(({
   cardId,
   card,
-  modeColor,
+  colorSpace,
+  colorArr,
 }: {
   cardId: number;
   card: cardType;
-  modeColor: number[];
+  colorSpace: ColorSpacesType
+  colorArr: number[];
 }, ref,
 ) => {
-  const {editingMode} = useAppSelector(selectOptions);
+  const {colorSpace: editingMode} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
   const {labels, maxes, converter, inverter} = (
-    getModeInfos(editingMode)
+    getSpaceInfos(editingMode)
   );
 
   /**
@@ -151,11 +154,14 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
     }
   }, [editingMode]);
 
+  /**
+   * Slider changed event.
+   */
   const handleSliderChange = (
       e: React.ChangeEvent<HTMLInputElement>,
       idx: number) => {
     const target = e.target;
-    const newModeColor = [...modeColor];
+    const newModeColor = [...colorArr];
     newModeColor[idx] = Number(target.value);
     const rgb = inverter(newModeColor);
     dispatch(editCard({idx: cardId, color: rgb}));
@@ -171,11 +177,11 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   ) => {
     if (card.isEditing && e.relatedTarget === null) {
       handleHexEditingFinished(e);
-      dispatch(setIsEditing({idx: cardId, newVal: false}));
+      dispatch(setIsEditing(cardId));
     }
   }, [card.isEditing]);
 
-
+  // Check container is out of window or not.
   const {
     windowSize, isSmall, pos, bound,
   } = useContext(MediaContext);
@@ -192,7 +198,6 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       } as const;
     }
   }, [pos, ...windowSize]);
-  // Check container is out of window or not.
   useEffect(() => {
     // @ts-expect-error ref === React.MutableRefObject.
     const container = ref.current as HTMLDivElement;
@@ -215,6 +220,20 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       container.style[endPos] = "";
     }
   }, [card.isEditing, ...windowSize]);
+  // Check container is out of window or not.
+
+  // Change slider value when color space changed.
+  useEffect(() => {
+    if (card.isEditing) {
+      let slider;
+      for (let i = 0; i < 4; i++) {
+        slider = (
+          document.getElementById(`card${cardId}-slider${i}`)
+        );
+        if (slider) (slider as HTMLInputElement).value = String(colorArr[i]);
+      }
+    }
+  }, [colorSpace, colorArr]);
 
   return (
     <div className={css.editing} ref={ref}
@@ -233,18 +252,16 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       />
       <form className={css.sliders} >
         {
-          labels.map((label, i) => {
+          colorArr.map((val, i) => {
+            const name = `card${cardId}-slider${i}`;
             return (
               <Fragment key={`card${cardId}-frag${i}`}>
-                <span key={`card${cardId}-label${i}`}
-                  // style={filterStyle}
-                >
-                  {`${label}: ${modeColor[i]}`}
-                </span>
-                <input key={`card${cardId}-slider${i}`}
-                  id={`card${cardId}-slider${i}`}
+                <label key={`card${cardId}-label${i}`} htmlFor={name} >
+                  {`${labels[i]}: ${val}`}
+                </label>
+                <input key={name} id={name} name={name}
                   type="range" min="0" max={maxes[i]}
-                  defaultValue={modeColor[i]}
+                  defaultValue={val}
                   onChange={(e) => handleSliderChange(e, i)}
                 />
               </Fragment>
@@ -273,22 +290,22 @@ const Card = forwardRef(({
 ref: Ref<HTMLDivElement>,
 ) => {
   // States / consts
-  const optionsState = useAppSelector(selectOptions);
+  const {colorSpace} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
   const {converter} = (
-    getModeInfos(optionsState.editingMode)
+    getSpaceInfos(colorSpace)
   );
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [
     isLight,
-    modeColor,
+    colorArr,
   ] = useMemo(() => {
     return [
       rgb2gray(card.rgb) > 127,
-      converter(card.rgb),
+      converter(card.rgb).map((val) => Math.floor(val)),
     ];
-  }, [...card.rgb, optionsState.editingMode]);
+  }, [...card.rgb, colorSpace]);
 
   const filterStyle = useMemo(() => {
     return {filter: isLight ? "" : "invert(1)"};
@@ -309,23 +326,10 @@ ref: Ref<HTMLDivElement>,
         dispatch(setIsLock(cardId));
       },
       isEditingChanged: () => {
-        dispatch(setIsEditing({idx: cardId}));
+        dispatch(setIsEditing(cardId));
       },
     };
-  }, [cardId, card.isEditing]);
-
-  useEffect(() => {
-    if (card.isEditing) {
-      let slider;
-      for (let i = 0; i < 3; i++) {
-        slider = (
-          document.getElementById(`card${cardId}-slider${i}`) as
-          HTMLInputElement
-        );
-        slider.value = String(modeColor[i]);
-      }
-    }
-  }, [optionsState.editingMode]);
+  }, [cardId]);
 
   useEffect(() => {
     if (card.isEditing) containerRef.current?.focus();
@@ -335,7 +339,6 @@ ref: Ref<HTMLDivElement>,
     <div className={css.cardContainer}
       style={{
         backgroundColor: card.hex,
-        // transition: "background-color .5s ease",
       }}
       ref={ref}
     >
@@ -366,7 +369,9 @@ ref: Ref<HTMLDivElement>,
             <Icon type="copy"
               style={filterStyle}
             />
-            {`${optionsState.editingMode}(${modeColor.toString()})`}
+            {`${colorSpace}(${
+              colorArr.toString()
+            })`}
           </div>
         </div>
       }
@@ -375,7 +380,8 @@ ref: Ref<HTMLDivElement>,
         <EditingDialog ref={containerRef}
           cardId={cardId}
           card={card}
-          modeColor={modeColor}
+          colorSpace={colorSpace}
+          colorArr={colorArr}
           isEditingChanged={events.isEditingChanged}
         />
       }

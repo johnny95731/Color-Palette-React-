@@ -16,9 +16,6 @@
 - ### ![](res/img/sliders.svg) Space (色彩空間)
   顯示模式及編輯模式中，使用的色彩空間。提供「RGB（預設）」、「HSB」、「HSL」、「CMY」。
   
-- ### ![](res/img/bookmark-plus.svg) Add / ![](res/img/bookmark-dash.svg) Del (調色盤加入書籤)
-  將調色盤（顏色組合）加入書籤，
-  
 - ### ![](res/img/bookmarks.svg) Bookmarks (開啟書籤)
   開啟書籤欄，包括顏色及調色盤。
 

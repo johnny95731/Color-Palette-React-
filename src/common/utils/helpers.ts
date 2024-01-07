@@ -37,51 +37,34 @@ export const inversion = <T>(arr: Array<T>): void => {
   }
 };
 
-// Blending
-type blend = (c1: number[], c2: number[]) => number[];
+// Averages
 /**
- * Blending two colors by evaluate their average.
- * @param color1 Numeric of a color.
- * @param color2 Numeric of a color.
+ * Evaluate elementwise mean of two arrays.
+ * @param arr1 Numeric of a color.
+ * @param arr2 Numeric of a color.
  * @returns The mean value of color1 and color2.
  */
-export const meanBlend: blend = (color1, color2) => {
-  const newColor = new Array(color1.length);
-  for (let i = 0; i < color1.length; i++) {
-    newColor[i] = 0.5 * (color1[i] + color2[i]);
+export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
+  const newColor = new Array(arr1.length);
+  for (let i = 0; i < arr1.length; i++) {
+    newColor[i] = 0.5 * (arr1[i] + arr2[i]);
   }
   return newColor;
 };
 
-const GAMMA_CONST = 2**(- 2 / 255);
-/**
- * Blending two colors by  illusions.hu's Soft Light formula.
- * @param color1 Numeric of a color.
- * @param color2 Numeric of a color.
- * @returns The mean value of color1 and color2.
- */
-export const softLightBlend: blend = (color1, color2) => {
-  const newColor = new Array(color1.length);
-  for (let i = 0; i < color1.length; i++) {
-    newColor[i] = 255 * (color1[i] / 255) ** (2 * GAMMA_CONST**color2[i]);
-  }
-  console.log(newColor);
-  return newColor;
-};
-
-/**
- * Blending two colors by evaluate their root mean square.
- * @param color1 Numeric of a color.
- * @param color2 Numeric of a color.
- * @returns The mean value of color1 and color2.
- */
-export const rmsBlend: blend = (color1, color2) => {
-  const newColor = new Array(color1.length);
-  for (let i = 0; i < color1.length; i++) {
-    newColor[i] = Math.sqrt(0.5 * (color1[i]**2 + color2[i]**2));
-  }
-  return newColor;
-};
+// /**
+//  * Blending two colors by evaluate their root mean square.
+//  * @param color1 Numeric of a color.
+//  * @param color2 Numeric of a color.
+//  * @returns The mean value of color1 and color2.
+//  */
+// export const rmsBlend: blend = (color1, color2) => {
+//   const newColor = new Array(color1.length);
+//   for (let i = 0; i < color1.length; i++) {
+//     newColor[i] = Math.sqrt(0.5 * (color1[i]**2 + color2[i]**2));
+//   }
+//   return newColor;
+// };
 
 // /**
 //  * Blending two colors by evaluate their Logarithmic mean.

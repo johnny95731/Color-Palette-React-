@@ -31,15 +31,14 @@ const InsertRegions = ({
   // States / consts
   const optionsState = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
-  const {isSmall} = useContext(MediaContext);
+  const {isSmall, pos} = useContext(MediaContext);
 
   const positions = useMemo(() => {
     const step = 100 / numOfCards;
-    const dir = isSmall ? "top" : "left";
 
     return Array.from({length: numOfCards + 1}, (_, i) => {
       const style: {[key: string]: string} = {};
-      style[dir] = `${i * step}%`;
+      style[pos] = `${i * step}%`;
       return style;
     });
   }, [numOfCards, isSmall]);
@@ -48,27 +47,29 @@ const InsertRegions = ({
   const handleAddCard = useCallback((idx: number) => {
     dispatch(addCard({
       idx,
-      mixingMode: optionsState.mixingMode,
-      editingMode: optionsState.editingMode,
+      blendMode: optionsState.blendMode,
+      editingMode: optionsState.colorSpace,
     }));
-  }, [optionsState.mixingMode, optionsState.editingMode]);
+  }, [optionsState.blendMode, optionsState.colorSpace]);
 
   return (
-    Array.from({length: numOfCards + 1}, (_, i) => {
-      return (
-        <div key={`insert${i}`}
-          tabIndex={-1}
-          className={css.insertContainer}
-          style={positions[i]}
-        >
-          <div
-            onClick={() => handleAddCard(i)}
+    <div id="insertRegion">
+      {Array.from({length: numOfCards + 1}, (_, i) => {
+        return (
+          <div key={`insert${i}`}
+            tabIndex={-1}
+            className={css.insertWrapper}
+            style={positions[i]}
           >
-            <Icon type={"insert"} />
+            <div
+              onClick={() => handleAddCard(i)}
+            >
+              <Icon type={"insert"} />
+            </div>
           </div>
-        </div>
-      );
-    })
+        );
+      })}
+    </div>
   );
 };
 
@@ -178,7 +179,7 @@ const DisplayRegion = ({
   // Drag events end
 
   return (
-    <div className={css.main}>
+    <main className={css.main}>
       {cardState.cards.map((card, i) => {
         return <Card key={`card${i}`}
           ref={(el) => cardRefs.current[i] = (el as HTMLDivElement)}
@@ -192,7 +193,7 @@ const DisplayRegion = ({
         />;
       })}
       <InsertRegions numOfCards={cardState.numOfCards} />
-    </div>
+    </main>
   );
 };
 
@@ -244,6 +245,9 @@ const App = () => {
           break;
         case "r":
           handleSorting("random");
+          break;
+        case "i":
+          handleSorting("inversion");
           break;
       }
     };

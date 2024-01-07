@@ -1,28 +1,24 @@
-import {mod} from "./helpers";
+import {mod} from "./helpers.ts";
 import {
   ColorSpacesType, spaceResolutions, getMaxesFromRes,
 } from "../../features/types/optionsType.ts";
 
 // Maximums
-const HSL_MAXES = getMaxesFromRes(spaceResolutions["hsl"]);
-const HSB_MAXES = getMaxesFromRes(spaceResolutions["hsb"]);
-
+export const RGB_MAXES = getMaxesFromRes(spaceResolutions["rgb"]);
+export const HSL_MAXES = getMaxesFromRes(spaceResolutions["hsl"]);
+export const HSB_MAXES = getMaxesFromRes(spaceResolutions["hsb"]);
 
 // From RGB.
 /**
  * Convert RGB to Hex.
- * @param {Array<number>} rgb RGB color array.
+ * @param {number[]} rgb RGB color array.
  * @return {String} Hex color.
  */
-export const rgb2hex = (rgb: Array<number>): string => {
+export const rgb2hex = (rgb: number[]): string => {
   let hex6 = "#";
-
   for (let i = 0; i < 3; i ++) {
-    if (rgb[i] < 16) {
-      hex6 += `0${rgb[i].toString(16)}`;
-    } else {
-      hex6 += rgb[i].toString(16);
-    }
+    const int = Math.floor(rgb[i]);
+    hex6 += int < 16 ? `0${int.toString(16)}` : int.toString(16);
   }
   return hex6.toUpperCase();
 };
@@ -30,10 +26,10 @@ export const rgb2hex = (rgb: Array<number>): string => {
 const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
 /**
  * Conver Hex to grayscale.
- * @param {Array<number>} rgb Array of RGB color.
+ * @param {number[]} rgb Array of RGB color.
  * @return {Number} grayscale
  */
-export const rgb2gray = (rgb: Array<number>): number => {
+export const rgb2gray = (rgb: number[]): number => {
   return rgb.reduce((cummul, val, i) => cummul += val * RGB_2_GRAY_COEFF[i], 0);
 };
 
@@ -41,10 +37,10 @@ export const rgb2gray = (rgb: Array<number>): number => {
 /**
  * Calculate hue (H channel of HSL/HSV) from rgb. Also, returns minimum and
  * maximum of rgb.
- * @param {Array} rgb RGB array.
- * @return {Array} [hue, min(r,g,b), max(r,g,b)].
+ * @param {number[]} rgb RGB array.
+ * @return {number[]} [hue, min(r,g,b), max(r,g,b)].
  */
-const rgb2hue = (rgb: Array<number>): Array<number> => {
+const rgb2hue = (rgb: number[]): number[] => {
   const [r, g, b] = rgb;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
@@ -68,13 +64,10 @@ const rgb2hue = (rgb: Array<number>): Array<number> => {
 
 /**
  * Convert RGB to HSL.
- * @param {Array<number>} rgb RGB color array.
- * @param {boolean} [toInt=true] Rounding output value to int.
- * @return {Array} [hue, sat, lum]
+ * @param {number[]} rgb RGB color array.
+ * @return {number[]} [hue, sat, lum]
  */
-export const rgb2hsl = (
-    rgb: Array<number>, toInt: boolean = true,
-): Array<number> => {
+export const rgb2hsl = (rgb: number[]): number[] => {
   const [h, min, max] = rgb2hue(rgb);
   const l = (max + min) / 2;
   let s;
@@ -85,51 +78,37 @@ export const rgb2hsl = (
   } else {
     s = HSL_MAXES[1] * (max - min) / (510 - 2 * l);
   }
-  if (toInt) {
-    return [h, s, l].map((val)=> Math.floor(val));
-  } else {
-    return [h, s, l];
-  }
+  return [h, s, l];
 };
 
 /**
  * Convert RGB to HSB.
- * @param {Array} rgb RGB color array.
- * @param {boolean} [toInt=true] Rounding output value to int.
- * @return {Array} [hue, sat, brightness].
+ * @param {number[]} rgb RGB color array.
+ * @return {number[]} [hue, sat, brightness].
  */
-export const rgb2hsb = (
-    rgb: Array<number>, toInt: boolean = true,
-): Array<number> => {
+export const rgb2hsb = (rgb: number[]): number[] => {
   const [h, min, max] = rgb2hue(rgb);
   const s = max ? ((max - min) / max) * HSB_MAXES[1] : 0;
-  if (toInt) {
-    return [h, s, max].map((val)=> Math.floor(val));
-  } else {
-    return [h, s, max];
-  }
+  return [h, s, max];
 };
 
 /**
  * Convert RGB to CMY.
- * @param {Array<number>} rgb RGB color array.
- * @return  {Array<number>} cmy CMY color array.
+ * @param {number[]} rgb RGB color array.
+ * @return  {number[]} cmy CMY color array.
  */
-export const rgb2cmy = (rgb: Array<number>): Array<number> => {
-  return rgb.map((val) => 255 - val);
+export const rgb2cmy = (rgb: number[]): number[] => {
+  return rgb.map((val, i) => RGB_MAXES[i] - val);
 };
 
 
 // To RGB.
 /**
  * Convert HSV to RGB.
- * @param  {Array<number>} hsv HSV color array.
- * @param {boolean} [toInt=true] Rounding output value to int.
- * @return {Array<number>} RGB color array.
+ * @param  {number[]} hsv HSV color array.
+ * @return {number[]} RGB color array.
  */
-export const hsv2rgb = (
-    hsv: Array<number>, toInt: boolean = true,
-): Array<number> => {
+export const hsv2rgb = (hsv: number[]): number[] => {
   if (hsv[1] === 0) {
     return hsv.map(() => hsv[2]);
   }
@@ -141,35 +120,28 @@ export const hsv2rgb = (
   const X = C * (1 - Math.abs((hsv[0]/60)%2 - 1));
   const m = hsv[2] - C;
   // Convert. (Note: The formula can reduce.)
-  let rgbPrime: Array<number>;
+  let rgbPrime: number[];
   if (hsv[0] < 60) rgbPrime = [C, X, 0];
   else if (hsv[0] < 120) rgbPrime = [X, C, 0];
   else if (hsv[0] < 180) rgbPrime = [0, C, X];
   else if (hsv[0] < 240) rgbPrime = [0, X, C];
   else if (hsv[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  if (toInt) {
-    return rgbPrime.map((val) => Math.floor(255 * (val+m)));
-  } else {
-    return rgbPrime.map((val) => 255 * (val+m));
-  }
+  return rgbPrime.map((val) => 255 * (val+m));
 };
 
 /**
  * Convert HSL to RGB.
- * @param  {Array<number>} hsl HSL array.
- * @param {boolean} [toInt=true] Rounding output value to int.
- * @return {Array<number>} RGB color array.
+ * @param  {number[]} hsl HSL array.
+ * @return {number[]} RGB color array.
  */
-export const hsl2rgb = (
-    hsl: Array<number>, toInt: boolean = true,
-): Array<number> => {
+export const hsl2rgb = (hsl: number[]): number[] => {
   if (hsl[1] === 0) {
     return hsl.map(() => hsl[2]);
   }
   // Normalize to [0, 1].
-  hsl[1] /= 255;
-  hsl[2] /= 255;
+  hsl[1] /= HSL_MAXES[1];
+  hsl[2] /= HSL_MAXES[2];
   // Consts
   const C = (1 - Math.abs(2*hsl[2] - 1)) * hsl[1];
   const X = C * (1 - Math.abs((hsl[0]/60) % 2 - 1));
@@ -182,28 +154,24 @@ export const hsl2rgb = (
   else if (hsl[0] < 240) rgbPrime = [0, X, C];
   else if (hsl[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  if (toInt) {
-    return rgbPrime.map((val) => Math.floor(255 * (val+m)));
-  } else {
-    return rgbPrime.map((val) => 255 * (val+m));
-  }
+  return rgbPrime.map((val, i) => RGB_MAXES[i] * (val + m));
 };
 
 /**
  * Convert CMY to RGB.
- * @param  {Array<number>} cmy CMY color array.
- * @return {Array<number>} RGB color array.
+ * @param  {number[]} cmy CMY color array.
+ * @return {number[]} RGB color array.
  */
-export const cmy2rgb = (cmy: Array<number>): Array<number> => {
+export const cmy2rgb = (cmy: number[]): number[] => {
   return rgb2cmy(cmy);
 };
 
 /**
  * Convert Hex color to RGB color.
  * @param {String} hex Hex color string.
- * @return {Array} rgb
+ * @return {number[]} rgb
  */
-export const hex2rgb = (hex: string): Array<number> | null => {
+export const hex2rgb = (hex: string): number[] | null => {
   if (hex.startsWith("#")) {
     hex = hex.slice(1);
   }
@@ -223,13 +191,28 @@ export const hex2rgb = (hex: string): Array<number> | null => {
   }
 };
 
+// Validator
+/**
+ * Verify the string whether is a (3 channel, no alpha channel) Hex color.
+ * @param {String} hex String that need to be verified.
+ * @return {Boolean} Validity of string.
+ */
+export const isValidHex = (hex: string): boolean => {
+  if (typeof hex !== "string") return false;
+  if (hex.startsWith("#")) hex = hex.slice(1);
+  else return false;
+  const nonHex = hex.match(/[^0-9A-F]/i);
+  if ((nonHex !== null) || (![3, 6].includes(hex.length))) return false;
+  return true;
+};
+
 
 // Generators
 /**
  * Generate an RGB color.
- * @return {Array<number>} [R, G, B]
+ * @return {number[]} [R, G, B]
  */
-export const randRgbGen = (): Array<number> => {
+export const randRgbGen = (): number[] => {
   const rgb = new Array(3);
   for (let i = 0; i < 3; i ++) {
     rgb[i] = Math.floor(Math.random() * 256);
@@ -254,35 +237,29 @@ type ColorSpaceInfo = {
    * @param x RGB values.
    * @returns specified color space values.
    */
-  converter: (x: number[], toInt?: boolean) => number[];
+  converter: (x: number[]) => number[];
   /**
    * The converter that convert specified color space to RGB space.
    * @param x specified color space values.
    * @returns RGB values.
    */
-  inverter: (x: number[], toInt?: boolean) => number[];
+  inverter: (x: number[]) => number[];
 }
 
 /**
  * Returns infomations about color space which will be display under hex code
  * and be used in edit mode.
- * @param {String} colorMode Color space.
+ * @param {String} space Color space.
  * @return {ColorSpaceInfo} ColorSpaceInfo
  */
-export const getModeInfos = (colorMode: ColorSpacesType): ColorSpaceInfo => {
+export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
   let infos: {[key: string]: any};
-  switch (colorMode) {
+  switch (space) {
     case "rgb":
       infos = {
         labels: ["Red", "Green", "Blue"],
-        converter: (x: number[], toInt = true) => {
-          if (toInt) return x.map((val) => Math.round(val));
-          else return x;
-        },
-        inverter: (x: number[], toInt = true) => {
-          if (toInt) return x.map((val) => Math.round(val));
-          else return x;
-        },
+        converter: (x: number[]) => x,
+        inverter: (x: number[]) => x,
       };
       break;
     case "hsl":
@@ -307,21 +284,6 @@ export const getModeInfos = (colorMode: ColorSpacesType): ColorSpaceInfo => {
       };
       break;
   }
-  infos.maxes = getMaxesFromRes(spaceResolutions[colorMode]);
+  infos.maxes = getMaxesFromRes(spaceResolutions[space]);
   return infos as ColorSpaceInfo;
-};
-
-// Validator
-/**
- * Verify the string whether is a (3 channel, no alpha channel) Hex color.
- * @param {String} hex String that need to be verified.
- * @return {Boolean} Validity of string.
- */
-export const isValidHex = (hex: string): boolean => {
-  if (typeof hex !== "string") return false;
-  if (hex.startsWith("#")) hex = hex.slice(1);
-  else return false;
-  const nonHex = hex.match(/[^0-9A-F]/i);
-  if ((nonHex !== null) || (![3, 6].includes(hex.length))) return false;
-  return true;
 };

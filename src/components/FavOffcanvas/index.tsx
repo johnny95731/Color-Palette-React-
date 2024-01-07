@@ -2,7 +2,7 @@ import React, {useState, useMemo} from "react";
 import Icon from "../Icons.tsx";
 import css from "./index.scss";
 // utils
-import {rgb2gray, hex2rgb} from "../../common/utils/converter.ts";
+import {rgb2gray, hex2rgb} from "../../common/utils/colors.ts";
 import {copyHex} from "../../common/utils/helpers.ts";
 // Redux / Context
 import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";

@@ -1,4 +1,4 @@
-import {randRgbGen, rgb2hex} from "../../common/utils/converter.ts";
+import {randRgbGen, rgb2hex} from "../../common/utils/colors.ts";
 
 /**
  * The current order of cards.

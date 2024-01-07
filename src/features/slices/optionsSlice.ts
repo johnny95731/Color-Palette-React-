@@ -1,28 +1,26 @@
 import {createSlice} from "@reduxjs/toolkit";
 // Types
-import {
-  ColorSpacesType, BlendingType,
-} from "../types/optionsType.ts";
+import {ColorSpacesType, BlendingType} from "../types/optionsType.ts";
 
 /**
  * The initial state about options.
- * @property {SuportColorSpacesType} editMode - Color space which will be
- *   display under hex code and be used in edit mode.
- * @property {SuportMixingModeType} mixingMode - How to evaluate a new color
+ * @property {SuportMixingModeType} blendMode - How to evaluate a new color
  *   when insert a new card.
+ * @property {SuportColorSpacesType} colorSpace - Color space which will be
+ *   display under hex code and be used in edit mode.
  */
 const initialState: {
-  editingMode: ColorSpacesType;
-  mixingMode: BlendingType;
+  blendMode: BlendingType;
+  colorSpace: ColorSpacesType;
 } = {
-  /**
-   * Color space which will be display under hex code and be used in edit mode.
-   */
-  editingMode: "rgb",
   /**
    * How to evaluate a new color when insert a new card.
    */
-  mixingMode: "mean",
+  blendMode: "mean",
+  /**
+   * Color space which will be display under hex code and be used in edit mode.
+   */
+  colorSpace: "rgb",
 };
 
 const optionSlice = createSlice({
@@ -33,13 +31,13 @@ const optionSlice = createSlice({
       payload: ColorSpacesType;
       type: string;
     }) => {
-      state.editingMode = action.payload;
+      state.colorSpace = action.payload;
     },
     mixingModeChanged: (state, action: {
       payload: BlendingType;
       type: string;
     }) => {
-      state.mixingMode = action.payload;
+      state.blendMode = action.payload;
     },
   },
 });
