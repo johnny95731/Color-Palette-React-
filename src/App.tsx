@@ -4,7 +4,7 @@ import React, {
 
 import Header from "./components/Header";
 import Card from "./components/Card";
-import FavSidebar from "./components/FavOffcanvas/index.tsx";
+import FavOffcanvas from "./components/FavOffcanvas/index.tsx";
 import Icon from "./components/Icons";
 import css from "./App.scss";
 // Redux / Context
@@ -94,7 +94,7 @@ const DisplayRegion = ({
     return {
       cardLength,
       cardsPos: Array.from({length: numOfCards},
-          (_, i) => Math.floor(i * cardLength),
+          (_, i) => bound[0] + Math.floor(i * cardLength),
       ),
     };
   }, [...windowSize, numOfCards]);
@@ -109,6 +109,8 @@ const DisplayRegion = ({
       cardId: number,
   ) => {
     if (!cardRefs.current) return;
+    // Disable pull-to-refresh on mobile.
+    document.body.style.overscrollBehavior = "none";
     // Cursor position when mouse down.
     const nowPos = (
       (e as React.MouseEvent)[clientPos] ||
@@ -153,6 +155,9 @@ const DisplayRegion = ({
    * The event is triggered when release left buton.
    */
   const handleMouseUp = useCallback(() => {
+    // Able pull-to-refresh on mobile.
+    document.body.style.overscrollBehavior = "";
+
     const nowIdx = cardRefs.current.nowDragging;
     if (nowIdx == null) return;
     const card = cardRefs.current[nowIdx];
@@ -201,14 +206,16 @@ const DisplayRegion = ({
 const App = () => {
   // States / consts
   const cardState = useAppSelector(selectCard);
-  const [favShowing, setFavShowing] = useState(() => false);
+  const [isfavShowing, setFavShowing] = useState(() => false);
+  const [isMaskBg, setIsMaskBg] = useState(() => false);
   const dispatch = useAppDispatch();
 
   const someCardIsEditing = cardState.cards.some((card) => card.isEditing);
 
   const favShowingChanged = useCallback(() => {
     setFavShowing((prev) => !prev);
-  }, []);
+    setIsMaskBg(!isfavShowing);
+  }, [isfavShowing]);
 
   const {
     refresh, handleSorting,
@@ -223,8 +230,8 @@ const App = () => {
     };
   }, []);
 
+  // Load database and initialize state.
   useEffect(() => {
-    // Load database and initialize state.
     dispatch(initializeColors());
     dispatch(initializePlts());
   }, []);
@@ -263,8 +270,14 @@ const App = () => {
         favShowingChanged={favShowingChanged}
       />
       <DisplayRegion dispatch={dispatch} />
-      <FavSidebar
-        isShowing={favShowing}
+      <div id="mask"
+        onClick={favShowingChanged}
+        style={{
+          display: isMaskBg ? undefined : "none",
+        }}
+      />
+      <FavOffcanvas
+        isShowing={isfavShowing}
         favShowingChanged={favShowingChanged}
       />
     </MediaProvider>

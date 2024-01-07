@@ -76,6 +76,23 @@ const SettingMenu = ({
   );
 };
 
+const Pallete = ({
+  isSmall,
+  onClick,
+}: {
+  isSmall?: boolean,
+  onClick: () => void;
+}) => {
+  return (
+    <span className={`${css.btn} ${isSmall ? "" : css.btnR}`}
+      onClick={onClick}
+    >
+      <Icon type={"bookmark"} />
+      Pallete
+    </span>
+  );
+};
+
 const Bookmarks = ({
   isSmall,
   onClick,
@@ -182,6 +199,7 @@ const Header = ({
           />
           {/* Float right */}
           <Bookmarks onClick={favShowingChanged} />
+          <Pallete onClick={favShowingChanged} />
         </div>
       </div>
     </header>

@@ -1,30 +1,8 @@
 @import "../commons.scss";
 
 // Containers
-#favContainer {
-  position: fixed;
-  display: block;
-  height: 100%;
-  width: min-content;
-  top: 0;
-  left: auto;
-  right: 0;
-}
-
-.blank {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
-  background-color: #0005;
-  @include mobile {
-    display: none;
-  }
-}
-
 .favOffcanvas {
-  position: absolute;
+  position: fixed;
   display: inline;
   top: 0;
   left: 100%;
@@ -32,6 +10,7 @@
   width: 300px;
   background-color: $color2;
   transition: transform 0.3s ease-in-out;
+  z-index: 1;
   @include mobile {
     width: 100vw;
   }
@@ -135,7 +114,7 @@ $appendPltHeight: 30px;
   }
 }
 
-.palleteBlock {
+.paletteBlock {
   @extend %favBlock;
   height: min-content;
   div:first-child {

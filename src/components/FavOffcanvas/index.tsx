@@ -95,7 +95,7 @@ const AddFavPlt = ({
   );
 };
 
-const PalleteBlock = ({
+const PaletteBlock = ({
   plt,
 }: {
   plt: string;
@@ -118,7 +118,7 @@ const PalleteBlock = ({
     dispatch(favPltsChanged(plt));
   };
   return (
-    <li className={css.palleteBlock}>
+    <li className={css.paletteBlock}>
       <div style={{background: `linear-gradient(90deg, ${bgGrad})`}} />
       <span className={css.delRegion}>
         <Icon type="del"
@@ -132,7 +132,7 @@ const PalleteBlock = ({
 
 // Main component
 const pageLabels: string[] = ["Colors", "Palettes"];
-const FavSidebar = ({
+const FavOffcanvas = ({
   isShowing,
   favShowingChanged,
 }: {
@@ -144,53 +144,45 @@ const FavSidebar = ({
   const [page, setPage] = useState<number>(() => 0);
 
   return (
-    <div id={css.favContainer}>
-      <div className={css.blank}
-        onClick={favShowingChanged}
-        style={{
-          display: isShowing ? undefined : "none",
-        }}
-      />
-      <div className={css.favOffcanvas}
-        style={{
-          transform: isShowing ? "translateX(-100%)" : "",
-        }}
-      >
-        <nav className={css.menuBar}>
-          {
-            pageLabels.map((label, i) => {
-              return (
-                <span key={`page ${label}`}
-                  className={i === page ? css.focusButton : undefined}
-                  onClick={() => setPage(i)}
-                >
-                  {label}
-                </span>
-              );
-            })
-          }
-          <Icon type="close"
-            onClick={favShowingChanged as (e:React.MouseEvent) => void}
-          />
-        </nav>
-        {/* Page content */}
-        <ul className={css.pageContent}>
-          {page === 0 ?
-            favoritesState.colors.map((hex) => {
-              return (
-                <ColorBlock key={`favColor ${hex}`} hex={hex} />
-              );
-            }) :
-            favoritesState.plts.map((plt) => {
-              return (
-                <PalleteBlock key={`favPlt ${plt}`} plt={plt} />
-              );
-            })
-          }
-        </ul>
-        <AddFavPlt changePage={() => setPage(1)}/>
-      </div>
+    <div className={css.favOffcanvas}
+      style={{
+        transform: isShowing ? "translateX(-100%)" : "",
+      }}
+    >
+      <nav className={css.menuBar}>
+        {
+          pageLabels.map((label, i) => {
+            return (
+              <span key={`page ${label}`}
+                className={i === page ? css.focusButton : undefined}
+                onClick={() => setPage(i)}
+              >
+                {label}
+              </span>
+            );
+          })
+        }
+        <Icon type="close"
+          onClick={favShowingChanged as (e:React.MouseEvent) => void}
+        />
+      </nav>
+      {/* Page content */}
+      <ul className={css.pageContent}>
+        {page === 0 ?
+          favoritesState.colors.map((hex) => {
+            return (
+              <ColorBlock key={`favColor ${hex}`} hex={hex} />
+            );
+          }) :
+          favoritesState.plts.map((plt) => {
+            return (
+              <PaletteBlock key={`favPlt ${plt}`} plt={plt} />
+            );
+          })
+        }
+      </ul>
+      <AddFavPlt changePage={() => setPage(1)}/>
     </div>
   );
 };
-export default FavSidebar;
+export default FavOffcanvas;

@@ -336,11 +336,8 @@ ref: Ref<HTMLDivElement>,
   }, [card.isEditing]);
 
   return (
-    <div className={css.cardContainer}
-      style={{
-        backgroundColor: card.hex,
-      }}
-      ref={ref}
+    <div className={css.cardContainer} ref={ref}
+      style={{backgroundColor: card.hex}}
     >
       <ToolBar
         numOfCards={numOfCards}
