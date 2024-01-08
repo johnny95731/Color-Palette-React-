@@ -156,11 +156,21 @@ const cardSlice = createSlice({
       const newVal = action.payload;
       state.isReordering = newVal;
     },
+    setPlt: (state, action: {
+      payload: string[];
+      type: string;
+    }) => {
+      const colors = action.payload;
+      state.cards = colors.map((hex) => newCard(hex));
+      state.numOfCards = colors.length;
+      state.sortBy = "random";
+      return state;
+    },
   },
 });
 
 export const {
   addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setIsEditing,
-  moveCard, setIsReordering,
+  moveCard, setIsReordering, setPlt,
 } = cardSlice.actions;
 export default cardSlice.reducer;

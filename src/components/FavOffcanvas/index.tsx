@@ -2,10 +2,11 @@ import React, {useState, useMemo} from "react";
 import Icon from "../Icons.tsx";
 import css from "./index.scss";
 // utils
-import {rgb2gray, hex2rgb} from "../../common/utils/colors.ts";
+import {rgb2gray, hex2rgb, isValidHex} from "../../common/utils/colors.ts";
 import {copyHex} from "../../common/utils/helpers.ts";
 // Redux / Context
 import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
+import {setPlt} from "../../features/slices/cardSlice.ts";
 import {
   favColorsChanged, favPltsChanged,
 } from "../../features/slices/favSlice.ts";
@@ -44,7 +45,7 @@ const ColorBlock = ({
         />
         {hex}
       </div>
-      <span className={css.delRegion}>
+      <span className={css.delWrapper}>
         <Icon type="del" onClick={removeFav} />
       </span>
     </li>
@@ -117,14 +118,23 @@ const PaletteBlock = ({
   const removeFav = () => {
     dispatch(favPltsChanged(plt));
   };
+  const handleSetPlt = () => {
+    for (const hex of colors) {
+      if (!isValidHex(hex)) return;
+    }
+    dispatch(setPlt(colors));
+  };
+
   return (
     <li className={css.paletteBlock}>
-      <div style={{background: `linear-gradient(90deg, ${bgGrad})`}} />
-      <span className={css.delRegion}>
-        <Icon type="del"
-          onClick={removeFav}
-        />
-      </span>
+      <div style={{background: `linear-gradient(90deg, ${bgGrad})`}} >
+        <div className={css.caretWrapper} >
+          <Icon type="caret" onClick={handleSetPlt} />
+        </div>
+        <span className={css.delWrapper}>
+          <Icon type="del" onClick={removeFav} />
+        </span>
+      </div>
       <div onClick={copyHex}>{plt}</div>
     </li>
   );

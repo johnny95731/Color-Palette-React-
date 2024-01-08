@@ -25,15 +25,7 @@ module.exports = {
     "semi": "error",
     "react/prop-types": "off",
     "no-use-before-define": "off",
-    "valid-jsdoc": [
-      "error",
-      {
-        "requireParam": false, 
-        "requireParamType": false, 
-        "requireReturn": false,
-        "requireReturnType": false,
-      }
-    ],
+    "valid-jsdoc": "off",
     "require-jsdoc": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-use-before-define": [

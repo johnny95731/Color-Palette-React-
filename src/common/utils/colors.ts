@@ -35,7 +35,7 @@ export const rgb2gray = (rgb: number[]): number => {
 
 
 /**
- * Calculate hue (H channel of HSL/HSV) from rgb. Also, returns minimum and
+ * Calculate hue (H channel of HSL/HSB) from rgb. Also, returns minimum and
  * maximum of rgb.
  * @param {number[]} rgb RGB array.
  * @return {number[]} [hue, min(r,g,b), max(r,g,b)].
@@ -104,28 +104,28 @@ export const rgb2cmy = (rgb: number[]): number[] => {
 
 // To RGB.
 /**
- * Convert HSV to RGB.
- * @param  {number[]} hsv HSV color array.
+ * Convert HSB to RGB.
+ * @param  {number[]} hsb HSB color array.
  * @return {number[]} RGB color array.
  */
-export const hsv2rgb = (hsv: number[]): number[] => {
-  if (hsv[1] === 0) {
-    return hsv.map(() => hsv[2]);
+export const hsb2rgb = (hsb: number[]): number[] => {
+  if (hsb[1] === 0) {
+    return hsb.map(() => hsb[2]);
   }
   // Normalize to [0, 1].
-  hsv[1] /= 255;
-  hsv[2] /= 255;
+  hsb[1] /= 255;
+  hsb[2] /= 255;
   // Consts
-  const C = hsv[1] * hsv[2];
-  const X = C * (1 - Math.abs((hsv[0]/60)%2 - 1));
-  const m = hsv[2] - C;
+  const C = hsb[1] * hsb[2];
+  const X = C * (1 - Math.abs((hsb[0]/60)%2 - 1));
+  const m = hsb[2] - C;
   // Convert. (Note: The formula can reduce.)
   let rgbPrime: number[];
-  if (hsv[0] < 60) rgbPrime = [C, X, 0];
-  else if (hsv[0] < 120) rgbPrime = [X, C, 0];
-  else if (hsv[0] < 180) rgbPrime = [0, C, X];
-  else if (hsv[0] < 240) rgbPrime = [0, X, C];
-  else if (hsv[0] < 300) rgbPrime = [X, 0, C];
+  if (hsb[0] < 60) rgbPrime = [C, X, 0];
+  else if (hsb[0] < 120) rgbPrime = [X, C, 0];
+  else if (hsb[0] < 180) rgbPrime = [0, C, X];
+  else if (hsb[0] < 240) rgbPrime = [0, X, C];
+  else if (hsb[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
   return rgbPrime.map((val) => 255 * (val+m));
 };
@@ -200,7 +200,6 @@ export const hex2rgb = (hex: string): number[] | null => {
 export const isValidHex = (hex: string): boolean => {
   if (typeof hex !== "string") return false;
   if (hex.startsWith("#")) hex = hex.slice(1);
-  else return false;
   const nonHex = hex.match(/[^0-9A-F]/i);
   if ((nonHex !== null) || (![3, 6].includes(hex.length))) return false;
   return true;
@@ -258,8 +257,8 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
     case "rgb":
       infos = {
         labels: ["Red", "Green", "Blue"],
-        converter: (x: number[]) => x,
-        inverter: (x: number[]) => x,
+        converter: (x: number[]) => x.map((val) => val),
+        inverter: (x: number[]) => x.map((val) => val),
       };
       break;
     case "hsl":
@@ -273,7 +272,7 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
       infos = {
         labels: ["Hue", "Saturation", "Brightness"],
         converter: rgb2hsb,
-        inverter: hsv2rgb,
+        inverter: hsb2rgb,
       };
       break;
     case "cmy":

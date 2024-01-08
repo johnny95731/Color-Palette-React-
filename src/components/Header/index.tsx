@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useMemo, useRef} from "react";
-import Icon, {iconType} from "../Icons.tsx";
-import {Menu, showPopupMenu} from "./Menus.tsx";
+import Icon, {iconType} from "../Icons";
+import {Menu, showPopupMenu} from "./Menus";
 import css from "./index.scss";
 import menuCss from "./menus.scss";
 // Redux / Context
@@ -73,23 +73,6 @@ const SettingMenu = ({
         ))
       }
     </Menu>
-  );
-};
-
-const Pallete = ({
-  isSmall,
-  onClick,
-}: {
-  isSmall?: boolean,
-  onClick: () => void;
-}) => {
-  return (
-    <span className={`${css.btn} ${isSmall ? "" : css.btnR}`}
-      onClick={onClick}
-    >
-      <Icon type={"bookmark"} />
-      Pallete
-    </span>
   );
 };
 
@@ -199,7 +182,6 @@ const Header = ({
           />
           {/* Float right */}
           <Bookmarks onClick={favShowingChanged} />
-          {/* <Pallete onClick={favShowingChanged} /> */}
         </div>
       </div>
     </header>

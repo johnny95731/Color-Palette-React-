@@ -18,6 +18,7 @@ import FavPalleteUrl from "../../res/img/bookmark-plus.svg?url";
 import UnfavPalleteUrl from "../../res/img/bookmark-dash.svg?url";
 import BookmarkUrl from "../../res/img/bookmarks.svg?url";
 import ListUrl from "../../res/img/list.svg?url";
+import caretUrl from "../../res/img/caret-left-fill.svg?url";
 import {MouseHandler, TouchHandler} from "../common/types/eventHandler";
 
 
@@ -39,6 +40,7 @@ const urls = {
   unfavorPallete: UnfavPalleteUrl,
   bookmark: BookmarkUrl,
   list: ListUrl,
+  caret: caretUrl,
 } as const;
 
 export type iconType = keyof typeof urls;

@@ -170,15 +170,15 @@ $rgbSize2560: 19px;
 
 .hexInput {
   display: inline;
-  font-size: $hexSize;
   width: 100%;
   border-radius: 7px;
   border-width: 1px;
   padding: 0px 8px;
   margin: 0 auto 15px;
   box-sizing: border-box;
-  cursor: text;
+  font-size: $hexSize;
   user-select: text;
+  cursor: text;
 
   @include desktop {
     font-size: $hexSize;
@@ -195,7 +195,7 @@ $rgbSize2560: 19px;
 
 .sliders {
   font-size: $rgbSize;
-  >input {
+  input {
     width: 100%;
     margin-bottom: 10px;
   }
@@ -204,11 +204,6 @@ $rgbSize2560: 19px;
     font-size: 25px;
   }
   @include laptop {
-    font-size: 11px;
-  }
-  @include small {
-    >input {
-      margin-bottom: 5px;
-    }
+    font-size: 14px;
   }
 }

@@ -1,4 +1,4 @@
-import {randRgbGen, rgb2hex} from "../../common/utils/colors.ts";
+import {hex2rgb, randRgbGen, rgb2hex} from "../../common/utils/colors.ts";
 
 /**
  * The current order of cards.
@@ -38,13 +38,23 @@ export type cardType = {
  * Create a new state object.
  * @return {cardType} State object.
  */
-export const newCard = (): cardType => {
-  const rgb = randRgbGen();
-  return {
-    rgb,
-    hex: rgb2hex(rgb),
-    isLock: false,
-    isFav: false,
-    isEditing: false,
-  };
+export const newCard = (hex?: string): cardType => {
+  if (!hex) {
+    const rgb = randRgbGen();
+    return {
+      rgb,
+      hex: rgb2hex(rgb),
+      isLock: false,
+      isFav: false,
+      isEditing: false,
+    };
+  } else {
+    return {
+      rgb: hex2rgb(hex) as number[],
+      hex,
+      isLock: false,
+      isFav: false,
+      isEditing: false,
+    };
+  }
 };

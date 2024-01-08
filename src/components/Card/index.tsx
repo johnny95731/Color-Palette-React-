@@ -140,12 +140,12 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       const newModeColor = converter(rgb);
       dispatch(editCard({idx: cardId, color: rgb}));
       let slider;
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         slider = (
           document.getElementById(`card${cardId}-slider${i}`) as
           HTMLInputElement
         );
-        slider.value = String(newModeColor[i]);
+        if (slider) slider.value = String(newModeColor[i]);
       }
       if (text.length === 4) {
         const hex6 = `#${text[1]+text[1]}${text[2]+text[2]}${text[3]+text[3]}`;
@@ -161,11 +161,11 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       e: React.ChangeEvent<HTMLInputElement>,
       idx: number) => {
     const target = e.target;
-    const newModeColor = [...colorArr];
+    const newModeColor = converter(card.rgb);
     newModeColor[idx] = Number(target.value);
     const rgb = inverter(newModeColor);
     dispatch(editCard({idx: cardId, color: rgb}));
-    // Edit input
+    // Set hex to hex input.
     const textInput = (
       document.getElementById(`card${cardId}-hex`) as HTMLInputElement
     );
@@ -250,20 +250,20 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
         onBlur={handleHexEditingFinished}
         onKeyDown={handleHexEditingFinished}
       />
-      <form className={css.sliders} >
+      <form action="" className={css.sliders} >
         {
           colorArr.map((val, i) => {
             const name = `card${cardId}-slider${i}`;
             return (
               <Fragment key={`card${cardId}-frag${i}`}>
-                <label key={`card${cardId}-label${i}`} htmlFor={name} >
+                <label key={`card${cardId}-label${i}`}>
                   {`${labels[i]}: ${val}`}
+                  <input key={name} id={name}
+                    type="range" min="0" max={maxes[i]} step={0.01}
+                    defaultValue={val}
+                    onChange={(e) => handleSliderChange(e, i)}
+                  />
                 </label>
-                <input key={name} id={name} name={name}
-                  type="range" min="0" max={maxes[i]}
-                  defaultValue={val}
-                  onChange={(e) => handleSliderChange(e, i)}
-                />
               </Fragment>
             );
           })
@@ -290,6 +290,7 @@ const Card = forwardRef(({
 ref: Ref<HTMLDivElement>,
 ) => {
   // States / consts
+  const {rgb, hex, isEditing} = card;
   const {colorSpace} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
   const {converter} = (
@@ -302,10 +303,10 @@ ref: Ref<HTMLDivElement>,
     colorArr,
   ] = useMemo(() => {
     return [
-      rgb2gray(card.rgb) > 127,
-      converter(card.rgb).map((val) => Math.floor(val)),
+      rgb2gray(rgb) > 127,
+      converter(rgb).map((val) => Math.floor(val)),
     ];
-  }, [...card.rgb, colorSpace]);
+  }, [...rgb, colorSpace]);
 
   const filterStyle = useMemo(() => {
     return {filter: isLight ? "" : "invert(1)"};
@@ -332,12 +333,12 @@ ref: Ref<HTMLDivElement>,
   }, [cardId]);
 
   useEffect(() => {
-    if (card.isEditing) containerRef.current?.focus();
-  }, [card.isEditing]);
+    if (isEditing) containerRef.current?.focus();
+  }, [isEditing]);
 
   return (
     <div className={css.cardContainer} ref={ref}
-      style={{backgroundColor: card.hex}}
+      style={{backgroundColor: hex}}
     >
       <ToolBar
         numOfCards={numOfCards}
@@ -348,24 +349,20 @@ ref: Ref<HTMLDivElement>,
       />
       {
         <div className={css.textDisplay}
-          style={{opacity: card.isEditing ? "0" : ""}}
+          style={{opacity: isEditing ? "0" : ""}}
         >
           <div className={css.hexText}
             onClick={copyHex}
             style={filterStyle}
           >
-            <Icon type="copy"
-              style={filterStyle}
-            />
-            {card.hex}
+            <Icon type="copy" />
+            {hex}
           </div>
           <div className={css.rgbText}
             style={filterStyle}
             onClick={copyHex}
           >
-            <Icon type="copy"
-              style={filterStyle}
-            />
+            <Icon type="copy" />
             {`${colorSpace}(${
               colorArr.toString()
             })`}
@@ -373,7 +370,7 @@ ref: Ref<HTMLDivElement>,
         </div>
       }
       {
-        card.isEditing &&
+        isEditing &&
         <EditingDialog ref={containerRef}
           cardId={cardId}
           card={card}

@@ -4,7 +4,7 @@ import React, {
 
 import Header from "./components/Header";
 import Card from "./components/Card";
-import FavOffcanvas from "./components/FavOffcanvas/index.tsx";
+import FavOffcanvas from "./components/FavOffcanvas";
 import Icon from "./components/Icons";
 import css from "./App.scss";
 // Redux / Context
@@ -79,12 +79,11 @@ const DisplayRegion = ({
   dispatch: AppDispatch;
 }) => {
   // States / consts
-  const cardState = useAppSelector(selectCard);
+  const {cards, numOfCards} = useAppSelector(selectCard);
   const cardRefs = useRef<{
       nowDragging: number | null;
       [key: number]: HTMLDivElement;
     }>({nowDragging: null});
-  const numOfCards = cardState.numOfCards;
   const {windowSize, isSmall, pos, clientPos, bound} = useContext(MediaContext);
 
   const {cardLength, cardsPos} = useMemo(() => {
@@ -185,7 +184,7 @@ const DisplayRegion = ({
 
   return (
     <main className={css.main}>
-      {cardState.cards.map((card, i) => {
+      {cards.map((card, i) => {
         return <Card key={`card${i}`}
           ref={(el) => cardRefs.current[i] = (el as HTMLDivElement)}
           cardId={i}
@@ -197,7 +196,7 @@ const DisplayRegion = ({
           }
         />;
       })}
-      <InsertRegions numOfCards={cardState.numOfCards} />
+      <InsertRegions numOfCards={numOfCards} />
     </main>
   );
 };
