@@ -43,6 +43,8 @@ const InsertRegions = ({
     });
   }, [numOfCards, isSmall]);
 
+  const displayStyle = numOfCards === 8 ? {display: "none"} : undefined;
+
   // Events
   const handleAddCard = useCallback((idx: number) => {
     dispatch(addCard({
@@ -53,7 +55,9 @@ const InsertRegions = ({
   }, [optionsState.blendMode, optionsState.colorSpace]);
 
   return (
-    <div id="insertRegion">
+    <div id="insertRegion"
+      style={displayStyle}
+    >
       {Array.from({length: numOfCards + 1}, (_, i) => {
         return (
           <div key={`insert${i}`}

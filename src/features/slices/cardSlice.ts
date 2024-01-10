@@ -44,7 +44,7 @@ const cardSlice = createSlice({
       };
       type: string;
     }) => {
-      if (state.numOfCards == 8) return state; // Maximum
+      if (state.numOfCards == 8) return state;
       const {idx, blendMode, editingMode} = action.payload;
       const cards = state.cards;
       const cardState = newCard();
@@ -68,6 +68,7 @@ const cardSlice = createSlice({
       payload: number;
       type: string;
     }) => {
+      if (state.numOfCards === 2) return state;
       const idx = action.payload;
       const [...cards] = state.cards;
       cards.splice(idx, 1);

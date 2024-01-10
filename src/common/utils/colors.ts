@@ -1,12 +1,13 @@
 import {mod} from "./helpers.ts";
 import {
-  ColorSpacesType, spaceResolutions, getMaxesFromRes,
+  ColorSpacesType, spaceMaxes,
 } from "../../features/types/optionsType.ts";
 
 // Maximums
-export const RGB_MAXES = getMaxesFromRes(spaceResolutions["rgb"]);
-export const HSL_MAXES = getMaxesFromRes(spaceResolutions["hsl"]);
-export const HSB_MAXES = getMaxesFromRes(spaceResolutions["hsb"]);
+export const RGB_MAXES = spaceMaxes["rgb"];
+export const HSL_MAXES = spaceMaxes["hsl"];
+export const HSB_MAXES = spaceMaxes["hsb"];
+const CMYK_MAXES = spaceMaxes["cmyk"];
 
 // From RGB.
 /**
@@ -73,10 +74,10 @@ export const rgb2hsl = (rgb: number[]): number[] => {
   let s;
   if ((max === 0) || (max === min)) {
     s = 0;
-  } else if (l <= 127.5) {
+  } else if (l <= (RGB_MAXES / 2)) {
     s = HSL_MAXES[1] * (max - min) / (2 * l);
   } else {
-    s = HSL_MAXES[1] * (max - min) / (510 - 2 * l);
+    s = HSL_MAXES[1] * (max - min) / (2 * (RGB_MAXES - l));
   }
   return [h, s, l];
 };
@@ -93,12 +94,16 @@ export const rgb2hsb = (rgb: number[]): number[] => {
 };
 
 /**
- * Convert RGB to CMY.
+ * Convert RGB to CMYK.
  * @param {number[]} rgb RGB color array.
- * @return  {number[]} cmy CMY color array.
+ * @return  {number[]} CMYK color array.
  */
-export const rgb2cmy = (rgb: number[]): number[] => {
-  return rgb.map((val, i) => RGB_MAXES[i] - val);
+export const rgb2cmyk = (rgb: number[]): number[] => {
+  const k: number = (RGB_MAXES - Math.max(...rgb));
+  if (Math.abs(RGB_MAXES - k) < 0.5) return [0, 0, 0, 100];
+  const kConst = CMYK_MAXES / (RGB_MAXES - k); // Const relate to k.
+  const cmy = rgb.map((val) => (RGB_MAXES - val - k) * kConst);
+  return [...cmy, k * (CMYK_MAXES / RGB_MAXES)];
 };
 
 
@@ -113,8 +118,8 @@ export const hsb2rgb = (hsb: number[]): number[] => {
     return hsb.map(() => hsb[2]);
   }
   // Normalize to [0, 1].
-  hsb[1] /= 255;
-  hsb[2] /= 255;
+  hsb[1] /= HSB_MAXES[1];
+  hsb[2] /= HSB_MAXES[2];
   // Consts
   const C = hsb[1] * hsb[2];
   const X = C * (1 - Math.abs((hsb[0]/60)%2 - 1));
@@ -127,7 +132,7 @@ export const hsb2rgb = (hsb: number[]): number[] => {
   else if (hsb[0] < 240) rgbPrime = [0, X, C];
   else if (hsb[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val) => 255 * (val+m));
+  return rgbPrime.map((val) => RGB_MAXES * (val+m));
 };
 
 /**
@@ -143,9 +148,9 @@ export const hsl2rgb = (hsl: number[]): number[] => {
   hsl[1] /= HSL_MAXES[1];
   hsl[2] /= HSL_MAXES[2];
   // Consts
-  const C = (1 - Math.abs(2*hsl[2] - 1)) * hsl[1];
-  const X = C * (1 - Math.abs((hsl[0]/60) % 2 - 1));
-  const m = hsl[2] - C/2;
+  const C = (1 - Math.abs(2 * hsl[2] - 1)) * hsl[1];
+  const X = C * (1 - Math.abs((hsl[0] / 60) % 2 - 1));
+  const m = hsl[2] - C / 2;
   // Convert (Note: The formula can reduce.)
   let rgbPrime;
   if (hsl[0] < 60) rgbPrime = [C, X, 0];
@@ -154,16 +159,23 @@ export const hsl2rgb = (hsl: number[]): number[] => {
   else if (hsl[0] < 240) rgbPrime = [0, X, C];
   else if (hsl[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val, i) => RGB_MAXES[i] * (val + m));
+  return rgbPrime.map((val) => RGB_MAXES * (val + m));
 };
 
 /**
- * Convert CMY to RGB.
- * @param  {number[]} cmy CMY color array.
- * @return {number[]} RGB color array.
+ * Convert RGB to CMYK.
+ * @param {number[]} cmyk RGB color array.
+ * @return  {number[]} CMYK color array.
  */
-export const cmy2rgb = (cmy: number[]): number[] => {
-  return rgb2cmy(cmy);
+export const cmyk2rgb = (cmyk: number[]): number[] => {
+  // K = 100%.
+  if (Math.abs(cmyk[3] - CMYK_MAXES) < 0.5) return [0, 0, 0];
+  // Const relate to k.
+  const kConst = (RGB_MAXES / CMYK_MAXES) * (CMYK_MAXES - cmyk[3]);
+  const rgb = Array.from(
+      {length: 3}, (_, i) => kConst * (1 - cmyk[i] / CMYK_MAXES),
+  );
+  return rgb;
 };
 
 /**
@@ -257,8 +269,8 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
     case "rgb":
       infos = {
         labels: ["Red", "Green", "Blue"],
-        converter: (x: number[]) => x.map((val) => val),
-        inverter: (x: number[]) => x.map((val) => val),
+        converter: (x: number[]) => Array.from(x),
+        inverter: (x: number[]) => Array.from(x),
       };
       break;
     case "hsl":
@@ -275,14 +287,19 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
         inverter: hsb2rgb,
       };
       break;
-    case "cmy":
+    case "cmyk":
       infos = {
-        labels: ["Cyan", "Magenta", "Yellow"],
-        converter: rgb2cmy,
-        inverter: cmy2rgb,
+        labels: ["Cyan", "Magenta", "Yellow", "Black"],
+        converter: rgb2cmyk,
+        inverter: cmyk2rgb,
       };
       break;
   }
-  infos.maxes = getMaxesFromRes(spaceResolutions[space]);
+  const maxes = spaceMaxes[space];
+  infos.maxes = (
+    typeof maxes === "number" ?
+        infos.labels.map(() => maxes) :
+        spaceMaxes[space]
+  );
   return infos as ColorSpaceInfo;
 };

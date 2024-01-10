@@ -10,6 +10,12 @@ export const mod = (n: number, m: number): number => {
   return ((n % m) + m) % m;
 };
 
+export const capitalize = (text: string) => {
+  const words = text.split(" ");
+  words.forEach((str) => `${str[0].toUpperCase()}${str.slice(1)}`);
+  return words.join(" ");
+};
+
 // Sorting
 /**
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input

@@ -161,9 +161,9 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       e: React.ChangeEvent<HTMLInputElement>,
       idx: number) => {
     const target = e.target;
-    const newModeColor = converter(card.rgb);
-    newModeColor[idx] = Number(target.value);
-    const rgb = inverter(newModeColor);
+    const newColorArr = converter(card.rgb);
+    newColorArr[idx] = Number(target.value);
+    const rgb = inverter(newColorArr);
     dispatch(editCard({idx: cardId, color: rgb}));
     // Set hex to hex input.
     const textInput = (
@@ -172,14 +172,12 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
     textInput.value = rgb2hex(rgb);
   };
 
-  const handleDialogBlurred = useCallback((
-      e: React.FocusEvent<HTMLInputElement>,
-  ) => {
+  const handleDialogBlurred = (e: React.FocusEvent<HTMLInputElement>) => {
     if (card.isEditing && e.relatedTarget === null) {
       handleHexEditingFinished(e);
       dispatch(setIsEditing(cardId));
     }
-  }, [card.isEditing]);
+  };
 
   // Check container is out of window or not.
   const {
@@ -304,7 +302,7 @@ ref: Ref<HTMLDivElement>,
   ] = useMemo(() => {
     return [
       rgb2gray(rgb) > 127,
-      converter(rgb).map((val) => Math.floor(val)),
+      converter(rgb).map((val) => Math.round(val)),
     ];
   }, [...rgb, colorSpace]);
 
@@ -376,7 +374,6 @@ ref: Ref<HTMLDivElement>,
           card={card}
           colorSpace={colorSpace}
           colorArr={colorArr}
-          isEditingChanged={events.isEditingChanged}
         />
       }
     </div>
