@@ -1,7 +1,6 @@
 import React from "react";
 import Icon, {iconType} from "../Icons.tsx";
 import css from "./menus.scss";
-const {popupMenu, menuContent, menuTitle} = css;
 import TriangleUrl from "@/assets/icons/triangle-down.svg?url";
 import {MouseHandler, FocusHandler} from "types/eventHandler.ts";
 
@@ -30,13 +29,6 @@ export const showPopupMenu: MouseHandler | FocusHandler = (
   if (!content.contains(e.target as Node)) {
     e.stopPropagation();
   }
-  // const display = content.style.display;
-  // if (display === "block") {
-  //   content.style.display = "";
-  //   target.blur();
-  // } else {
-  //   content.style.display = "block";
-  // }
   const height = content.style.maxHeight;
   if (height === "") {
     content.style.maxHeight = "100vh";
@@ -51,7 +43,7 @@ export const Menu = ({
   className,
   iconType,
   title = "",
-  contentClass = menuContent,
+  contentClass = css.menuContent,
 }: {
   children: React.ReactNode;
   className: string;
@@ -60,12 +52,12 @@ export const Menu = ({
   contentClass?: string;
 }): React.JSX.Element => {
   return (
-    <span className={`${className ? className : ""} ${popupMenu}`}
+    <span className={`${className ? className : ""} ${css.popupMenu}`}
       tabIndex={-1}
       onClick={showPopupMenu as MouseHandler}
       onBlur={showPopupMenu as FocusHandler}
     >
-      <div className={menuTitle}>
+      <div className={css.menuTitle}>
         {iconType && <Icon type={iconType} />}
         {title}
         <img src={TriangleUrl} alt="clickable" className={css.triangle} />

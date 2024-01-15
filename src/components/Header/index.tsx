@@ -189,6 +189,7 @@ const Header = ({
           <SettingMenu iconType="edit" title="Space"
             contents={ColorSpacesList} currentVal={colorSpace}
             handleClick={handleEditModeChanged as (option: string) => void}
+            letterCase="all-caps"
           />
           {/* Float right */}
           <Bookmarks onClick={favShowingChanged} />

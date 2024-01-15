@@ -12,12 +12,12 @@ module.exports = {
   entry: "./src/index.tsx",
   resolve: {
     alias: {
-      "@": path.resolve("src"),
+      "@": path.resolve(__dirname, "src"),
       "types": [
-        path.resolve("src/features/types"),
-        path.resolve("src/common/types")
-      ],
-      "slices": path.resolve("src/features/slices"),
+        path.resolve(__dirname, "src/features/types"),
+        path.resolve(__dirname, "src/common/types")
+      ].join(":"),
+      "slices": path.resolve(__dirname, "src/features/slices"),
     },
     extensions: [".ts", ".tsx", ".js", ".jsx", ".json",],
   },
