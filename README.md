@@ -1,5 +1,5 @@
 # Color-Palette
-[Vue版本](https://github.com/johnny95731/Color-Palette-Vue)
+[Vue版本連結](https://github.com/johnny95731/Color-Palette-Vue)。
 網頁配色調色盤工具。
 
 ## Header工具列
