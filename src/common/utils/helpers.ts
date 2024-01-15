@@ -12,7 +12,9 @@ export const mod = (n: number, m: number): number => {
 
 export const capitalize = (text: string) => {
   const words = text.split(" ");
-  words.forEach((str) => `${str[0].toUpperCase()}${str.slice(1)}`);
+  words.forEach((str, i, arr) => {
+    arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
+  });
   return words.join(" ");
 };
 
@@ -58,42 +60,11 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
   return newColor;
 };
 
-// /**
-//  * Blending two colors by evaluate their root mean square.
-//  * @param color1 Numeric of a color.
-//  * @param color2 Numeric of a color.
-//  * @returns The mean value of color1 and color2.
-//  */
-// export const rmsBlend: blend = (color1, color2) => {
-//   const newColor = new Array(color1.length);
-//   for (let i = 0; i < color1.length; i++) {
-//     newColor[i] = Math.sqrt(0.5 * (color1[i]**2 + color2[i]**2));
-//   }
-//   return newColor;
-// };
-
-// /**
-//  * Blending two colors by evaluate their Logarithmic mean.
-//  * @param {number[]} color1 Numeric of a color.
-//  * @param {number[]} color2 Numeric of a color.
-//  * @returns {number[]} The mean value of color1 and color2.
-//  */
-// export const logBlend = (color1: number[], color2: number[]): number[] => {
-//   const newColor = [];
-//   for (let i = 0; i < 3; i++) {
-//     if (!color1[i] || !color2[i]) newColor.push(0);
-//     else if (color1[i] === color2[i]) newColor.push(color1[i]);
-//     else {
-//       newColor.push(
-//           (color1[i] - color2[i]) / Math.log(color1[i] / color2[i]),
-//       );
-//     }
-//   }
-//   return newColor;
-// };
-
-
 // Events
+export const preventDefault = (e: MouseEvent) => {
+  e.preventDefault();
+  return false;
+};
 /**
  * Remove non-hex text and add "#" to first word.
  * @param e Triggered mouse event.

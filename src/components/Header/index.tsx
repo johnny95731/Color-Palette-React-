@@ -1,26 +1,22 @@
 import React, {useContext, useEffect, useMemo, useRef} from "react";
-import Icon, {iconType} from "../Icons";
+import Icon from "../Icons";
 import {Menu, showPopupMenu} from "./Menus";
 import css from "./index.scss";
 import menuCss from "./menus.scss";
-// Redux / Context
-import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
-import {
-  editModeChanged, mixingModeChanged,
-} from "../../features/slices/optionsSlice.ts";
-import MediaContext from "../../features/mediaContext.ts";
-import {selectCard, selectOptions} from "../../features/store.ts";
+// Utils / Consts
+import {capitalize, preventDefault} from "@/common/utils/helpers.ts";
+import {sortAction} from "@/features/types/cardType.ts";
+import {ColorSpacesList, BlendModeList} from "@/features/types/optionsType.ts";
+// Stores
+import {selectCard, selectOptions} from "@/features/store.ts";
+import {useAppDispatch, useAppSelector} from "@/common/hooks/storeHooks.ts";
+import {editModeChanged, mixingModeChanged} from "slices/optionsSlice.ts";
+import MediaContext from "@/features/mediaContext.ts";
 // types
-import {MouseHandler} from "../../common/types/eventHandler.ts";
-import {sortAction, SortActionType} from "../../features/types/cardType.ts";
-import {
-  ColorSpacesList, ColorSpacesType, BlendModeList, BlendingType,
-} from "../../features/types/optionsType.ts";
-
-const preventDefault = (e: MouseEvent) => {
-  e.preventDefault();
-  return false;
-};
+import type {iconType} from "../Icons";
+import type {MouseHandler} from "@/common/types/eventHandler.ts";
+import type {SortActionType} from "@/features/types/cardType.ts";
+import type {ColorSpacesType, BlendingType} from "types/optionsType.ts";
 
 // Other components
 const RefreshAll = ({
@@ -41,6 +37,7 @@ const SettingMenu = ({
   title,
   contents,
   currentVal,
+  letterCase = "title",
   hotkeys = [],
   handleClick,
 }: {
@@ -48,9 +45,24 @@ const SettingMenu = ({
   title?: string;
   contents: readonly string[];
   currentVal: typeof contents[number];
+  letterCase?: "origin" | "title" | "all-caps";
   hotkeys?: Array<string | undefined>;
   handleClick: (option: typeof contents[number]) => void
 }) => {
+  const menuItems = useMemo(() => {
+    /**
+     * Convert leter case.
+     */
+    let converter = (x: string) => x; // origin
+    if (letterCase === "all-caps") {
+      converter = (str: string) => str.toUpperCase();
+    } else if (letterCase === "title") converter = capitalize;
+    return Array.from(contents, (val) => ({
+      val,
+      name: converter(val),
+      style: val === currentVal ? {fontWeight: "800"}: undefined,
+    }));
+  }, [currentVal, letterCase, contents]);
   return (
     <Menu className={css.btn}
       iconType={iconType}
@@ -59,14 +71,12 @@ const SettingMenu = ({
       }
     >
       {
-        contents.map((val, i) => (
-          <div key={`${iconType}${val}`}
-            style={{
-              fontWeight: val === currentVal ? "800" : "",
-            }}
-            onClick={() => handleClick(val)}
+        menuItems.map((item, i) => (
+          <div key={`${iconType}${item.name}`}
+            style={item.style}
+            onClick={() => handleClick(item.val)}
           >
-            {`${val}${
+            {`${item.name}${
               hotkeys[i] ? ` (${hotkeys[i]})` : ""
             }`}
           </div>

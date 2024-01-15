@@ -18,10 +18,3 @@ export type FocusHandler = {
 export type TouchHandler = {
   (e: React.TouchEvent<HTMLElement>): any;
 };
-
-/**
- * Native focus event handler. For connecting with addEventListener.
- */
-export type NFocusHandler = {
-  (e: FocusEvent): any;
-};

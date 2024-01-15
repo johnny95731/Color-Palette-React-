@@ -13,6 +13,11 @@ module.exports = {
   resolve: {
     alias: {
       "@": path.resolve("src"),
+      "types": [
+        path.resolve("src/features/types"),
+        path.resolve("src/common/types")
+      ],
+      "slices": path.resolve("src/features/slices"),
     },
     extensions: [".ts", ".tsx", ".js", ".jsx", ".json",],
   },

@@ -7,19 +7,19 @@ import Card from "./components/Card";
 import FavOffcanvas from "./components/FavOffcanvas";
 import Icon from "./components/Icons";
 import css from "./App.scss";
-// Redux / Context
+// Stores
 import {useAppDispatch, useAppSelector} from "./common/hooks/storeHooks.ts";
 import {selectCard, selectOptions} from "./features/store.ts";
 import type {AppDispatch} from "./features/store.ts";
 import {
   addCard, moveCard, refreshCard, setIsReordering, sortCards,
-} from "./features/slices/cardSlice.ts";
+} from "slices/cardSlice.ts";
 import {initializeColors, initializePlts} from "./features/slices/favSlice.ts";
 import MediaProvider from "./features/MediaProvider.tsx";
 import MediaContext from "./features/mediaContext.ts";
 // Types
-import {MouseHandler} from "./common/types/eventHandler.ts";
-import {SortActionType} from "./features/types/cardType.ts";
+import type {MouseHandler} from "types/eventHandler.ts";
+import type {SortActionType} from "types/cardType.ts";
 
 
 // Other components

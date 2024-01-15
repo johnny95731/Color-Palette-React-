@@ -2,11 +2,8 @@ import React from "react";
 import Icon, {iconType} from "../Icons.tsx";
 import css from "./menus.scss";
 const {popupMenu, menuContent, menuTitle} = css;
-
 import TriangleUrl from "@/assets/icons/triangle-down.svg?url";
-import {
-  MouseHandler, FocusHandler,
-} from "../../common/types/eventHandler.ts";
+import {MouseHandler, FocusHandler} from "types/eventHandler.ts";
 
 
 export const showPopupMenu: MouseHandler | FocusHandler = (

@@ -2,17 +2,15 @@ import React, {useState, useMemo} from "react";
 import Icon from "../Icons.tsx";
 import css from "./index.scss";
 // utils
-import {rgb2gray, hex2rgb, isValidHex} from "../../common/utils/colors.ts";
-import {copyHex} from "../../common/utils/helpers.ts";
-// Redux / Context
-import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
-import {setPlt} from "../../features/slices/cardSlice.ts";
-import {
-  favColorsChanged, favPltsChanged,
-} from "../../features/slices/favSlice.ts";
-import {selectCard, selectFavorites} from "../../features/store.ts";
+import {rgb2gray, hex2rgb, isValidHex} from "@/common/utils/colors.ts";
+import {copyHex} from "@/common/utils/helpers.ts";
+// Stores
+import {selectCard, selectFavorites} from "@/features/store.ts";
+import {useAppDispatch, useAppSelector} from "@/common/hooks/storeHooks.ts";
+import {setPlt} from "slices/cardSlice.ts";
+import {favColorsChanged, favPltsChanged} from "slices/favSlice.ts";
 // types
-import {MouseHandler} from "../../common/types/eventHandler.ts";
+import type {MouseHandler} from "types/eventHandler.ts";
 
 // Other Components
 const ColorBlock = ({

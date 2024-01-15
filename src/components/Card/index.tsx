@@ -7,20 +7,20 @@ import Icon from "../Icons.tsx";
 // utils
 import {
   rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos,
-} from "../../common/utils/colors.ts";
-import {hexTextEdited, copyHex} from "../../common/utils/helpers.ts";
-// Store
-import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
+} from "@/common/utils/colors.ts";
+import {hexTextEdited, copyHex} from "@/common/utils/helpers.ts";
+// Stores
+import {selectOptions, selectFavorites} from "@/features/store.ts";
+import {useAppDispatch, useAppSelector} from "@/common/hooks/storeHooks.ts";
 import {
   delCard, refreshCard, editCard, setIsLock, setIsEditing,
-} from "../../features/slices/cardSlice.ts";
-import {favColorsChanged} from "../../features/slices/favSlice.ts";
-import {selectOptions, selectFavorites} from "../../features/store.ts";
-import MediaContext from "../../features/mediaContext.ts";
+} from "slices/cardSlice.ts";
+import {favColorsChanged} from "slices/favSlice.ts";
+import MediaContext from "@/features/mediaContext.ts";
 // types
-import {MouseHandler, TouchHandler} from "../../common/types/eventHandler.ts";
-import {cardType} from "../../features/types/cardType.ts";
-import {ColorSpacesType} from "src/features/types/optionsType.ts";
+import type {MouseHandler, TouchHandler} from "types/eventHandler.ts";
+import type {cardType} from "types/cardType.ts";
+import type {ColorSpacesType} from "types/optionsType.ts";
 
 
 // Other Components

@@ -1,9 +1,11 @@
 {
   "include": ["./src/**/*", "./types"],
-  "paths": {
-    "@/*": ["./src/*"]
-  },
   "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "types/*": ["./src/features/types/*", "./src/common/types/*"],
+      "slices/*": ["./src/features/slices/*"],
+    },
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
