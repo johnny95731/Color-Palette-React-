@@ -1,5 +1,5 @@
 # Color-Palette
-網頁配色調色盤工具，。
+網頁配色調色盤工具。
 
 ## Header工具列
 上方工具列依序為「Refresh(重新整理所有)」、「Sort(排序)」、「Insert Algo(插入色塊算法)」、「Mode(編輯色彩模式)」。
@@ -13,7 +13,7 @@
 - ### <img src="./res/img/file-earmark-plus.svg" alt="blend" /> Blend (混色方法)
   混色方法，提供「平均值（Mean，預設）」、「更亮(brighter)」、「更暗(deeper)」、「soft light」、「隨機(Random)」。平均值以Space選取值計算。「brighter」與「deeper」先以RGB平均值計算，再透過HSL空間調整亮度與彩度。「[soft light](https://en.wikipedia.org/wiki/Blend_modes)」使用illusions.hu的公式(此方法非左右對稱)。
   
-- ###<img src="./res/img/sliders.svg" alt="edit" /> Space (色彩空間)
+- ### <img src="./res/img/sliders.svg" alt="edit" /> Space (色彩空間)
   顯示模式及編輯模式中，使用的色彩空間。提供「RGB（預設）」、「HSB」、「HSL」、「CMYK」。
   
 - ### <img src="./res/img/bookmarks.svg" alt="bookmarks" /> Bookmarks (書籤頁)

@@ -52,50 +52,6 @@ const ColorBlock = ({
   );
 };
 
-const AddFavPlt = ({
-  changePage,
-}: {
-  /**
-   * setPage(1)
-   */
-  changePage: () => void;
-}) => {
-  // States / consts
-  const cards = useAppSelector(selectCard).cards;
-  const plt = cards.map((state) => state.hex.slice(1)).join("-");
-  const favPltList = useAppSelector(selectFavorites).plts;
-  const isFavPlt = favPltList.includes(plt);
-  const dispatch = useAppDispatch();
-
-  // Events
-  const removeFav = () => {
-    dispatch(favPltsChanged(plt));
-    changePage();
-  };
-
-  const state = useMemo(() => {
-    if (isFavPlt) {
-      return {
-        icon: "unfavorPallete",
-        text: "Remove Pallete",
-      } as const;
-    } else {
-      return {
-        icon: "favorPallete",
-        text: "Append Pallete",
-      } as const;
-    }
-  }, [isFavPlt]);
-  return (
-    <div className={css.appendPlt}
-      onClick={removeFav}
-    >
-      <Icon type={state.icon} />
-      {state.text}
-    </div>
-  );
-};
-
 const PaletteBlock = ({
   plt,
 }: {
@@ -137,6 +93,50 @@ const PaletteBlock = ({
       </div>
       <div onClick={copyHex}>{plt}</div>
     </li>
+  );
+};
+
+const AddFavPlt = ({
+  changePage,
+}: {
+  /**
+   * setPage(1)
+   */
+  changePage: () => void;
+}) => {
+  // States / consts
+  const cards = useAppSelector(selectCard).cards;
+  const plt = cards.map((state) => state.hex.slice(1)).join("-");
+  const favPltList = useAppSelector(selectFavorites).plts;
+  const isFavPlt = favPltList.includes(plt);
+  const dispatch = useAppDispatch();
+
+  // Events
+  const removeFav = () => {
+    dispatch(favPltsChanged(plt));
+    changePage();
+  };
+
+  const state = useMemo(() => {
+    if (isFavPlt) {
+      return {
+        icon: "unfavorPallete",
+        text: "Remove Pallete",
+      } as const;
+    } else {
+      return {
+        icon: "favorPallete",
+        text: "Append Pallete",
+      } as const;
+    }
+  }, [isFavPlt]);
+  return (
+    <div className={css.appendPlt}
+      onClick={removeFav}
+    >
+      <Icon type={state.icon} />
+      {state.text}
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-@import "../commons.scss";
+@import "@/assets/commons.scss";
 
 .cardContainer {
   position: relative;
@@ -194,6 +194,7 @@ $rgbSize2560: 19px;
 }
 
 .sliders {
+  display: inline-block;
   font-size: $rgbSize;
   input {
     width: 100%;

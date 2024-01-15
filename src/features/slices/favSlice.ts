@@ -52,7 +52,6 @@ const favSlice = createSlice({
     }) => {
       const targetHex = action.payload;
       const isIncluding = state.colors.includes(targetHex);
-      console.log(targetHex, isIncluding, state.colors.length);
       // Update database
       update<string[]>(FAV_COLORS, (prev) => {
         if (!prev) return [];
@@ -72,8 +71,6 @@ const favSlice = createSlice({
       } else { // Non-Favoriting => Favoriting
         state.colors.push(targetHex);
       }
-      console.log(targetHex, state.colors.includes(targetHex),
-          state.colors.length);
     },
     favPltsChanged: (state, action:{
       payload: string;

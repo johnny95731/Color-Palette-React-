@@ -4,8 +4,8 @@ module.exports = {
     "es2021": true,
   },
   "extends": [
-    "eslint:recommended",
     "google",
+    "eslint:recommended",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",

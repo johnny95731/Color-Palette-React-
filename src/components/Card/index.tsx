@@ -9,7 +9,7 @@ import {
   rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos,
 } from "../../common/utils/colors.ts";
 import {hexTextEdited, copyHex} from "../../common/utils/helpers.ts";
-// Redux-relate
+// Store
 import {useAppDispatch, useAppSelector} from "../../common/hooks/storeHooks.ts";
 import {
   delCard, refreshCard, editCard, setIsLock, setIsEditing,
@@ -33,7 +33,7 @@ const ToolBar = ({
 }: {
   numOfCards: number;
   card: cardType;
-  filterStyle: {filter: string | undefined};
+  filterStyle: {filter: string} | undefined;
   events: {
     [key: string]: () => void;
   }
@@ -248,7 +248,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
         onBlur={handleHexEditingFinished}
         onKeyDown={handleHexEditingFinished}
       />
-      <form action="" className={css.sliders} >
+      <div className={css.sliders} >
         {
           colorArr.map((val, i) => {
             const name = `card${cardId}-slider${i}`;
@@ -266,7 +266,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
             );
           })
         }
-      </form>
+      </div>
     </div>
   );
 });
@@ -294,20 +294,20 @@ ref: Ref<HTMLDivElement>,
   const {converter} = (
     getSpaceInfos(colorSpace)
   );
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const editingDialogRef = useRef<HTMLDivElement | null>(null);
 
-  const [
+  const {
     isLight,
     colorArr,
-  ] = useMemo(() => {
-    return [
-      rgb2gray(rgb) > 127,
-      converter(rgb).map((val) => Math.round(val)),
-    ];
+  } = useMemo(() => {
+    return {
+      isLight: rgb2gray(rgb) > 127,
+      colorArr: converter(rgb).map((val) => Math.round(val)),
+    };
   }, [...rgb, colorSpace]);
 
   const filterStyle = useMemo(() => {
-    return {filter: isLight ? "" : "invert(1)"};
+    return isLight ? undefined : {filter: "invert(1)"};
   }, [isLight]);
 
   /**
@@ -330,8 +330,9 @@ ref: Ref<HTMLDivElement>,
     };
   }, [cardId]);
 
+  // Focus the dialog when open it.
   useEffect(() => {
-    if (isEditing) containerRef.current?.focus();
+    if (isEditing) editingDialogRef.current?.focus();
   }, [isEditing]);
 
   return (
@@ -369,7 +370,7 @@ ref: Ref<HTMLDivElement>,
       }
       {
         isEditing &&
-        <EditingDialog ref={containerRef}
+        <EditingDialog ref={editingDialogRef}
           cardId={cardId}
           card={card}
           colorSpace={colorSpace}

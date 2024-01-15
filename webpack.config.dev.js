@@ -11,7 +11,10 @@ module.exports = {
   },
   entry: "./src/index.tsx",
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
+    alias: {
+      "@": path.resolve("src"),
+    },
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json",],
   },
   output: {
     path: path.join(__dirname, "dist"),

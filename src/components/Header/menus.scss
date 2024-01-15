@@ -1,4 +1,4 @@
-@import "../commons.scss";
+@import "@/assets/commons.scss";
 
 .popupMenu {
   position: relative;
@@ -9,7 +9,7 @@
   @include small {
     &:focus .menuTitle {
       padding-bottom: 5px;
-      transition: padding-bottom .2s ease-in-out;
+      transition: padding-bottom .3s ease-in-out;
     }
   }
 }
@@ -21,7 +21,7 @@
 
 .triangle {
   margin-left: 3px;
-  vertical-align: middle;
+  vertical-align: bottom;
 }
 
 %menuContent {

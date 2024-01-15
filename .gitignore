@@ -1,5 +1,6 @@
 # Basic folder
-node_modules
 .vscode
+node_modules
+dist/
 
 test.js

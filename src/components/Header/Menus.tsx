@@ -3,7 +3,7 @@ import Icon, {iconType} from "../Icons.tsx";
 import css from "./menus.scss";
 const {popupMenu, menuContent, menuTitle} = css;
 
-import TriangleUrl from "../../../res/img/triangle-down.svg?url";
+import TriangleUrl from "@/assets/icons/triangle-down.svg?url";
 import {
   MouseHandler, FocusHandler,
 } from "../../common/types/eventHandler.ts";

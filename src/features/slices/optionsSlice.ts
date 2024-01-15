@@ -23,7 +23,7 @@ const initialState: {
   colorSpace: "rgb",
 };
 
-const optionSlice = createSlice({
+const optionsSlice = createSlice({
   name: "options",
   initialState,
   reducers: {
@@ -42,5 +42,5 @@ const optionSlice = createSlice({
   },
 });
 
-export const {editModeChanged, mixingModeChanged} = optionSlice.actions;
-export default optionSlice.reducer;
+export const {editModeChanged, mixingModeChanged} = optionsSlice.actions;
+export default optionsSlice.reducer;
