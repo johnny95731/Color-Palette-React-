@@ -16,7 +16,7 @@ module.exports = {
       "types": [
         path.resolve(__dirname, "src/features/types"),
         path.resolve(__dirname, "src/common/types")
-      ].join(":"),
+      ],
       "slices": path.resolve(__dirname, "src/features/slices"),
     },
     extensions: [".ts", ".tsx", ".js", ".jsx", ".json",],

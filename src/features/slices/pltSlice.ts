@@ -1,16 +1,38 @@
 import {createSlice} from "@reduxjs/toolkit";
 // Utils
-import {rgb2gray, rgb2hex} from "../../common/utils/colors.ts";
-import {shuffle, inversion} from "../../common/utils/helpers.ts";
-import {blendBy} from "../../common/utils/blend.ts";
+import {hex2rgb, randRgbGen, rgb2gray, rgb2hex} from "@/common/utils/colors";
+import {shuffle, inversion} from "@/common/utils/helpers";
+import {blendBy} from "@/common/utils/blend";
+import {INIT_NUM_OF_CARDS} from "@/common/utils/constants";
 // Types
-import {
-  newCard, cardType, orderStateType, SortActionType,
-} from "../types/cardType.ts";
-import {ColorSpacesType, BlendingType} from "../types/optionsType.ts";
+import {cardType, orderStateType, SortActionType} from "types/pltType";
+import {ColorSpacesType, BlendingType} from "types/optionsType";
 
 
-const INIT_NUM_OF_CARDS = 5;
+/**
+ * Create a new state object.
+ * @return {cardType} State object.
+ */
+export const newCard = (hex?: string): cardType => {
+  if (!hex) {
+    const rgb = randRgbGen();
+    return {
+      rgb,
+      hex: rgb2hex(rgb),
+      isLock: false,
+      isFav: false,
+      isEditing: false,
+    };
+  } else {
+    return {
+      rgb: hex2rgb(hex) as number[],
+      hex,
+      isLock: false,
+      isFav: false,
+      isEditing: false,
+    };
+  }
+};
 const initialState: {
   /**
    * Total number of cards.
@@ -33,19 +55,19 @@ const initialState: {
 };
 
 const cardSlice = createSlice({
-  name: "card",
+  name: "plt",
   initialState,
   reducers: {
     addCard: (state, action: {
       payload: {
         idx: number;
         blendMode: BlendingType;
-        editingMode: ColorSpacesType;
+        colorSpace: ColorSpacesType;
       };
       type: string;
     }) => {
       if (state.numOfCards == 8) return state;
-      const {idx, blendMode, editingMode} = action.payload;
+      const {idx, blendMode, colorSpace} = action.payload;
       const cards = state.cards;
       const cardState = newCard();
       if (blendMode !== "random") { // RGB Mean
@@ -57,7 +79,7 @@ const cardSlice = createSlice({
         // -Add to the last. Blending the last card and white.
         if (!rightColor) rightColor = [255, 255, 255];
         // Blend
-        cardState.rgb = blendBy[blendMode](leftColor, rightColor, editingMode);
+        cardState.rgb = blendBy[blendMode](leftColor, rightColor, colorSpace);
       }
       cardState.hex = rgb2hex(cardState.rgb);
       state.cards.splice(idx, 0, cardState);

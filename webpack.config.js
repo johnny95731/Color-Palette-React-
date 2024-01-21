@@ -1,6 +1,6 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: "production",
@@ -83,8 +83,8 @@ module.exports = {
       filename: "index.css",
     }),
     new HtmlWebpackPlugin({
-      template: './public/index.html',
-      filename: 'index.html',
+      template: "./public/index.html",
+      filename: "index.html",
       favicon: "./public/color-wheel.png",
     }),
   ],

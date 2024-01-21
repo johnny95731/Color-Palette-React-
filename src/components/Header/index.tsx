@@ -1,21 +1,25 @@
 import React, {useContext, useEffect, useMemo, useRef} from "react";
 import Icon from "../Icons";
-import {Menu, showPopupMenu} from "./Menus";
+import {Menu} from "./Menus";
 import css from "./index.scss";
 import menuCss from "./menus.scss";
 // Utils / Consts
-import {capitalize, preventDefault} from "@/common/utils/helpers.ts";
-import {sortAction} from "@/features/types/cardType.ts";
-import {ColorSpacesList, BlendModeList} from "@/features/types/optionsType.ts";
+import {
+  capitalize, preventDefault, showPopupMenu,
+} from "@/common/utils/helpers.ts";
+import {
+  COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS,
+} from "@/common/utils/constants";
 // Stores
-import {selectCard, selectOptions} from "@/features/store.ts";
-import {useAppDispatch, useAppSelector} from "@/common/hooks/storeHooks.ts";
-import {editModeChanged, mixingModeChanged} from "slices/optionsSlice.ts";
+import {
+  useAppDispatch, useAppSelector, selectPlt, selectOptions,
+} from "@/features";
+import {setColorSpace, setBlendMode} from "slices/optionsSlice.ts";
 import MediaContext from "@/features/mediaContext.ts";
 // types
 import type {iconType} from "../Icons";
-import type {MouseHandler} from "@/common/types/eventHandler.ts";
-import type {SortActionType} from "@/features/types/cardType.ts";
+import type {MouseHandler} from "types/eventHandler.ts";
+import type {SortActionType} from "types/pltType";
 import type {ColorSpacesType, BlendingType} from "types/optionsType.ts";
 
 // Other components
@@ -117,7 +121,7 @@ const Header = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuContentRef = useRef<HTMLDivElement>(null);
   const {isSmall} = useContext(MediaContext);
-  const {sortBy} = useAppSelector(selectCard);
+  const {sortBy} = useAppSelector(selectPlt);
   const {blendMode, colorSpace} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
 
@@ -129,12 +133,12 @@ const Header = ({
       handleMixingModeChanged: (
           newMode: BlendingType,
       ) => {
-        dispatch(mixingModeChanged(newMode));
+        dispatch(setBlendMode(newMode));
       },
       handleEditModeChanged: (
           newMode: ColorSpacesType,
       ) => {
-        dispatch(editModeChanged(newMode));
+        dispatch(setColorSpace(newMode));
       },
     };
   }, []);
@@ -178,16 +182,16 @@ const Header = ({
           {/* Float left */}
           <RefreshAll onClick={refresh} />
           <SettingMenu iconType="sort"
-            contents={sortAction} currentVal={sortBy}
-            hotkeys={sortAction.map((str) => str[0])}
+            contents={SORTING_ACTIONS} currentVal={sortBy}
+            hotkeys={SORTING_ACTIONS.map((str) => str[0])}
             handleClick={handleSorting as (option: string) => void}
           />
           <SettingMenu iconType="blend"
-            contents={BlendModeList} currentVal={blendMode}
+            contents={BLEND_MODES} currentVal={blendMode}
             handleClick={handleBlendChanged as (option: string) => void}
           />
           <SettingMenu iconType="edit" title="Space"
-            contents={ColorSpacesList} currentVal={colorSpace}
+            contents={COLOR_SPACES} currentVal={colorSpace}
             handleClick={handleEditModeChanged as (option: string) => void}
             letterCase="all-caps"
           />

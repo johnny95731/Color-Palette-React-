@@ -5,9 +5,9 @@ import css from "./index.scss";
 import {rgb2gray, hex2rgb, isValidHex} from "@/common/utils/colors.ts";
 import {copyHex} from "@/common/utils/helpers.ts";
 // Stores
-import {selectCard, selectFavorites} from "@/features/store.ts";
-import {useAppDispatch, useAppSelector} from "@/common/hooks/storeHooks.ts";
-import {setPlt} from "slices/cardSlice.ts";
+import {selectPlt, selectFavorites} from "@/features";
+import {useAppDispatch, useAppSelector} from "@/features";
+import {setPlt} from "@/features/slices/pltSlice.ts";
 import {favColorsChanged, favPltsChanged} from "slices/favSlice.ts";
 // types
 import type {MouseHandler} from "types/eventHandler.ts";
@@ -103,7 +103,7 @@ const AddFavPlt = ({
   changePage: () => void;
 }) => {
   // States / consts
-  const cards = useAppSelector(selectCard).cards;
+  const cards = useAppSelector(selectPlt).cards;
   const plt = cards.map((state) => state.hex.slice(1)).join("-");
   const favPltList = useAppSelector(selectFavorites).plts;
   const isFavPlt = favPltList.includes(plt);

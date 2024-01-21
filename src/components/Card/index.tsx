@@ -10,16 +10,17 @@ import {
 } from "@/common/utils/colors.ts";
 import {hexTextEdited, copyHex} from "@/common/utils/helpers.ts";
 // Stores
-import {selectOptions, selectFavorites} from "@/features/store.ts";
-import {useAppDispatch, useAppSelector} from "@/common/hooks/storeHooks.ts";
+import {
+  useAppDispatch, useAppSelector, selectOptions, selectFavorites,
+} from "@/features";
 import {
   delCard, refreshCard, editCard, setIsLock, setIsEditing,
-} from "slices/cardSlice.ts";
+} from "@/features/slices/pltSlice.ts";
 import {favColorsChanged} from "slices/favSlice.ts";
 import MediaContext from "@/features/mediaContext.ts";
 // types
 import type {MouseHandler, TouchHandler} from "types/eventHandler.ts";
-import type {cardType} from "types/cardType.ts";
+import type {cardType} from "types/pltType.ts";
 import type {ColorSpacesType} from "types/optionsType.ts";
 
 
@@ -116,10 +117,9 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   colorArr: number[];
 }, ref,
 ) => {
-  const {colorSpace: editingMode} = useAppSelector(selectOptions);
   const dispatch = useAppDispatch();
   const {labels, maxes, converter, inverter} = (
-    getSpaceInfos(editingMode)
+    getSpaceInfos(colorSpace)
   );
 
   /**
@@ -152,7 +152,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
         textInput.value = hex6;
       }
     }
-  }, [editingMode]);
+  }, [colorSpace]);
 
   /**
    * Slider changed event.

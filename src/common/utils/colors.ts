@@ -1,13 +1,13 @@
 import {mod} from "./helpers.ts";
-import {
-  ColorSpacesType, spaceMaxes,
-} from "../../features/types/optionsType.ts";
+import {SPACE_MAXES} from "@/common/utils/constants.ts";
+import type {ColorSpacesType} from "types/optionsType.ts";
 
 // Maximums
-export const RGB_MAXES = spaceMaxes["rgb"];
-export const HSL_MAXES = spaceMaxes["hsl"];
-export const HSB_MAXES = spaceMaxes["hsb"];
-const CMYK_MAXES = spaceMaxes["cmyk"];
+export const RGB_MAXES = SPACE_MAXES["rgb"];
+export const HSL_MAXES = SPACE_MAXES["hsl"];
+export const HSB_MAXES = SPACE_MAXES["hsb"];
+const CMY_MAXES = SPACE_MAXES["cmy"];
+const CMYK_MAXES = SPACE_MAXES["cmyk"];
 
 // From RGB.
 /**
@@ -46,21 +46,21 @@ const rgb2hue = (rgb: number[]): number[] => {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const delta = max - min;
-  let h;
+  let hue;
   switch (max) {
     case min:
-      h = 0;
+      hue = 0;
       break;
     case r:
-      h = 60 * mod(((g - b) / delta), 6);
+      hue = mod(((g - b) / delta), 6);
       break;
     case g:
-      h = ((b-r) / delta + 2) * 60;
+      hue = (b - r) / delta + 2;
       break;
     default: // case b:
-      h = ((r-g) / delta + 4) * 60;
+      hue = (r - g) / delta + 4;
   }
-  return [h, min, max];
+  return [60 * hue, min, max];
 };
 
 /**
@@ -69,17 +69,17 @@ const rgb2hue = (rgb: number[]): number[] => {
  * @return {number[]} [hue, sat, lum]
  */
 export const rgb2hsl = (rgb: number[]): number[] => {
-  const [h, min, max] = rgb2hue(rgb);
-  const l = (max + min) / 2;
-  let s;
-  if ((max === 0) || (max === min)) {
-    s = 0;
-  } else if (l <= (RGB_MAXES / 2)) {
-    s = HSL_MAXES[1] * (max - min) / (2 * l);
+  const [Hue, min, max] = rgb2hue(rgb);
+  const lPrime = max + min;
+  let sat;
+  if ((max === 0)) {
+    sat = 0;
+  } else if (lPrime <= (RGB_MAXES / 2)) {
+    sat = HSL_MAXES[1] * (max - min) / (2 * lPrime);
   } else {
-    s = HSL_MAXES[1] * (max - min) / (2 * (RGB_MAXES - l));
+    sat = HSL_MAXES[1] * (max - min) / (2 * (RGB_MAXES - lPrime));
   }
-  return [h, s, l];
+  return [Hue, sat, lPrime / 2];
 };
 
 /**
@@ -88,56 +88,73 @@ export const rgb2hsl = (rgb: number[]): number[] => {
  * @return {number[]} [hue, sat, brightness].
  */
 export const rgb2hsb = (rgb: number[]): number[] => {
-  const [h, min, max] = rgb2hue(rgb);
-  const s = max ? ((max - min) / max) * HSB_MAXES[1] : 0;
-  return [h, s, max];
+  const [hue, min, max] = rgb2hue(rgb);
+  const sat = max ? HSB_MAXES[1] * ((max - min) / max) : 0;
+  return [hue, sat, max];
+};
+
+/**
+ * Convert RGB to CMY.
+ * @param {number[]} rgb RGB color array.
+ * @return {number[]} CMYK color array.
+ */
+export const rgb2cmy = (rgb: number[]): number[] => {
+  const rgbMax = Math.max(...rgb);
+  // Tolerance = 0.5. <input(range)> have decimals.
+  if (rgbMax < 0.5) return [CMY_MAXES, CMY_MAXES, CMY_MAXES];
+  const scalingCoeff = CMY_MAXES / RGB_MAXES;
+  const cmy = rgb.map((val) => (RGB_MAXES - val) * scalingCoeff);
+  return cmy;
 };
 
 /**
  * Convert RGB to CMYK.
  * @param {number[]} rgb RGB color array.
- * @return  {number[]} CMYK color array.
+ * @return {number[]} CMYK color array.
  */
 export const rgb2cmyk = (rgb: number[]): number[] => {
-  const k: number = (RGB_MAXES - Math.max(...rgb));
-  if (Math.abs(RGB_MAXES - k) < 0.5) return [0, 0, 0, 100];
-  const kConst = CMYK_MAXES / (RGB_MAXES - k); // Const relate to k.
+  const k = (RGB_MAXES - Math.max(...rgb)); // k in [0, RGB_MAXES].
+  // Tolerance = 0.5. <input(range)> have decimals.
+  if (CMYK_MAXES - k < 0.5) return [0, 0, 0, CMYK_MAXES];
+  const kConst = CMYK_MAXES / (RGB_MAXES - k); // Scaling to [0, CMYK_MAXES].
   const cmy = rgb.map((val) => (RGB_MAXES - val - k) * kConst);
-  return [...cmy, k * (CMYK_MAXES / RGB_MAXES)];
+  cmy.push(k * (CMYK_MAXES / RGB_MAXES));
+  return cmy;
 };
 
 
 // To RGB.
 /**
  * Convert HSB to RGB.
- * @param  {number[]} hsb HSB color array.
+ * @param {number[]} hsb HSB color array.
  * @return {number[]} RGB color array.
  */
 export const hsb2rgb = (hsb: number[]): number[] => {
   if (hsb[1] === 0) {
     return hsb.map(() => hsb[2]);
   }
+  const temp = [...hsb];
   // Normalize to [0, 1].
-  hsb[1] /= HSB_MAXES[1];
-  hsb[2] /= HSB_MAXES[2];
+  temp[1] /= HSB_MAXES[1];
+  temp[2] /= HSB_MAXES[2];
   // Consts
-  const C = hsb[1] * hsb[2];
-  const X = C * (1 - Math.abs((hsb[0]/60)%2 - 1));
-  const m = hsb[2] - C;
+  const C = temp[1] * temp[2];
+  const X = C * (1 - Math.abs((temp[0]/60) % 2 - 1));
+  const m = temp[2] - C;
   // Convert. (Note: The formula can reduce.)
   let rgbPrime: number[];
-  if (hsb[0] < 60) rgbPrime = [C, X, 0];
-  else if (hsb[0] < 120) rgbPrime = [X, C, 0];
-  else if (hsb[0] < 180) rgbPrime = [0, C, X];
-  else if (hsb[0] < 240) rgbPrime = [0, X, C];
-  else if (hsb[0] < 300) rgbPrime = [X, 0, C];
+  if (temp[0] < 60) rgbPrime = [C, X, 0];
+  else if (temp[0] < 120) rgbPrime = [X, C, 0];
+  else if (temp[0] < 180) rgbPrime = [0, C, X];
+  else if (temp[0] < 240) rgbPrime = [0, X, C];
+  else if (temp[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val) => RGB_MAXES * (val+m));
+  return rgbPrime.map((val) => RGB_MAXES * (val + m));
 };
 
 /**
  * Convert HSL to RGB.
- * @param  {number[]} hsl HSL array.
+ * @param {number[]} hsl HSL array.
  * @return {number[]} RGB color array.
  */
 export const hsl2rgb = (hsl: number[]): number[] => {
@@ -163,13 +180,24 @@ export const hsl2rgb = (hsl: number[]): number[] => {
 };
 
 /**
- * Convert RGB to CMYK.
- * @param {number[]} cmyk RGB color array.
- * @return  {number[]} CMYK color array.
+ * Convert CMY to RGB.
+ * @param {number[]} cmyk CMY color array.
+ * @return {number[]} RGB color array.
+ */
+export const cmy2rgb = (cmy: number[]): number[] => {
+  const scalingCoeff = RGB_MAXES / CMY_MAXES;
+  const rgb = cmy.map((val) => RGB_MAXES - val * scalingCoeff);
+  return rgb;
+};
+
+/**
+ * Convert CMYK to RGB.
+ * @param {number[]} cmyk CMYK color array.
+ * @return {number[]} RGB color array.
  */
 export const cmyk2rgb = (cmyk: number[]): number[] => {
   // K = 100%.
-  if (Math.abs(cmyk[3] - CMYK_MAXES) < 0.5) return [0, 0, 0];
+  if (CMYK_MAXES - cmyk[3] < 0.5) return [0, 0, 0];
   // Const relate to k.
   const kConst = (RGB_MAXES / CMYK_MAXES) * (CMYK_MAXES - cmyk[3]);
   const rgb = Array.from(
@@ -212,8 +240,9 @@ export const hex2rgb = (hex: string): number[] | null => {
 export const isValidHex = (hex: string): boolean => {
   if (typeof hex !== "string") return false;
   if (hex.startsWith("#")) hex = hex.slice(1);
+  if (![3, 6].includes(hex.length)) return false;
   const nonHex = hex.match(/[^0-9A-F]/i);
-  if ((nonHex !== null) || (![3, 6].includes(hex.length))) return false;
+  if ((nonHex !== null)) return false;
   return true;
 };
 
@@ -226,7 +255,7 @@ export const isValidHex = (hex: string): boolean => {
 export const randRgbGen = (): number[] => {
   const rgb = new Array(3);
   for (let i = 0; i < 3; i ++) {
-    rgb[i] = Math.floor(Math.random() * 256);
+    rgb[i] = Math.floor(Math.random() * (RGB_MAXES + 1));
   }
   return rgb;
 };
@@ -266,13 +295,6 @@ type ColorSpaceInfo = {
 export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
   let infos: {[key: string]: any};
   switch (space) {
-    case "rgb":
-      infos = {
-        labels: ["Red", "Green", "Blue"],
-        converter: (x: number[]) => Array.from(x),
-        inverter: (x: number[]) => Array.from(x),
-      };
-      break;
     case "hsl":
       infos = {
         labels: ["Hue", "Saturation", "Luminance"],
@@ -287,6 +309,13 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
         inverter: hsb2rgb,
       };
       break;
+    case "cmy":
+      infos = {
+        labels: ["Cyan", "Magenta", "Yellow"],
+        converter: rgb2cmy,
+        inverter: cmy2rgb,
+      };
+      break;
     case "cmyk":
       infos = {
         labels: ["Cyan", "Magenta", "Yellow", "Black"],
@@ -294,12 +323,19 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
         inverter: cmyk2rgb,
       };
       break;
+    default: // "rgb" and "name"
+      infos = {
+        labels: ["Red", "Green", "Blue"],
+        converter: (x: number[]) => Array.from(x),
+        inverter: (x: number[]) => Array.from(x),
+      };
+      break;
   }
-  const maxes = spaceMaxes[space];
+  const maxes = SPACE_MAXES[space];
   infos.maxes = (
     typeof maxes === "number" ?
         infos.labels.map(() => maxes) :
-        spaceMaxes[space]
+        SPACE_MAXES[space]
   );
   return infos as ColorSpaceInfo;
 };

@@ -8,18 +8,18 @@ import FavOffcanvas from "./components/FavOffcanvas";
 import Icon from "./components/Icons";
 import css from "./App.scss";
 // Stores
-import {useAppDispatch, useAppSelector} from "./common/hooks/storeHooks.ts";
-import {selectCard, selectOptions} from "./features/store.ts";
-import type {AppDispatch} from "./features/store.ts";
+import {
+  useAppDispatch, useAppSelector, selectPlt, selectOptions,
+} from "./features";
 import {
   addCard, moveCard, refreshCard, setIsReordering, sortCards,
-} from "slices/cardSlice.ts";
+} from "@/features/slices/pltSlice.ts";
 import {initializeColors, initializePlts} from "./features/slices/favSlice.ts";
 import MediaProvider from "./features/MediaProvider.tsx";
 import MediaContext from "./features/mediaContext.ts";
 // Types
 import type {MouseHandler} from "types/eventHandler.ts";
-import type {SortActionType} from "types/cardType.ts";
+import type {SortActionType} from "types/pltType.ts";
 
 
 // Other components
@@ -50,7 +50,7 @@ const InsertRegions = ({
     dispatch(addCard({
       idx,
       blendMode: optionsState.blendMode,
-      editingMode: optionsState.colorSpace,
+      colorSpace: optionsState.colorSpace,
     }));
   }, [optionsState.blendMode, optionsState.colorSpace]);
 
@@ -77,17 +77,14 @@ const InsertRegions = ({
   );
 };
 
-const DisplayRegion = ({
-  dispatch,
-}: {
-  dispatch: AppDispatch;
-}) => {
+const Palette = () => {
   // States / consts
-  const {cards, numOfCards} = useAppSelector(selectCard);
+  const {cards, numOfCards} = useAppSelector(selectPlt);
   const cardRefs = useRef<{
       nowDragging: number | null;
       [key: number]: HTMLDivElement;
     }>({nowDragging: null});
+  const dispatch = useAppDispatch();
   const {windowSize, isSmall, pos, clientPos, bound} = useContext(MediaContext);
 
   const {cardLength, cardsPos} = useMemo(() => {
@@ -208,7 +205,7 @@ const DisplayRegion = ({
 // Main component
 const App = () => {
   // States / consts
-  const cardState = useAppSelector(selectCard);
+  const cardState = useAppSelector(selectPlt);
   const [isfavShowing, setFavShowing] = useState(() => false);
   const [isMaskBg, setIsMaskBg] = useState(() => false);
   const dispatch = useAppDispatch();
@@ -272,7 +269,7 @@ const App = () => {
         handleSorting={handleSorting}
         favShowingChanged={favShowingChanged}
       />
-      <DisplayRegion dispatch={dispatch} />
+      <Palette />
       <div id="mask"
         onClick={favShowingChanged}
         style={{

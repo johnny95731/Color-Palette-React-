@@ -1,7 +1,9 @@
+import NAMED_COLORS from "./named-color.json";
+
 /**
  * The modulo function. Equivalent to
  *   `let a = n % m;
- *   if (a < 0) a += m;`
+ *    if (a < 0) a += m;`
  * @param {Number} n Dividend.
  * @param {Number} m Divisor.
  * @return {Number} Signed remainder.
@@ -10,12 +12,41 @@ export const mod = (n: number, m: number): number => {
   return ((n % m) + m) % m;
 };
 
+/**
+ * Capitalize a text.
+ */
 export const capitalize = (text: string) => {
   const words = text.split(" ");
   words.forEach((str, i, arr) => {
     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
   });
   return words.join(" ");
+};
+
+/**
+ * Get closet name of css named color. The distance is evaluate by L_1 norm.
+ * @param rgb
+ * @returns {keyof typeof NAMED_COLORS}
+ */
+export const getClosestName = (rgb: number[]) => {
+  let name: string = "";
+  let minDist = Infinity;
+  let dist: number;
+  for (const [key, vals] of Object.entries(NAMED_COLORS)) {
+    dist = 0;
+    for (let i = 0; i < 3; i++) {
+      dist += Math.abs(rgb[i] - vals[i]);
+    }
+    if (dist < minDist) {
+      name = key;
+      minDist = dist;
+    }
+  }
+  return name;
+};
+
+export const getNamedColor = (name: keyof typeof NAMED_COLORS) => {
+  return NAMED_COLORS[name];
 };
 
 // Sorting
@@ -99,5 +130,38 @@ export const copyHex = (
     navigator.clipboard.writeText(hex);
   } catch (err) {
     console.log(err);
+  }
+};
+
+export const showPopupMenu = (
+    e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>,
+) => {
+  const target = e.currentTarget;
+  const content = target.lastChild as HTMLElement;
+  if ((e as React.FocusEvent).type === "blur") {
+    content.style.maxHeight = "";
+    return;
+  }
+  /**
+   * For small size device, menu has 2 layers. The outer mune content contains
+   * menu (inner menu) and non-menu (button). And both layers' menu connet to
+   * this function. Click outer menu content has following 3 cases.
+   * 1. Click non-menu: target === (outer menu). Trigger button event and close
+   *    outer content.
+   * In case 2 and 3, target === (inner menu).
+   * 2. Click inner menu: content === (inner menu content). Hence, stop
+   *    propagation to outer menu and open inner menu content.
+   * 3. Click inner menu content: (!content.contains(e.target) === false).
+   *    Hence, do propagation => close outer menu content.
+   */
+  if (!content.contains(e.target as Node)) {
+    e.stopPropagation();
+  }
+  const height = content.style.maxHeight;
+  if (height === "") {
+    content.style.maxHeight = "100vh";
+  } else {
+    content.style.maxHeight = "";
+    target.blur();
   }
 };

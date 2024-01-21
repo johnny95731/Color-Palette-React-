@@ -27,13 +27,13 @@ const optionsSlice = createSlice({
   name: "options",
   initialState,
   reducers: {
-    editModeChanged: (state, action: {
+    setColorSpace: (state, action: {
       payload: ColorSpacesType;
       type: string;
     }) => {
       state.colorSpace = action.payload;
     },
-    mixingModeChanged: (state, action: {
+    setBlendMode: (state, action: {
       payload: BlendingType;
       type: string;
     }) => {
@@ -42,5 +42,5 @@ const optionsSlice = createSlice({
   },
 });
 
-export const {editModeChanged, mixingModeChanged} = optionsSlice.actions;
+export const {setColorSpace, setBlendMode} = optionsSlice.actions;
 export default optionsSlice.reducer;

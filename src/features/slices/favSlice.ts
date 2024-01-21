@@ -1,22 +1,11 @@
 import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import {get, update, set} from "idb-keyval";
 
-import {
-  favoritesDb, FAV_COLORS, FAV_PLTS,
-} from "../../common/utils/database.ts";
+import {favoritesDb, FAV_COLORS, FAV_PLTS} from "@/common/utils/database.ts";
+
 
 export const initializeColors = createAsyncThunk("favorites/initializeColors",
-    () => get<string[]>(FAV_COLORS, favoritesDb)
-        .then((vals) => {
-          if (!vals) return;
-          const unique: string[] = [];
-          for (const target of vals) {
-            if (!unique.includes(target)) {
-              unique.push(target);
-            }
-          }
-          return unique;
-        }),
+    () => get<string[]>(FAV_COLORS, favoritesDb),
 );
 export const initializePlts = createAsyncThunk("favorites/initializePlts",
     () => get<string[]>(FAV_PLTS, favoritesDb),
@@ -100,7 +89,7 @@ const favSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-        // initializeColors
+        // Initialize colors
         .addCase(initializeColors.fulfilled, (state, action) => {
           const colors = action.payload;
           if (!colors) { // First time enter this site.
@@ -114,7 +103,7 @@ const favSlice = createSlice({
           console.error(action.error.message);
           state.isInitialized[0] = true;
         })
-        // initializePlts
+        // Initialize plts
         .addCase(initializePlts.fulfilled, (state, action) => {
           const plts = action.payload;
           if (!plts) { // First time enter this site.
@@ -126,7 +115,6 @@ const favSlice = createSlice({
         })
         .addCase(initializePlts.rejected, (state, action) => {
           console.error(action.error.message);
-          state.isInitialized[1] = false;
           state.isInitialized[1] = true;
         });
   },

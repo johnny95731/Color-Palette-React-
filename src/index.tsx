@@ -5,7 +5,7 @@ import "normalize.css";
 import "./index.scss";
 
 import App from "./App.tsx";
-import store from "./features/store";
+import store from "./features/index.ts";
 
 const root = ReactDOM.createRoot(
     document.getElementById("root") as Element,
