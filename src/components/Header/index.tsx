@@ -12,15 +12,16 @@ import {
 } from "@/common/utils/constants";
 // Stores
 import {
-  useAppDispatch, useAppSelector, selectPlt, selectOptions,
+  useAppDispatch, useAppSelector, selectPlt,
 } from "@/features";
-import {setColorSpace, setBlendMode} from "slices/optionsSlice.ts";
+import {setColorSpace, setBlendMode} from "slices/pltSlice";
 import MediaContext from "@/features/mediaContext.ts";
 // types
 import type {iconType} from "../Icons";
 import type {MouseHandler} from "types/eventHandler.ts";
-import type {SortActionType} from "types/pltType";
-import type {ColorSpacesType, BlendingType} from "types/optionsType.ts";
+import type {
+  SortActionType, ColorSpacesType, BlendingType,
+} from "types/pltType";
 
 // Other components
 const RefreshAll = ({
@@ -121,8 +122,7 @@ const Header = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuContentRef = useRef<HTMLDivElement>(null);
   const {isSmall} = useContext(MediaContext);
-  const {sortBy} = useAppSelector(selectPlt);
-  const {blendMode, colorSpace} = useAppSelector(selectOptions);
+  const {sortBy, blendMode, colorSpace} = useAppSelector(selectPlt);
   const dispatch = useAppDispatch();
 
   // Events

@@ -1,6 +1,6 @@
 import {mod} from "./helpers.ts";
 import {SPACE_MAXES} from "@/common/utils/constants.ts";
-import type {ColorSpacesType} from "types/optionsType.ts";
+import type {ColorSpacesType} from "types/pltType.ts";
 
 // Maximums
 export const RGB_MAXES = SPACE_MAXES["rgb"];
@@ -69,7 +69,7 @@ const rgb2hue = (rgb: number[]): number[] => {
  * @return {number[]} [hue, sat, lum]
  */
 export const rgb2hsl = (rgb: number[]): number[] => {
-  const [Hue, min, max] = rgb2hue(rgb);
+  const [hue, min, max] = rgb2hue(rgb);
   const lPrime = max + min;
   let sat;
   if ((max === 0)) {
@@ -79,7 +79,7 @@ export const rgb2hsl = (rgb: number[]): number[] => {
   } else {
     sat = HSL_MAXES[1] * (max - min) / (2 * (RGB_MAXES - lPrime));
   }
-  return [Hue, sat, lPrime / 2];
+  return [hue, sat, lPrime / 2];
 };
 
 /**
@@ -161,20 +161,21 @@ export const hsl2rgb = (hsl: number[]): number[] => {
   if (hsl[1] === 0) {
     return hsl.map(() => hsl[2]);
   }
+  const temp = [...hsl];
   // Normalize to [0, 1].
-  hsl[1] /= HSL_MAXES[1];
-  hsl[2] /= HSL_MAXES[2];
+  temp[1] /= HSL_MAXES[1];
+  temp[2] /= HSL_MAXES[2];
   // Consts
-  const C = (1 - Math.abs(2 * hsl[2] - 1)) * hsl[1];
-  const X = C * (1 - Math.abs((hsl[0] / 60) % 2 - 1));
-  const m = hsl[2] - C / 2;
+  const C = (1 - Math.abs(2 * temp[2] - 1)) * temp[1];
+  const X = C * (1 - Math.abs((temp[0] / 60) % 2 - 1));
+  const m = temp[2] - C / 2;
   // Convert (Note: The formula can reduce.)
   let rgbPrime;
-  if (hsl[0] < 60) rgbPrime = [C, X, 0];
-  else if (hsl[0] < 120) rgbPrime = [X, C, 0];
-  else if (hsl[0] < 180) rgbPrime = [0, C, X];
-  else if (hsl[0] < 240) rgbPrime = [0, X, C];
-  else if (hsl[0] < 300) rgbPrime = [X, 0, C];
+  if (temp[0] < 60) rgbPrime = [C, X, 0];
+  else if (temp[0] < 120) rgbPrime = [X, C, 0];
+  else if (temp[0] < 180) rgbPrime = [0, C, X];
+  else if (temp[0] < 240) rgbPrime = [0, X, C];
+  else if (temp[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
   return rgbPrime.map((val) => RGB_MAXES * (val + m));
 };

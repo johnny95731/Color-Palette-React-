@@ -4,8 +4,8 @@
   position: relative;
   flex: 1 1 auto;
 
-  &:hover .toolContainer :global(.icon) {
-    visibility: visible;
+  &:hover .toolContainer {
+    display: block;
   }
 
   @include small {
@@ -16,10 +16,10 @@
 
 .toolContainer {
   @extend %horizontalCenter;
+  display: none;
   bottom: 37%;
   user-select: none;
   :global(.icon) {
-    visibility: hidden;
     display: block;
     margin: 27px auto;
     height: 27px;
@@ -40,12 +40,12 @@
   }
   @include small {
     flex: 1 0 240px; // Total icon width + margin
+    display: block;
     position: static;
     margin-bottom: 0;
     margin-left: 20px;
     transform: none;
     :global(.icon) {
-      visibility: visible;
       display: inline;
       height: 20px;
       margin: 5px 10px;
@@ -150,7 +150,7 @@ $rgbSize2560: 19px;
   box-sizing: border-box;
   z-index: 1;
   >div {
-    height: 25px;
+    height: 10px;
     width: 100%;
     border-radius: 7px;
     margin-bottom: 7px;
@@ -198,9 +198,9 @@ $rgbSize2560: 19px;
   font-size: $rgbSize;
   input {
     width: 100%;
+    margin-top: 5px;
     margin-bottom: 10px;
   }
-  
   @include desktop {
     font-size: 25px;
   }

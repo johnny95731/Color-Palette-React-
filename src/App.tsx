@@ -9,7 +9,7 @@ import Icon from "./components/Icons";
 import css from "./App.scss";
 // Stores
 import {
-  useAppDispatch, useAppSelector, selectPlt, selectOptions,
+  useAppDispatch, useAppSelector, selectPlt,
 } from "./features";
 import {
   addCard, moveCard, refreshCard, setIsReordering, sortCards,
@@ -29,7 +29,7 @@ const InsertRegions = ({
   numOfCards: number;
 }) => {
   // States / consts
-  const optionsState = useAppSelector(selectOptions);
+  const {blendMode, colorSpace} = useAppSelector(selectPlt);
   const dispatch = useAppDispatch();
   const {isSmall, pos} = useContext(MediaContext);
 
@@ -47,12 +47,8 @@ const InsertRegions = ({
 
   // Events
   const handleAddCard = useCallback((idx: number) => {
-    dispatch(addCard({
-      idx,
-      blendMode: optionsState.blendMode,
-      colorSpace: optionsState.colorSpace,
-    }));
-  }, [optionsState.blendMode, optionsState.colorSpace]);
+    dispatch(addCard(idx));
+  }, [blendMode, colorSpace]);
 
   return (
     <div id="insertRegion"
@@ -205,12 +201,12 @@ const Palette = () => {
 // Main component
 const App = () => {
   // States / consts
-  const cardState = useAppSelector(selectPlt);
+  const pltState = useAppSelector(selectPlt);
   const [isfavShowing, setFavShowing] = useState(() => false);
   const [isMaskBg, setIsMaskBg] = useState(() => false);
   const dispatch = useAppDispatch();
 
-  const someCardIsEditing = cardState.cards.some((card) => card.isEditing);
+  const someCardIsEditing = pltState.cards.some((card) => card.isEditing);
 
   const favShowingChanged = useCallback(() => {
     setFavShowing((prev) => !prev);

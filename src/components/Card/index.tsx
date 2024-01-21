@@ -8,10 +8,12 @@ import Icon from "../Icons.tsx";
 import {
   rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos,
 } from "@/common/utils/colors.ts";
-import {hexTextEdited, copyHex} from "@/common/utils/helpers.ts";
+import {
+  getClosestName, hexTextEdited, copyHex,
+} from "@/common/utils/helpers.ts";
 // Stores
 import {
-  useAppDispatch, useAppSelector, selectOptions, selectFavorites,
+  useAppDispatch, useAppSelector, selectPlt, selectFavorites,
 } from "@/features";
 import {
   delCard, refreshCard, editCard, setIsLock, setIsEditing,
@@ -20,8 +22,7 @@ import {favColorsChanged} from "slices/favSlice.ts";
 import MediaContext from "@/features/mediaContext.ts";
 // types
 import type {MouseHandler, TouchHandler} from "types/eventHandler.ts";
-import type {cardType} from "types/pltType.ts";
-import type {ColorSpacesType} from "types/optionsType.ts";
+import type {CardType, ColorSpacesType} from "types/pltType.ts";
 
 
 // Other Components
@@ -33,7 +34,7 @@ const ToolBar = ({
   handleDragReorder,
 }: {
   numOfCards: number;
-  card: cardType;
+  card: CardType;
   filterStyle: {filter: string} | undefined;
   events: {
     [key: string]: () => void;
@@ -112,7 +113,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   colorArr,
 }: {
   cardId: number;
-  card: cardType;
+  card: CardType;
   colorSpace: ColorSpacesType
   colorArr: number[];
 }, ref,
@@ -138,7 +139,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       const rgb = hex2rgb(text);
       if (!rgb) return;
       const newModeColor = converter(rgb);
-      dispatch(editCard({idx: cardId, color: rgb}));
+      dispatch(editCard({idx: cardId, color: newModeColor}));
       let slider;
       for (let i = 0; i < 4; i++) {
         slider = (
@@ -161,14 +162,14 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       e: React.ChangeEvent<HTMLInputElement>,
       idx: number) => {
     const target = e.target;
-    const newColorArr = converter(card.rgb);
+    const newColorArr = [...card.color];
     newColorArr[idx] = Number(target.value);
-    const rgb = inverter(newColorArr);
-    dispatch(editCard({idx: cardId, color: rgb}));
+    dispatch(editCard({idx: cardId, color: newColorArr}));
     // Set hex to hex input.
     const textInput = (
       document.getElementById(`card${cardId}-hex`) as HTMLInputElement
     );
+    const rgb = inverter(newColorArr);
     textInput.value = rgb2hex(rgb);
   };
 
@@ -282,29 +283,27 @@ const Card = forwardRef(({
 }: {
   cardId: number;
   numOfCards: number;
-  card: cardType;
+  card: CardType;
   handleDraggingCard: MouseHandler;
 },
 ref: Ref<HTMLDivElement>,
 ) => {
   // States / consts
-  const {rgb, hex, isEditing} = card;
-  const {colorSpace} = useAppSelector(selectOptions);
+  const {color, hex, isEditing} = card;
+  const {colorSpace} = useAppSelector(selectPlt);
   const dispatch = useAppDispatch();
-  const {converter} = (
-    getSpaceInfos(colorSpace)
-  );
   const editingDialogRef = useRef<HTMLDivElement | null>(null);
 
   const {
     isLight,
     colorArr,
   } = useMemo(() => {
+    const {inverter} = getSpaceInfos(colorSpace);
     return {
-      isLight: rgb2gray(rgb) > 127,
-      colorArr: converter(rgb).map((val) => Math.round(val)),
+      isLight: rgb2gray(inverter(color)) > 127,
+      colorArr: color.map((val) => Math.round(val)),
     };
-  }, [...rgb, colorSpace]);
+  }, [hex, colorSpace]);
 
   const filterStyle = useMemo(() => {
     return isLight ? undefined : {filter: "invert(1)"};
@@ -362,9 +361,11 @@ ref: Ref<HTMLDivElement>,
             onClick={copyHex}
           >
             <Icon type="copy" />
-            {`${colorSpace}(${
-              colorArr.toString()
-            })`}
+            {
+              colorSpace === "name" ?
+                getClosestName(color) :
+                `${colorSpace}(${colorArr.toString()})`
+            }
           </div>
         </div>
       }

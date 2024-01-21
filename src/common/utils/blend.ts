@@ -1,7 +1,8 @@
-import {ColorSpacesType} from "src/features/types/optionsType.ts";
 import {getSpaceInfos, HSL_MAXES} from "./colors.ts";
 import {elementwiseMean} from "./helpers.ts";
-type blend = (c1: number[], c2: number[]) => number[];
+import type {ColorSpacesType} from "types/pltType.ts";
+
+type blender = (c1: number[], c2: number[]) => number[];
 
 /**
  * Blending two colors by evaluate their average.
@@ -27,7 +28,7 @@ const GAMMA_CONST = 2**(- 2 / 255);
  * @param color2 Numeric of a color.
  * @returns The mean value of color1 and color2.
  */
-const softLightBlend: blend = (color1, color2) => {
+const softLightBlend: blender = (color1, color2) => {
   const newColor = new Array(color1.length);
   for (let i = 0; i < color1.length; i++) {
     newColor[i] = 255 * (color1[i] / 255) ** (2 * GAMMA_CONST**color2[i]);
@@ -44,7 +45,7 @@ const softLightBlend: blend = (color1, color2) => {
  *   The color is brighter if gamma < 1.
  * @returns The blend color of color1 and color2.
  */
-const gammaBlend = (
+const blendNGamma = (
     color1: number[], color2: number[], gamma: number = 0.3,
 ) => {
   /**
@@ -60,12 +61,14 @@ const gammaBlend = (
   return inverter([hue, newSat, newLum]);
 };
 
-const brighter: blend = (color1, color2) => gammaBlend(color1, color2);
-const deeperBlend: blend = (color1, color2) => gammaBlend(color1, color2, 1.5);
+const brighter: blender = (color1, color2) => blendNGamma(color1, color2);
+const deeperBlend: blender = (color1, color2) => {
+  return blendNGamma(color1, color2, 1.5);
+};
 
-export const blendBy = {
+export const blenders = Object.freeze({
   "mean": meanBlend,
   "brighter": brighter,
   "deeper": deeperBlend,
   "soft light": softLightBlend,
-};
+});

@@ -1,9 +1,8 @@
-
 /**
  * Support color spaces.
  */
 export const COLOR_SPACES = [
-  "rgb", "hsl", "hsb", "cmy", "cmyk", "name",
+  "rgb", "name", "hsl", "hsb", "cmy", "cmyk",
 ] as const;
 
 /**
@@ -23,11 +22,11 @@ export const SORTING_ACTIONS = ["gray", "random", "inversion"] as const;
  */
 export const SPACE_MAXES = Object.freeze({
   "rgb": 255,
+  "name": 255,
   "hsl": [359, 255, 255],
   "hsb": [359, 255, 255],
   "cmy": 100,
   "cmyk": 100,
-  "name": 0,
 });
 
 /**
