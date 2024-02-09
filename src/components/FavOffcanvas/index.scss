@@ -26,10 +26,10 @@ $appendPltHeight: 30px;
   padding: 0 5px;
   border-bottom: 1px solid black;
   box-sizing: border-box;
-  background-color: $color3;
+  background-color: $color2;
   user-select: none;
   >* {
-    border-radius: 7px;
+    border-radius: $radius-lg;
     &:hover {
       background-color: $color1;
     }
@@ -84,11 +84,12 @@ $appendPltHeight: 30px;
 }
 
 %favBlock {
+  // Shape
   position: relative;
-  border-radius: 10px;
-  overflow: hidden;
+  border-radius: $radius-lg;
   margin: 5px;
   list-style-type: none;
+  overflow: hidden;
 
   &:hover .delWrapper {
     opacity: 1;
@@ -99,14 +100,19 @@ $appendPltHeight: 30px;
   @extend %favBlock;
   height: 40px;
   >div {
+    font-size: var(--font-sm);
+    font-weight: 500;
+    // position
     @extend %verticalCenter;
     left: 8px;
-    font-size: 15px;
-    font-weight: 500;
+    display: table-cell;
+    vertical-align: middle;
+
     cursor: pointer;
     >:global(.icon) {
+      height: var(--font-sm);
+      margin-right: 3px;
       opacity: 0;
-      margin-right: 5px;
     }
   }
   &:hover :global(.icon) {
@@ -148,7 +154,7 @@ $appendPltHeight: 30px;
   }
 }
 
-$paddingTop: calc((#{$appendPltHeight - $defaultFontSize}) / 2 - 2px);
+$paddingTop: calc((#{$appendPltHeight} - var(--font-body)) / 2 - 2px);
 .appendPlt {
   display: block;
   border-top: 1px solid black;
@@ -162,7 +168,7 @@ $paddingTop: calc((#{$appendPltHeight - $defaultFontSize}) / 2 - 2px);
   cursor: pointer;
   >:global(.icon) {
     margin-right: 3px;
-    height: $defaultFontSize + 3px;
+    height: calc(var(--font-body) + 3px);
     vertical-align: text-bottom;
   }
 }

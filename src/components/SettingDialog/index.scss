@@ -1,0 +1,191 @@
+@import "@/assets/commons.scss";
+
+.settingDialog {
+  display: grid;
+  grid-template-rows: 32px 1fr;
+  grid-template-columns: 110px 1fr 29px;
+  // position
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  // shape
+  height: 400px;
+  width: 320px;
+  border-radius: $radius-lg;
+  overflow: hidden;
+
+  background-color: $color2;
+  >h5 {
+    // position
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 1;
+    grid-column-end: 2;
+    // shape
+    padding: 8px 10px 10px;
+    margin: 0;
+    // color
+    color: $color4;
+    text-align: center;
+    font-size: var(--font-subheading);
+    font-weight: $boldWeight;
+
+    user-select: none;
+  }
+  >:global(.icon) {
+    // position
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 3;
+    grid-column-end: 4;
+    justify-self: flex-end;
+    margin: 6px;
+    // shape
+    height: 13px;
+    padding: 4px;
+    border-radius: $radius-lg;
+
+    background-color: $color1;
+    &:hover {
+      background-color: $color2;
+    }
+  }
+}
+
+.sidebar {
+  display: flex;
+  grid-column-start: 2;
+  grid-column-end: 3;
+
+  user-select: none;
+  >div {
+    display: block;
+    margin-top: auto;
+
+    border-radius: $radius-sm;
+    padding: 5px 10px;
+    box-sizing: border-box;
+
+    font-size: var(--font-sm);
+    cursor: pointer;
+    &:hover {
+      background-color: $color1;
+    }
+  }
+}
+
+%optionLayout {
+  display: grid;
+  grid-template-rows: repeat(auto-fill, minmax(25px, 1fr));
+  grid-template-columns: 85px 1fr;
+  row-gap: 10px;
+  column-gap: 5px;
+  justify-items: flex-start;
+  align-items: center;
+}
+
+.content {
+  // layout
+  @extend %optionLayout;
+  overflow-y: auto;
+  // position
+  grid-row-start: 2;
+  grid-row-end: 4;
+  grid-column-start: 1;
+  grid-column-end: 4;
+  // shape
+  height: 100%;
+  width: 100%;
+  padding: 15px 20px 10px;
+  box-sizing: border-box;
+
+  background-color: $color1;
+  >label:not(), >div:not(), >input:not() {
+    max-height: min-content;
+    font-size: var(--font-body);
+  }
+  >h6 {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    margin: 0;
+    font-size: var(--font-subheading);
+  }
+  >label {
+    grid-column-start: 1;
+    grid-column-end: 2;
+  }
+  >div { // custom <Select>
+    grid-column-start: 2;
+    grid-column-end: 3;
+  }
+  >input {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    border-radius: $radius-sm;
+    box-sizing: border-box;
+    width: 100%;
+  }
+}
+
+.subOption {
+  // layout
+  @extend %optionLayout;
+  row-gap: 5px;
+  // position
+  &label {
+    grid-column-start: 1;
+    grid-column-end: 2;
+  }
+  &*:not(label) {
+    grid-column-start: 2;
+    grid-column-end: 3;
+  }
+  // shape
+  height: fit-content;
+  width: 100%;
+
+  font-size: var(--font-sm);
+}
+
+.buttons {
+  // position
+  grid-row-end: -1;
+  grid-column-start: 1;
+  grid-column-end: 3;
+  // shape
+  height: 100%;
+  width: 100%;
+  >button {
+    display: block;
+    margin: 0 0 0 20px;
+    float: right;
+    // shape
+    height: fit-content;
+    border: none;
+    padding: 3px 12px;
+    border-radius: $radius-md;
+    box-sizing: border-box;
+
+    font-weight: $normalWeight;
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+.applyBtn {
+  color: $color1;
+  background-color: $color5;
+  &:hover {
+    background-color: $color4;
+  }
+}
+
+.resetBtn {
+  color: $color5;
+  background-color: $color2;
+  &:hover {
+    background-color: $color3;
+  }
+}

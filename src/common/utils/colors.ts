@@ -1,13 +1,9 @@
-import {mod} from "./helpers.ts";
-import {SPACE_MAXES} from "@/common/utils/constants.ts";
+import {identity, mod} from "./helpers.ts";
+import {
+  RGB_MAXES, HSL_MAXES, HSB_MAXES, CMY_MAXES, CMYK_MAXES,
+} from "@/common/utils/constants.ts";
+import type {ColorSpaceInfos, ColorSpaceTrans} from "types/utilTypes.ts";
 import type {ColorSpacesType} from "types/pltType.ts";
-
-// Maximums
-export const RGB_MAXES = SPACE_MAXES["rgb"];
-export const HSL_MAXES = SPACE_MAXES["hsl"];
-export const HSB_MAXES = SPACE_MAXES["hsb"];
-const CMY_MAXES = SPACE_MAXES["cmy"];
-const CMYK_MAXES = SPACE_MAXES["cmyk"];
 
 // From RGB.
 /**
@@ -262,81 +258,103 @@ export const randRgbGen = (): number[] => {
 };
 
 /**
- * Infomations about color space which will be used in edit mode.
- */
-type ColorSpaceInfo = {
-  /**
-   * Name of channels
-   */
-  labels: string[];
-  /**
-   * Maximum of intervals of each channels
-   */
-  maxes: number[];
-  /**
-   * The converter that convert RGB space to specified color space.
-   * @param x RGB values.
-   * @returns specified color space values.
-   */
-  converter: (x: number[]) => number[];
-  /**
-   * The converter that convert specified color space to RGB space.
-   * @param x specified color space values.
-   * @returns RGB values.
-   */
-  inverter: (x: number[]) => number[];
-}
-
-/**
- * Returns infomations about color space which will be display under hex code
+ * Returns informations about color space which will be display under hex code
  * and be used in edit mode.
  * @param {String} space Color space.
- * @return {ColorSpaceInfo} ColorSpaceInfo
+ * @return {ColorSpaceInfos} ColorSpaceInfo
  */
-export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfo => {
-  let infos: {[key: string]: any};
+export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos => {
   switch (space) {
     case "hsl":
-      infos = {
+      return {
         labels: ["Hue", "Saturation", "Luminance"],
+        maxes: [...HSL_MAXES],
+      };
+    case "hsb": // hsb = hsv
+      return {
+        labels: ["Hue", "Saturation", "Brightness"],
+        maxes: [...HSB_MAXES],
+      };
+    case "cmy":
+      return {
+        labels: ["Cyan", "Magenta", "Yellow"],
+        maxes: [CMY_MAXES, CMY_MAXES, CMY_MAXES],
+      };
+    case "cmyk":
+      return {
+        labels: ["Cyan", "Magenta", "Yellow", "Black"],
+        maxes: [CMYK_MAXES, CMYK_MAXES, CMYK_MAXES, CMYK_MAXES],
+      };
+    default: // "rgb" and "name"
+      return {
+        labels: ["Red", "Green", "Blue"],
+        maxes: [RGB_MAXES, RGB_MAXES, RGB_MAXES],
+      };
+  }
+};
+export const getSpaceTrans = (space: ColorSpacesType): ColorSpaceTrans => {
+  switch (space) {
+    case "hsl":
+      return {
         converter: rgb2hsl,
         inverter: hsl2rgb,
       };
-      break;
     case "hsb": // hsb = hsv
-      infos = {
-        labels: ["Hue", "Saturation", "Brightness"],
+      return {
         converter: rgb2hsb,
         inverter: hsb2rgb,
       };
-      break;
     case "cmy":
-      infos = {
-        labels: ["Cyan", "Magenta", "Yellow"],
+      return {
         converter: rgb2cmy,
         inverter: cmy2rgb,
       };
-      break;
     case "cmyk":
-      infos = {
-        labels: ["Cyan", "Magenta", "Yellow", "Black"],
+      return {
         converter: rgb2cmyk,
         inverter: cmyk2rgb,
       };
-      break;
     default: // "rgb" and "name"
-      infos = {
-        labels: ["Red", "Green", "Blue"],
-        converter: (x: number[]) => Array.from(x),
-        inverter: (x: number[]) => Array.from(x),
+      return {
+        converter: identity,
+        inverter: identity,
       };
-      break;
   }
-  const maxes = SPACE_MAXES[space];
-  infos.maxes = (
-    typeof maxes === "number" ?
-        infos.labels.map(() => maxes) :
-        SPACE_MAXES[space]
-  );
-  return infos as ColorSpaceInfo;
+};
+
+
+// Adjusts contrast.
+/**
+ * Scale ths values of RGB.
+ * @param {number[][]} rgbs RGB arrays.
+ * @param {number} c Scaling coefficient.
+ * @returns {number[][]} `rgb` after scaling.
+ */
+export const scaling = (rgbs: number[][], c: number): typeof rgbs => {
+  for (let i = 0; i < rgbs.length; i++) {
+    for (let j = 0; j < rgbs[i].length; j++) {
+      rgbs[i][j] = rgbs[i][j] * c > RGB_MAXES ? RGB_MAXES : rgbs[i][j] * c;
+    }
+  }
+  return rgbs;
+};
+
+/**
+ * Gamma correction to RGB array(s).
+ * @param {number[] | number[][]} rgb RGB array(s).
+ * @param {number} gamma Gamma coefficient.
+ * @returns {number[] | number[][]} `rgb` after correction. The type is the
+ * same as `rgb`.
+ */
+export const gammaCorrection = (
+    rgb: number[] | number[][], gamma: number,
+): typeof rgb => {
+  if (typeof rgb[0] === "number") {
+    const normalizeCoeff = RGB_MAXES ** (1 - gamma);
+    return (rgb as number[]).map((val) => normalizeCoeff * (val ** gamma));
+  } else {
+    return (rgb as number[][]).map(
+        (arr) => gammaCorrection(arr, gamma) as number[],
+    );
+  }
 };

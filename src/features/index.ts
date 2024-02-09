@@ -2,11 +2,13 @@ import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
 import {configureStore} from "@reduxjs/toolkit";
 import cardSlice from "./slices/pltSlice";
 import favSlice from "./slices/favSlice";
+import settingsSlice from "./slices/settingsSlice";
 
 const store = configureStore({
   reducer: {
     plt: cardSlice,
     favorites: favSlice,
+    settings: settingsSlice,
   },
 });
 
@@ -21,5 +23,6 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 // Seloctors
 export const selectPlt = (state: RootState) => state.plt;
 export const selectFavorites = (state: RootState) => state.favorites;
+export const selectSettings = (state: RootState) => state.settings;
 
 export default store;

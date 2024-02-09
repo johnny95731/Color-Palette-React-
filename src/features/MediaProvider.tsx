@@ -21,9 +21,9 @@ const MediaProvider = ({
 
   const context = useMemo<MediaContextType>(() => {
     const isSmall = windowSize[1] <= maxSmallSize;
-    const headerHeight = Number( // Get var(--headerHeight) in css.
+    const headerHeight = Number( // Get var(--header-height) in css.
         getComputedStyle(document.documentElement)
-            .getPropertyValue("--headerHeight")
+            .getPropertyValue("--header-height")
             .slice(0, -2),
     );
     return {

@@ -1,0 +1,43 @@
+@import "@/assets/commons.scss";
+
+$transDuration: 300ms;
+
+.wrapper {
+  display: inline-block;
+  position: relative;
+  // shape
+  height: 20px;
+  width: 40px;
+  border-radius: $radius-lg;
+  // style
+  background-color: $color4;
+  transition: background-color $transDuration;
+  cursor: pointer;
+  >span {
+    @extend %verticalCenter;
+    left: 100%;
+    margin-left: 5px;
+    color: $color5;
+  }
+}
+
+.active {
+  background-color: hsl(120, 80%, 50%);
+}
+
+.circle {
+  display: inline-block;
+  // position
+  position: absolute;
+  top: 50%;
+  bottom: auto;
+  transition-property: left transform;
+  transition-duration: $transDuration;
+  transition-timing-function: ease-in-out;
+  // shape
+  height: 65%;
+  aspect-ratio: 1 / 1;
+  border-radius: 100%;
+
+  background-color: $color1;
+}

@@ -1,16 +1,21 @@
 @import "@/assets/commons.scss";
 
 .cardContainer {
-  position: relative;
-  flex: 1 1 auto;
-
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  border-style: none solid;
+  border-color: transparent;
+  box-sizing: border-box;
+  transition-property: left, width, background-color;
+  transition-duration: 0s;
   &:hover .toolContainer {
     display: block;
   }
-
   @include small {
     display: flex;
     align-items: center;
+    border-style: solid none;
   }
 }
 
@@ -84,13 +89,6 @@
   }
 }
 
-$hexSize: 20px;
-$rgbSize: 12px;
-$hexSize1024: 18px;
-$rgbSize1024: 12px;
-$hexSize2560: 39px;
-$rgbSize2560: 19px;
-
 %textPosition {
   position: relative;
   left: 50%;
@@ -101,43 +99,23 @@ $rgbSize2560: 19px;
     top: 50%;
   }
 }
-@mixin textSize($iconHeight, $iconMargin, $fontSize: 16px) {
+@mixin textSize($iconHeight, $iconMargin, $fontSize) {
   font-size: $fontSize;
   :global(.icon) {
     height: $iconHeight;
-    transform: translateX(calc(-100% - #{$iconMargin})) translateY(-50%);
+    transform: translate(calc(-100% - #{$iconMargin}), -50%);
   }
 }
 
 .hexText {
   @extend %textPosition;
-  @include textSize($hexSize - 4px, 3px, $hexSize);
-
-  @include desktop {
-    @include textSize(25px, 6px, $hexSize2560);
-  }
-  @include laptop {
-    @include textSize(16px, 4px, $hexSize1024);
-  }
-  @include small {
-    @include textSize(16px, 4px, $hexSize1024);
-  }
+  @include textSize(var(--font-subheading) - 4px, 4px, var(--font-subheading));
 }
 
 .rgbText {
   @extend %textPosition;
-  @include textSize(10px, 2px, $rgbSize);
+  @include textSize(calc(var(--font-sm) - 3px), 3px, var(--font-sm));
   margin-top: 4px;
-
-  @include desktop {
-    @include textSize(13px, 4px, $rgbSize2560);
-  }
-  @include laptop {
-    @include textSize(9px, 3px, $rgbSize1024);
-  }
-  @include small {
-    @include textSize(9px, 3px, $rgbSize1024);
-  }
 }
 
 .editing {
@@ -145,14 +123,14 @@ $rgbSize2560: 19px;
   top: 63%;
   width: 150px;
   padding: 5px 10px;
-  border-radius: 10px;
+  border-radius: $radius-lg;
   background-color: $color1;
   box-sizing: border-box;
   z-index: 1;
   >div {
     height: 10px;
     width: 100%;
-    border-radius: 7px;
+    border-radius: $radius-lg;
     margin-bottom: 7px;
   }
   @include small {
@@ -171,40 +149,27 @@ $rgbSize2560: 19px;
 .hexInput {
   display: inline;
   width: 100%;
-  border-radius: 7px;
+  border-radius: $radius-md;
   border-width: 1px;
   padding: 0px 8px;
   margin: 0 auto 15px;
   box-sizing: border-box;
-  font-size: $hexSize;
+  font-size: var(--font-subheading);
   user-select: text;
   cursor: text;
 
-  @include desktop {
-    font-size: $hexSize;
-  }
-  @include laptop {
-    font-size: $hexSize1024;
-  }
   @include small {
     margin: 0 auto 7px;
     bottom: auto;
-    font-size: $hexSize1024;
   }
 }
 
 .sliders {
   display: inline-block;
-  font-size: $rgbSize;
+  font-size: var(--font-sm);
   input {
     width: 100%;
     margin-top: 5px;
     margin-bottom: 10px;
-  }
-  @include desktop {
-    font-size: 25px;
-  }
-  @include laptop {
-    font-size: 14px;
   }
 }

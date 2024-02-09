@@ -1,18 +1,19 @@
 import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
 import {get, update, set} from "idb-keyval";
 
-import {favoritesDb, FAV_COLORS, FAV_PLTS} from "@/common/utils/database.ts";
+import {
+  favoritesDb, STORE_FAV_COLORS, STORE_FAV_PLTS,
+} from "@/common/utils/database.ts";
 
 
-export const initializeColors = createAsyncThunk("favorites/initializeColors",
-    () => get<string[]>(FAV_COLORS, favoritesDb),
+export const initColors = createAsyncThunk("favorites/initColors",
+    () => get<string[]>(STORE_FAV_COLORS, favoritesDb),
 );
-export const initializePlts = createAsyncThunk("favorites/initializePlts",
-    () => get<string[]>(FAV_PLTS, favoritesDb),
+export const initPlts = createAsyncThunk("favorites/initPlts",
+    () => get<string[]>(STORE_FAV_PLTS, favoritesDb),
 );
 
-
-const initialState: {
+type stateType = {
   /**
    * Favorite colors.
    */
@@ -24,11 +25,13 @@ const initialState: {
   /**
    * Whether the colors/plts is loaded.
    */
-  isInitialized: [boolean, boolean];
-} = {
+  isInit: [boolean, boolean];
+}
+
+const initialState: stateType = {
   colors: [],
   plts: [],
-  isInitialized: [false, false],
+  isInit: [false, false],
 };
 
 const favSlice = createSlice({
@@ -42,7 +45,7 @@ const favSlice = createSlice({
       const targetHex = action.payload;
       const isIncluding = state.colors.includes(targetHex);
       // Update database
-      update<string[]>(FAV_COLORS, (prev) => {
+      update<string[]>(STORE_FAV_COLORS, (prev) => {
         if (!prev) return [];
         let newFav: string[];
         if (isIncluding) { // Favoriting => Non-Favoriting
@@ -67,7 +70,7 @@ const favSlice = createSlice({
     }) => {
       const targetPlt = action.payload;
       // Update database
-      update<string[]>(FAV_PLTS, (prev) => {
+      update<string[]>(STORE_FAV_PLTS, (prev) => {
         if (!prev) return [];
         let newFav: string[];
         if (prev.includes(targetPlt)) { // Favoriting => Non-Favoriting
@@ -90,32 +93,32 @@ const favSlice = createSlice({
   extraReducers: (builder) => {
     builder
         // Initialize colors
-        .addCase(initializeColors.fulfilled, (state, action) => {
+        .addCase(initColors.fulfilled, (state, action) => {
           const colors = action.payload;
           if (!colors) { // First time enter this site.
-            set(FAV_COLORS, [], favoritesDb);
+            set(STORE_FAV_COLORS, [], favoritesDb);
           } else {
             state.colors = colors;
           }
-          state.isInitialized[0] = true;
+          state.isInit[0] = true;
         })
-        .addCase(initializeColors.rejected, (state, action) => {
-          console.error(action.error.message);
-          state.isInitialized[0] = true;
+        .addCase(initColors.rejected, (state, action) => {
+          console.error("Colors store:", action.error.message);
+          state.isInit[0] = true;
         })
         // Initialize plts
-        .addCase(initializePlts.fulfilled, (state, action) => {
+        .addCase(initPlts.fulfilled, (state, action) => {
           const plts = action.payload;
           if (!plts) { // First time enter this site.
-            set(FAV_PLTS, [], favoritesDb);
+            set(STORE_FAV_PLTS, [], favoritesDb);
           } else {
             state.plts = plts;
           }
-          state.isInitialized[1] = true;
+          state.isInit[1] = true;
         })
-        .addCase(initializePlts.rejected, (state, action) => {
-          console.error(action.error.message);
-          state.isInitialized[1] = true;
+        .addCase(initPlts.rejected, (state, action) => {
+          console.error("Palettes store:", action.error.message);
+          state.isInit[1] = true;
         });
   },
 });

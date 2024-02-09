@@ -3,13 +3,19 @@
 .header {
   display: inline-flex;
   align-items: center;
-  width: 100%;
-  height: var(--headerHeight);
+  // position
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  // shape
+  width: 100vw;
+  height: var(--header-height);
   padding: 0 30px 0 60px;
   box-sizing: border-box;
+
   background-color: $color2;
   user-select: none;
-
   @include small {
     padding: 0 0 0 15px;
     justify-content: space-between;
@@ -17,35 +23,41 @@
 }
 
 .title {
-  font-size: 24px;
+  font-size: var(--font-heading);
   font-weight: 900;
   color: $color5;
   margin: 0;
-  @include small {
-    font-size: 20px;
-  }
 }
 
 .menubar {
   flex: 1 0 auto;
-  display: table;
   color: $color5;
   margin: auto 0 auto 20px;
-
+  >div {
+    display: flex;
+    width: 100%;
+    @include small {
+      display: block;
+      width: 100vw;
+    }
+  }
+  .empty {
+    flex-grow: 1;
+  }
   @include small {
-    flex: 0 0 var(--headerHeight);
+    flex: 0 0 var(--header-height);
     position: relative;
     height: 100%;
     margin: 0;
     float: right;
-    background-color: $color3;
+    background-color: $color1;
   }
 }
 
-.btn {
+%btn {
+  margin: 0 2px;
   float: left;
-  padding: 5px 8px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background-color: inherit;
   cursor: pointer;
   :global(.icon) {
@@ -59,6 +71,8 @@
   }
   @include small {
     position: relative;
+    margin: 0;
+    // shape
     min-height: 30px;
     width: 100%;
     padding: 7px 0;
@@ -68,8 +82,18 @@
     }
   }
 }
+.list {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-.btnR {
-  float: right;
-  margin: 0;
+.btn {
+  @extend %btn;
+  padding: 5px 10px 5px 7px;
+}
+
+.btnMenu {
+  @extend %btn;
+  padding: 5px 6px 5px 8px;
 }

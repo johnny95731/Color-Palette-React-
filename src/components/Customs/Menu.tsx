@@ -1,11 +1,14 @@
 import React from "react";
-import Icon, {type iconType} from "../Icons.tsx";
+import Icon from "./Icons.tsx";
 import TriangleUrl from "@/assets/icons/triangle-down.svg?url";
-import css from "./menus.scss";
+import css from "./menu.scss";
+// Utils
 import {showPopupMenu} from "@/common/utils/helpers.ts";
-import {MouseHandler, FocusHandler} from "types/eventHandler.ts";
+// Types
+import type {MouseHandler, FocusHandler} from "types/eventHandler.ts";
+import type {iconType} from "./Icons.tsx";
 
-export const Menu = ({
+const Menu = ({
   children,
   className,
   iconType,
@@ -13,8 +16,8 @@ export const Menu = ({
   contentClass = css.menuContent,
 }: {
   children: React.ReactNode;
-  className: string;
-  iconType: iconType;
+  className?: string;
+  iconType?: iconType;
   title: string;
   contentClass?: string;
 }): React.JSX.Element => {
@@ -35,3 +38,4 @@ export const Menu = ({
     </span>
   );
 };
+export default Menu;

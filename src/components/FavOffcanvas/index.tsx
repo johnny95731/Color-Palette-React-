@@ -1,5 +1,5 @@
 import React, {useState, useMemo} from "react";
-import Icon from "../Icons.tsx";
+import Icon from "../Customs/Icons.tsx";
 import css from "./index.scss";
 // utils
 import {rgb2gray, hex2rgb, isValidHex} from "@/common/utils/colors.ts";
@@ -9,8 +9,6 @@ import {selectPlt, selectFavorites} from "@/features";
 import {useAppDispatch, useAppSelector} from "@/features";
 import {setPlt} from "@/features/slices/pltSlice.ts";
 import {favColorsChanged, favPltsChanged} from "slices/favSlice.ts";
-// types
-import type {MouseHandler} from "types/eventHandler.ts";
 
 // Other Components
 const ColorBlock = ({
@@ -23,7 +21,6 @@ const ColorBlock = ({
   if (!rgb) return;
   const isLight = useMemo(() => rgb2gray(rgb) > 127, [hex]);
   const dispatch = useAppDispatch();
-
   // Events
   const removeFav = () => {
     dispatch(favColorsChanged(hex));
@@ -67,12 +64,11 @@ const PaletteBlock = ({
     return midPoint;
   }, [plt]);
   const dispatch = useAppDispatch();
-
   // Events
   const removeFav = () => {
     dispatch(favPltsChanged(plt));
   };
-  const handleSetPlt = () => {
+  const applyingPlt = () => {
     for (const hex of colors) {
       if (!isValidHex(hex)) return;
     }
@@ -83,7 +79,7 @@ const PaletteBlock = ({
     <li className={css.paletteBlock}>
       <div style={{background: `linear-gradient(90deg, ${bgGrad})`}} >
         <div className={css.caretWrapper} >
-          <Icon type="caret" onClick={handleSetPlt} />
+          <Icon type="caret" onClick={applyingPlt} />
         </div>
         <span className={css.delWrapper}>
           <Icon type="del" onClick={removeFav} />
@@ -103,7 +99,7 @@ const AddFavPlt = ({
   changePage: () => void;
 }) => {
   // States / consts
-  const cards = useAppSelector(selectPlt).cards;
+  const {cards} = useAppSelector(selectPlt);
   const plt = cards.map((state) => state.hex.slice(1)).join("-");
   const favPltList = useAppSelector(selectFavorites).plts;
   const isFavPlt = favPltList.includes(plt);
@@ -142,10 +138,10 @@ const AddFavPlt = ({
 const pageLabels: string[] = ["Colors", "Palettes"];
 const FavOffcanvas = ({
   isShowing,
-  favShowingChanged,
+  showingChanged,
 }: {
   isShowing: boolean;
-  favShowingChanged: MouseHandler,
+  showingChanged: () => void;
 }) => {
   // States / consts
   const favoritesState = useAppSelector(selectFavorites);
@@ -170,9 +166,7 @@ const FavOffcanvas = ({
             );
           })
         }
-        <Icon type="close"
-          onClick={favShowingChanged as (e:React.MouseEvent) => void}
-        />
+        <Icon type="close" onClick={showingChanged} />
       </nav>
       {/* Page content */}
       <ul className={css.pageContent}>
@@ -193,4 +187,5 @@ const FavOffcanvas = ({
     </div>
   );
 };
+FavOffcanvas.displayName = "FavOffcanvas";
 export default FavOffcanvas;

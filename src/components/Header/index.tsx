@@ -1,14 +1,15 @@
 import React, {useContext, useEffect, useMemo, useRef} from "react";
-import Icon from "../Icons";
-import {Menu} from "./Menus";
+import Icon from "../Customs/Icons.tsx";
+import Menu from "../Customs/Menu.tsx";
 import css from "./index.scss";
-import menuCss from "./menus.scss";
+import menuCss from "../Customs/menu.scss";
 // Utils / Consts
 import {
   capitalize, preventDefault, showPopupMenu,
 } from "@/common/utils/helpers.ts";
 import {
   COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS,
+  CURRENT_OPTION_WEIGHT,
 } from "@/common/utils/constants";
 // Stores
 import {
@@ -17,7 +18,7 @@ import {
 import {setColorSpace, setBlendMode} from "slices/pltSlice";
 import MediaContext from "@/features/mediaContext.ts";
 // types
-import type {iconType} from "../Icons";
+import type {iconType} from "../Customs/Icons.tsx";
 import type {MouseHandler} from "types/eventHandler.ts";
 import type {
   SortActionType, ColorSpacesType, BlendingType,
@@ -65,11 +66,11 @@ const SettingMenu = ({
     return Array.from(contents, (val) => ({
       val,
       name: converter(val),
-      style: val === currentVal ? {fontWeight: "800"}: undefined,
+      style: val === currentVal ? CURRENT_OPTION_WEIGHT : undefined,
     }));
   }, [currentVal, letterCase, contents]);
   return (
-    <Menu className={css.btn}
+    <Menu className={css.btnMenu}
       iconType={iconType}
       title={
         title ? title : `${iconType[0].toUpperCase()}${iconType.slice(1)}`
@@ -102,21 +103,40 @@ const Bookmarks = ({
     <span className={`${css.btn} ${isSmall ? "" : css.btnR}`}
       onClick={onClick}
     >
-      <Icon type={"bookmark"} />
+      <Icon type="bookmark" />
       Bookmarks
+    </span>
+  );
+};
+
+const Settings = ({
+  isSmall,
+  onClick,
+}: {
+  isSmall?: boolean,
+  onClick: (e: React.MouseEvent) => void;
+}) => {
+  return (
+    <span className={`${css.btn} ${isSmall ? "" : css.btnR}`}
+      onClick={onClick}
+    >
+      <Icon type="setting" />
+      Settings
     </span>
   );
 };
 
 // Main component
 const Header = ({
-  refresh,
-  handleSorting,
-  favShowingChanged,
+  refreshPlt,
+  sortPlt,
+  showSettings,
+  showFavOffcanvas,
 }: {
-  refresh: () => void;
-  handleSorting: (sortBy: SortActionType) => void;
-  favShowingChanged: () => void;
+  refreshPlt: () => void;
+  sortPlt: (sortBy: SortActionType) => void;
+  showSettings: () => void;
+  showFavOffcanvas: () => void;
 }) => {
   // Consts
   const menuRef = useRef<HTMLDivElement>(null);
@@ -176,15 +196,15 @@ const Header = ({
       >
         {
           isSmall &&
-          <Icon type={"list"} />
+          <Icon type="list" className={css.list} />
         }
         <div ref={menuContentRef}>
           {/* Float left */}
-          <RefreshAll onClick={refresh} />
+          <RefreshAll onClick={refreshPlt} />
           <SettingMenu iconType="sort"
             contents={SORTING_ACTIONS} currentVal={sortBy}
             hotkeys={SORTING_ACTIONS.map((str) => str[0])}
-            handleClick={handleSorting as (option: string) => void}
+            handleClick={sortPlt as (option: string) => void}
           />
           <SettingMenu iconType="blend"
             contents={BLEND_MODES} currentVal={blendMode}
@@ -195,8 +215,10 @@ const Header = ({
             handleClick={handleEditModeChanged as (option: string) => void}
             letterCase="all-caps"
           />
+          <div className={css.empty}></div>
           {/* Float right */}
-          <Bookmarks onClick={favShowingChanged} />
+          <Bookmarks onClick={showFavOffcanvas} />
+          <Settings onClick={showSettings} />
         </div>
       </div>
     </header>

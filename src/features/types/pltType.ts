@@ -1,5 +1,5 @@
 import {
-  SORTING_ACTIONS, COLOR_SPACES, BLEND_MODES,
+  SORTING_ACTIONS, COLOR_SPACES, BLEND_MODES, CONTRAST_METHODS,
 } from "@/common/utils/constants";
 
 
@@ -17,15 +17,32 @@ export type ColorSpacesType = typeof COLOR_SPACES[number];
  */
 export type BlendingType = typeof BLEND_MODES[number];
 
+/**
+ * Support contrast adjusting methods.
+ */
+export type ContrastMethods = typeof CONTRAST_METHODS[number];
+
 export type CardType = {
   /**
-   * RGB sapce value in hex code.
+   * Order of card in palette.
+   */
+  order: number;
+  /**
+   * RGB hex code.
    */
   hex: string;
   /**
    * Color array in specific color space.
    */
   color: number[];
+  /**
+   * Stores hex before editing the palette.
+   */
+  originHex: string;
+  /**
+   * Stores color before editing the palette.
+   */
+  originColor: number[];
   /**
    * The card is lock (can't refresh the card).
    */

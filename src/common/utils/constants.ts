@@ -1,4 +1,12 @@
 /**
+ * font-weight that be used in selected option.
+ */
+export const CURRENT_OPTION_WEIGHT: React.CSSProperties = {
+  fontWeight: 700,
+};
+
+// Palette consts.
+/**
  * Support color spaces.
  */
 export const COLOR_SPACES = [
@@ -18,18 +26,36 @@ export const BLEND_MODES = [
 export const SORTING_ACTIONS = ["gray", "random", "inversion"] as const;
 
 /**
- * Maximums of each color space.
+ * Methods of adjusting contrast.
  */
-export const SPACE_MAXES = Object.freeze({
-  "rgb": 255,
-  "name": 255,
-  "hsl": [359, 255, 255],
-  "hsb": [359, 255, 255],
-  "cmy": 100,
-  "cmyk": 100,
-});
+export const CONTRAST_METHODS = [
+  "multiplication", "gamma",
+] as const;
+
+export const MULTIPLICATION_MAX = 10;
+export const GAMMA_MAX = 3;
+
+// Maximums of each color space.
+export const RGB_MAXES = 255;
+export const HSL_MAXES = [359, 255, 255] as const;
+export const HSB_MAXES = [359, 255, 255] as const;
+export const CMY_MAXES = 100;
+export const CMYK_MAXES = 100;
 
 /**
  * Initial number of color in palette.
  */
 export const INIT_NUM_OF_CARDS = 5;
+export const MAX_NUM_OF_CARDS = 8;
+export const MIN_NUM_OF_CARDS = 2;
+/**
+ * Initial color space in palette.
+ */
+export const INIT_COLOR_SPACE = "rgb";
+
+
+// Settings consts.
+export const SETTINGS = ["Card", "Contrast"] as const;
+
+export const BORDER_MAX_WIDTH = 10 as const;
+export const BORDER_COLOR = ["white", "gray", "black"] as const;

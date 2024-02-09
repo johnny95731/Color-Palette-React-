@@ -1,0 +1,83 @@
+@import "@/assets/commons.scss";
+
+.sliderWrapper {
+  position: relative;
+  height: 22px;
+  width: 100%;
+  font-size: var(--font-sm);
+  background-color: transparent;
+}
+
+.tracker {
+  position: relative;
+  left: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 6px;
+  width: calc(100% - 14px);
+  border-radius: $radius-lg;
+  background-color: $color5;
+  cursor: pointer;
+  user-select: none;
+  &:hover .tooltip {
+    display: block;
+  }
+}
+
+.indicator {
+  @extend %center;
+  height: 14px;
+  aspect-ratio: 1 / 1;
+  border: solid 3px white;
+  outline: solid 1px $color5;
+  border-radius: 100%;
+  box-sizing: border-box;
+  background-color: $color5;
+}
+
+.limit {
+  display: inline-block;
+  position: absolute;
+  bottom: 100%;
+  font-size: var(--font-sm);
+  &:first-of-type{
+    left: 0;
+  }
+  &:last-of-type {
+    left: auto;
+    right: 0;
+  }
+}
+
+.tooltip { // Tooltip
+  display: none;
+  // position
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translate(-50%, -9px);
+  // shape
+  min-width: 10px;
+  padding: 3px 8px;
+  border-radius: $radius-md;
+
+  font-size: var(--font-sm);
+  text-align: center;
+  color: $color1;
+  background-color: $color5;
+  cursor: default;
+  user-select: all;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%);
+    width: 0;
+    height: 0;
+    border-width: 5px 6px;
+    border-style: solid;
+    border-color: $color5 transparent transparent transparent;
+  }
+}
+

@@ -1,6 +1,7 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: "development",
@@ -71,6 +72,11 @@ module.exports = {
     new ForkTsCheckerWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: "index.css",
+    }),
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+      filename: "index.html",
+      favicon: "./public/color-wheel.png",
     }),
   ],
   devServer: {

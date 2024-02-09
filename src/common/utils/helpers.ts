@@ -13,6 +13,62 @@ export const mod = (n: number, m: number): number => {
 };
 
 /**
+ * Convert a number `val` to percentage form, that is, `val*100%`.
+ * @param num A number.
+ * @param digits Digit of output number.
+ * @return Percentage number.
+ */
+export const round = (num: number, digits: number = 0): number => {
+  return Math.round(10**(digits) * num) / 10**(digits);
+};
+
+
+/**
+ * Convert a number `val` to percentage form, that is, `val*100%`.
+ * @param num A number.
+ * @param digits Digit of output number.
+ * @return Percentage number.
+ */
+export const toPercent = (num: number, digits: number = 0): number => {
+  return round(100 * num, digits);
+};
+
+/**
+ * Clip the number in the range `[min, max]`.
+ * @param num A number to clip.
+ * @param min Minimum value.
+ * @param max maximum value.
+ * @returns Clipped number.
+ */
+export const clip = (num: number, min?: number, max?: number): number => {
+  if (max !== undefined && num > max) return max;
+  else if (min !== undefined && num < min) return min;
+  else return num;
+};
+
+/**
+ * Check whether two object has same keys.
+ */
+export const hasSameKeys = (obj1: object, obj2: object): boolean => {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+  const allKeys = new Set([...keys1, ...keys2]);
+  if (!allKeys.size) return true;
+  if (!(allKeys.size === keys1.length && allKeys.size === keys2.length)) {
+    return false;
+  }
+  // Deep check
+  for (const key of allKeys) {
+    // @ts-expect-error Already deal `undefined` case.
+    const item1 = typeof obj1[key] === "object" ? obj1[key] : {};
+    // @ts-expect-error Already deal `undefined` case.
+    const item2 = typeof obj2[key] === "object" ? obj2[key] : {};
+    if (!hasSameKeys(item1, item2)) false;
+  }
+  return true;
+};
+
+/**
  * Capitalize a text.
  */
 export const capitalize = (text: string) => {
@@ -45,9 +101,7 @@ export const getClosestName = (rgb: number[]) => {
   return name;
 };
 
-export const getNamedColor = (name: keyof typeof NAMED_COLORS) => {
-  return NAMED_COLORS[name];
-};
+export const identity = <T>(x: T[]): T[] => Array.from(x);
 
 // Sorting
 /**
@@ -60,19 +114,6 @@ export const shuffle = <T>(arr: Array<T>): void => {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-};
-
-/**
- * Invert the order of an array. The process will change the input
- * array.
- * @template T
- * @param {Array<T>} arr The array be inverted.
- */
-export const inversion = <T>(arr: Array<T>): void => {
-  const lastIdx = arr.length - 1;
-  for (let i = 0; i < arr.length / 2; i++) {
-    [arr[i], arr[lastIdx - i]] = [arr[lastIdx - i], arr[i]];
   }
 };
 
@@ -129,7 +170,7 @@ export const copyHex = (
   try {
     navigator.clipboard.writeText(hex);
   } catch (err) {
-    console.log(err);
+    console.error("copy hex:", err);
   }
 };
 

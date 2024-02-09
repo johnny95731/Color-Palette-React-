@@ -2,11 +2,12 @@ import React, {
   Fragment, useMemo, useEffect, useCallback, forwardRef, Ref, useRef,
   useContext,
 } from "react";
-import css from "./index.scss";
-import Icon from "../Icons.tsx";
+import css from "./card.scss";
+import Icon from "../Customs/Icons.tsx";
 // utils
 import {
   rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos,
+  getSpaceTrans,
 } from "@/common/utils/colors.ts";
 import {
   getClosestName, hexTextEdited, copyHex,
@@ -16,7 +17,7 @@ import {
   useAppDispatch, useAppSelector, selectPlt, selectFavorites,
 } from "@/features";
 import {
-  delCard, refreshCard, editCard, setIsLock, setIsEditing,
+  refreshCard, editCard, setIsLock, setIsEditing,
 } from "@/features/slices/pltSlice.ts";
 import {favColorsChanged} from "slices/favSlice.ts";
 import MediaContext from "@/features/mediaContext.ts";
@@ -32,6 +33,7 @@ const ToolBar = ({
   filterStyle,
   events,
   handleDragReorder,
+  removeCard,
 }: {
   numOfCards: number;
   card: CardType;
@@ -40,12 +42,13 @@ const ToolBar = ({
     [key: string]: () => void;
   }
   handleDragReorder: MouseHandler | TouchHandler;
+  removeCard: () => void;
 }) => {
   // States / consts
   const favState = useAppSelector(selectFavorites);
   const isFav = useMemo(() => {
     return favState.colors.includes(card.hex);
-  }, [card.hex, favState.colors.length, favState.isInitialized[0]]);
+  }, [card.hex, favState.colors.length, favState.isInit[0]]);
   const dispatch = useAppDispatch();
 
   const {opacity, cursor} = useMemo(() => {
@@ -76,7 +79,7 @@ const ToolBar = ({
           opacity,
           cursor,
         }}
-        onClick={events.delCard}
+        onClick={removeCard}
       />
       <Icon type={card.isLock ? "lock" : "unlock"}
         style={filterStyle}
@@ -119,9 +122,13 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
 }, ref,
 ) => {
   const dispatch = useAppDispatch();
-  const {labels, maxes, converter, inverter} = (
-    getSpaceInfos(colorSpace)
-  );
+
+  const {labels, maxes, converter, inverter} = useMemo(() => {
+    return {
+      ...getSpaceInfos(colorSpace),
+      ...getSpaceTrans(colorSpace),
+    };
+  }, []);
 
   /**
    * Finish Hex editing when input is blurred or press "Enter"
@@ -181,9 +188,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   };
 
   // Check container is out of window or not.
-  const {
-    windowSize, isSmall, pos, bound,
-  } = useContext(MediaContext);
+  const {windowSize, isSmall, pos, bound} = useContext(MediaContext);
   const {endPos, resetPos} = useMemo(() => {
     if (isSmall) {
       return {
@@ -279,11 +284,21 @@ const Card = forwardRef(({
   cardId,
   numOfCards,
   card,
+  cardStyle,
+  isDoingTrans,
+  position,
   handleDraggingCard,
+  handleTransitionEnd,
+  removeCardTransition,
 }: {
   cardId: number;
   numOfCards: number;
   card: CardType;
+  cardStyle: React.CSSProperties;
+  isDoingTrans: boolean;
+  position: string;
+  removeCardTransition: () => void;
+  handleTransitionEnd: () => void;
   handleDraggingCard: MouseHandler;
 },
 ref: Ref<HTMLDivElement>,
@@ -291,32 +306,25 @@ ref: Ref<HTMLDivElement>,
   // States / consts
   const {color, hex, isEditing} = card;
   const {colorSpace} = useAppSelector(selectPlt);
+  const {pos} = useContext(MediaContext);
   const dispatch = useAppDispatch();
   const editingDialogRef = useRef<HTMLDivElement | null>(null);
 
-  const {
-    isLight,
-    colorArr,
-  } = useMemo(() => {
-    const {inverter} = getSpaceInfos(colorSpace);
-    return {
-      isLight: rgb2gray(inverter(color)) > 127,
-      colorArr: color.map((val) => Math.round(val)),
-    };
-  }, [hex, colorSpace]);
+  const colorArr = color.map((val) => Math.round(val));
+  const isLight = rgb2gray(hex2rgb(hex) as number[]) > 127;
 
   const filterStyle = useMemo(() => {
-    return isLight ? undefined : {filter: "invert(1)"};
-  }, [isLight]);
+    return {
+      display: isDoingTrans ? "none" : "",
+      filter: isLight ? "" : "invert(1)",
+    };
+  }, [isLight, isDoingTrans]);
 
   /**
    * Toolbar events.
    */
   const events = useMemo(() => {
     return {
-      delCard: () => {
-        dispatch(delCard(cardId));
-      },
       refreshCard: () => {
         dispatch(refreshCard(cardId));
       },
@@ -336,7 +344,12 @@ ref: Ref<HTMLDivElement>,
 
   return (
     <div className={css.cardContainer} ref={ref}
-      style={{backgroundColor: hex}}
+      style={{
+        ...cardStyle,
+        backgroundColor: hex,
+        [pos]: position,
+      }}
+      onTransitionEnd={handleTransitionEnd}
     >
       <ToolBar
         numOfCards={numOfCards}
@@ -344,6 +357,7 @@ ref: Ref<HTMLDivElement>,
         filterStyle={filterStyle}
         events={events}
         handleDragReorder={handleDraggingCard}
+        removeCard={removeCardTransition}
       />
       {
         <div className={css.textDisplay}
