@@ -66,16 +66,12 @@ const rgb2hue = (rgb: number[]): number[] => {
  */
 export const rgb2hsl = (rgb: number[]): number[] => {
   const [hue, min, max] = rgb2hue(rgb);
-  const lPrime = max + min;
-  let sat;
-  if ((max === 0)) {
-    sat = 0;
-  } else if (lPrime <= (RGB_MAXES / 2)) {
-    sat = HSL_MAXES[1] * (max - min) / (2 * lPrime);
-  } else {
-    sat = HSL_MAXES[1] * (max - min) / (2 * (RGB_MAXES - lPrime));
+  const lum = (max + min) / (2 * RGB_MAXES);
+  let sat = 0;
+  if (max !== min) {
+    sat = (max - min) / (1 - Math.abs(2 * lum - 1)) / RGB_MAXES;
   }
-  return [hue, sat, lPrime / 2];
+  return [hue, HSL_MAXES[1] * sat, HSL_MAXES[2] * lum];
 };
 
 /**
@@ -85,8 +81,9 @@ export const rgb2hsl = (rgb: number[]): number[] => {
  */
 export const rgb2hsb = (rgb: number[]): number[] => {
   const [hue, min, max] = rgb2hue(rgb);
-  const sat = max ? HSB_MAXES[1] * ((max - min) / max) : 0;
-  return [hue, sat, max];
+  const sat = max ? ((max - min) / max) / RGB_MAXES : 0;
+  const bri = max / RGB_MAXES;
+  return [hue, HSB_MAXES[1] *sat, HSB_MAXES[2] * bri];
 };
 
 /**

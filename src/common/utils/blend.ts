@@ -53,8 +53,8 @@ const blendNGamma = (
    */
   const sacleCoeff = HSL_MAXES.slice(1).map(
       (val) => Math.pow(val, (1 - gamma)));
-  const {converter, inverter} = getSpaceTrans("hsl");
   const mean = elementwiseMean(color1, color2);
+  const {converter, inverter} = getSpaceTrans("hsl");
   const [hue, sat, lum] = converter(mean);
   const newSat = Math.pow(sat, gamma) * sacleCoeff[0];
   const newLum = Math.pow(lum, gamma) * sacleCoeff[1];

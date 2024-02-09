@@ -285,7 +285,7 @@ const Card = forwardRef(({
   numOfCards,
   card,
   cardStyle,
-  isDoingTrans,
+  isExcutingTrans,
   position,
   handleDraggingCard,
   handleTransitionEnd,
@@ -295,7 +295,7 @@ const Card = forwardRef(({
   numOfCards: number;
   card: CardType;
   cardStyle: React.CSSProperties;
-  isDoingTrans: boolean;
+  isExcutingTrans: boolean;
   position: string;
   removeCardTransition: () => void;
   handleTransitionEnd: () => void;
@@ -315,10 +315,10 @@ ref: Ref<HTMLDivElement>,
 
   const filterStyle = useMemo(() => {
     return {
-      display: isDoingTrans ? "none" : "",
+      display: isExcutingTrans ? "none" : "",
       filter: isLight ? "" : "invert(1)",
     };
-  }, [isLight, isDoingTrans]);
+  }, [isLight, isExcutingTrans]);
 
   /**
    * Toolbar events.

@@ -139,11 +139,16 @@ const Palette = () => {
       );
     }
   };
-  useEffect(() => resetTransitionDuration(), []);
+  useEffect(() => resetTransitionDuration(), []); // Init transition duration.
 
+  // Add card, remove card, and drag card have transition event.
+  // The state is for checking the transition is end.
   const [isExcutingTrans, setIsExcutingTrans] = useState<boolean[]>(() =>
     Array.from({length: INIT_NUM_OF_CARDS}, () => false),
   );
+  // After transition end, some side effect will happen. This state is present
+  // for checking the entire event and side effect is complete.
+  const [isEventEnd, setIsEventEnd] = useState(true);
 
   const handleTransitionEnd = (cardIdx: number) => {
     setIsExcutingTrans((prev) => {
@@ -155,7 +160,7 @@ const Palette = () => {
 
   // Transition after adding card.
   const [addCardTrans, setAddCardStep] = useState<number>(() => 0);
-  const addCardIdx = useRef<number | null>(null);
+  const addCardObj = useRef<{idx: number; rgb: number[];} | null>(null);
   const addCardTransition = (idx: number) => {
     let rgb;
     if (blendMode === "random") rgb = randRgbGen();
@@ -194,7 +199,8 @@ const Palette = () => {
       );
     }
     setIsExcutingTrans(Array.from({length: numOfCards}, () => true));
-    addCardIdx.current = idx;
+    addCardObj.current = {idx, rgb};
+    setIsEventEnd(false);
   };
 
   useEffect(() => {
@@ -204,7 +210,8 @@ const Palette = () => {
       setAddCardStep(2);
     } else if (addCardTrans === 2) {
       resetTransitionDuration();
-      addCardIdx.current = null;
+      addCardObj.current = null;
+      setIsEventEnd(true);
       setAddCardStep(0);
     }
   }, [addCardTrans]);
@@ -237,6 +244,7 @@ const Palette = () => {
     }
     setIsExcutingTrans(Array.from({length: numOfCards - 1}, () => true));
     removeCardIdx.current = cardIdx;
+    setIsEventEnd(false);
   };
   useEffect(() => {
     if (removeCardStep === 1) {
@@ -244,6 +252,7 @@ const Palette = () => {
       setRemoveCardStep(2);
     } else if (removeCardStep === 2) {
       resetTransitionDuration();
+      setIsEventEnd(true);
       setRemoveCardStep(0);
     }
   }, [removeCardStep]);
@@ -271,6 +280,7 @@ const Palette = () => {
       newState[cardIdx] = true;
       return newState;
     });
+    setIsEventEnd(false);
     dragIdx.current.draggingIdx = cardIdx;
     dragIdx.current.finalIdx = cardIdx;
     const card = cardRefs.current[cardIdx];
@@ -356,6 +366,7 @@ const Palette = () => {
       dispatch(setIsReordering(false));
       resetTransitionDuration();
       setIsExcutingTrans((prev) => Array.from(prev, () => false));
+      setIsEventEnd(true);
       setMouseUpStep(0);
     }
   }, [mouseUpStep]);
@@ -378,8 +389,8 @@ const Palette = () => {
   const someCardIsExcutingTrans = isExcutingTrans.some((val) => val);
   useEffect(() => {
     if (someCardIsExcutingTrans) return;
-    if (addCardIdx.current !== null) { // After adding card.
-      dispatch(addCard(addCardIdx.current));
+    if (addCardObj.current !== null) { // After adding card.
+      dispatch(addCard(addCardObj.current));
       removeTransitionDuration();
       for (let i = 0; i < numOfCards; i++) {
         cardRefs.current[i].style[pos] = (
@@ -387,7 +398,7 @@ const Palette = () => {
         );
       }
       document.body.style.backgroundColor = "";
-      setAddCardStep(1);
+      setTimeout(() => setAddCardStep(1), 50);
     } else if (removeCardIdx.current !== null) { // After remove card.
       // Step 2. Call delete card action. Index `numOfCards - 1` of card DOM
       // will be delete. Have to set the style to new position.
@@ -406,7 +417,7 @@ const Palette = () => {
       cardRefs.current[cardIdx].style[size] = newLength;
       prevCardNum.current = numOfCards - 1;
       removeCardIdx.current = null;
-      setRemoveCardStep(1);
+      setTimeout(() => setRemoveCardStep(1), 50);
     } else if (mouseUpStep === 1) { // After mouse up event.
       // Prevent transition when state is updated.
       removeTransitionDuration();
@@ -425,7 +436,7 @@ const Palette = () => {
           card={card}
           cardStyle={cardStyle}
           position={cardsPos[i]}
-          isDoingTrans={someCardIsExcutingTrans}
+          isExcutingTrans={someCardIsExcutingTrans || !isEventEnd}
           removeCardTransition={() => removeCardTransition(i)}
           handleTransitionEnd={() => handleTransitionEnd(i)}
           handleDraggingCard={
@@ -436,7 +447,7 @@ const Palette = () => {
       })}
       <InsertRegions
         addCardTransition={addCardTransition}
-        isExcutingTrans={someCardIsExcutingTrans}
+        isExcutingTrans={someCardIsExcutingTrans || !isEventEnd}
       />
     </main>
   );

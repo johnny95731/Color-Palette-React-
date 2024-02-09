@@ -5,7 +5,6 @@ import {
   scaling,
 } from "@/common/utils/colors";
 import {shuffle} from "@/common/utils/helpers";
-import {blenders} from "@/common/utils/blend";
 import {
   INIT_NUM_OF_CARDS, INIT_COLOR_SPACE, MAX_NUM_OF_CARDS,
 } from "@/common/utils/constants";
@@ -19,16 +18,11 @@ import type {
  * @return {CardType} State object.
  */
 export const newCard = (
-    order: number, colorSpace: ColorSpacesType, color?: number[],
+    order: number, colorSpace: ColorSpacesType, rgb?: number[],
 ): CardType => {
   const infos = getSpaceTrans(colorSpace);
-  let rgb;
-  if (!color) {
-    rgb = randRgbGen();
-    color = infos.converter(rgb);
-  } else {
-    rgb = infos.inverter(color);
-  }
+  if (!rgb) rgb = randRgbGen();
+  const color = infos.converter(rgb);
   const hex = rgb2hex(rgb);
   return {
     order,
@@ -88,39 +82,16 @@ const cardSlice = createSlice({
   reducers: {
     // Card actions
     addCard: (state, action: {
-      payload: number;
+      payload: {
+        idx: number;
+        rgb: number[];
+      };
       type: string;
     }) => {
       if (state.numOfCards == MAX_NUM_OF_CARDS) return state;
-      const idx = action.payload;
+      const {idx, rgb} = action.payload;
       const cards = state.cards;
-      const cardState = newCard(idx, state.colorSpace);
-      if (state.blendMode !== "random") { // RGB Mean
-        const {converter, inverter} = getSpaceTrans(state.colorSpace);
-        // Pick cards.
-        let leftRgbColor;
-        let rightRgbColor;
-        // -Add to the first. Blending the first card and black.
-        if (!idx) leftRgbColor = [0, 0, 0];
-        else {
-          leftRgbColor = inverter(
-              (cards.find((card) => card.order === idx - 1) as CardType).color,
-          );
-        }
-        // -Add to the last. Blending the last card and white.
-        if (idx === state.numOfCards) rightRgbColor = [255, 255, 255];
-        else {
-          rightRgbColor = inverter(
-              (cards.find((card) => card.order === idx) as CardType).color,
-          );
-        }
-        // Blend
-        const rgb = blenders[state.blendMode](
-            leftRgbColor, rightRgbColor, state.colorSpace,
-        );
-        cardState.hex = rgb2hex(rgb);
-        cardState.color = converter(rgb);
-      }
+      const cardState = newCard(idx, state.colorSpace, rgb);
       cards.forEach((card) => {
         if (card.order >= idx) card.order += 1;
       });

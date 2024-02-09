@@ -37,8 +37,8 @@ export const GAMMA_MAX = 3;
 
 // Maximums of each color space.
 export const RGB_MAXES = 255;
-export const HSL_MAXES = [359, 255, 255] as const;
-export const HSB_MAXES = [359, 255, 255] as const;
+export const HSL_MAXES = [359, 100, 100] as const;
+export const HSB_MAXES = [359, 100, 100] as const;
 export const CMY_MAXES = 100;
 export const CMYK_MAXES = 100;
 
