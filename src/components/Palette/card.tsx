@@ -1,6 +1,6 @@
 import React, {
-  Fragment, useMemo, useEffect, useCallback, forwardRef, Ref, useRef,
-  useContext,
+  Fragment, useMemo, useEffect, useCallback, forwardRef, useRef,
+  useContext, useLayoutEffect,
 } from "react";
 import css from "./card.scss";
 import Icon from "../Customs/Icons.tsx";
@@ -22,6 +22,7 @@ import {
 import {favColorsChanged} from "slices/favSlice.ts";
 import MediaContext from "@/features/mediaContext.ts";
 // types
+import type {Ref} from "react";
 import type {MouseHandler, TouchHandler} from "types/eventHandler.ts";
 import type {CardType, ColorSpacesType} from "types/pltType.ts";
 
@@ -202,7 +203,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       } as const;
     }
   }, [pos, ...windowSize]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     // @ts-expect-error ref === React.MutableRefObject.
     const container = ref.current as HTMLDivElement;
     const rect = container.getBoundingClientRect();
@@ -259,16 +260,14 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
           colorArr.map((val, i) => {
             const name = `card${cardId}-slider${i}`;
             return (
-              <Fragment key={`card${cardId}-frag${i}`}>
-                <label key={`card${cardId}-label${i}`}>
-                  {`${labels[i]}: ${val}`}
-                  <input key={name} id={name}
-                    type="range" min="0" max={maxes[i]} step={0.01}
-                    defaultValue={val}
-                    onChange={(e) => handleSliderChange(e, i)}
-                  />
-                </label>
-              </Fragment>
+              <label key={`card${cardId}-label${i}`}>
+                {`${labels[i]}: ${val}`}
+                <input key={name} id={name}
+                  type="range" min="0" max={maxes[i]} step={0.01}
+                  defaultValue={val}
+                  onChange={(e) => handleSliderChange(e, i)}
+                />
+              </label>
             );
           })
         }
@@ -282,7 +281,6 @@ EditingDialog.displayName = "EditingWindow";
 // Main component
 const Card = forwardRef(({
   cardId,
-  numOfCards,
   card,
   cardStyle,
   isExcutingTrans,
@@ -292,7 +290,6 @@ const Card = forwardRef(({
   removeCardTransition,
 }: {
   cardId: number;
-  numOfCards: number;
   card: CardType;
   cardStyle: React.CSSProperties;
   isExcutingTrans: boolean;
@@ -305,7 +302,7 @@ ref: Ref<HTMLDivElement>,
 ) => {
   // States / consts
   const {color, hex, isEditing} = card;
-  const {colorSpace} = useAppSelector(selectPlt);
+  const {colorSpace, numOfCards} = useAppSelector(selectPlt);
   const {pos} = useContext(MediaContext);
   const dispatch = useAppDispatch();
   const editingDialogRef = useRef<HTMLDivElement | null>(null);

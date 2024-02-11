@@ -5,21 +5,20 @@ import React, {
 import Card from "./card.tsx";
 import Icon from "../Customs/Icons.tsx";
 import css from "./index.scss";
+// Utils
 import {toPercent} from "@/common/utils/helpers.ts";
 import {blenders} from "@/common/utils/blend.ts";
 import {INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS} from "@/common/utils/constants.ts";
 import {getSpaceTrans, randRgbGen, rgb2hex} from "@/common/utils/colors.ts";
 // Stores
 import {
-  useAppDispatch, useAppSelector, selectPlt,
-  selectSettings,
+  useAppDispatch, useAppSelector, selectPlt, selectSettings,
 } from "@/features";
 import {
   addCard, delCard, moveCard, resetOrder, setIsReordering,
 } from "@/features/slices/pltSlice.ts";
 import MediaContext from "@/features/mediaContext.ts";
 // Types
-import type {MouseHandler} from "types/eventHandler.ts";
 import type {CardType} from "@/features/types/pltType.ts";
 
 // Other components
@@ -49,9 +48,7 @@ const InsertRegions = ({
         undefined
   );
 
-  // Events
   const handleAddCard = addCardTransition;
-
   return (
     <div id="insertRegion"
       style={displayStyle}
@@ -158,10 +155,11 @@ const Palette = () => {
     });
   };
 
-  // Transition after adding card.
+  // Transition before adding card.
   const [addCardTrans, setAddCardStep] = useState<number>(() => 0);
   const addCardObj = useRef<{idx: number; rgb: number[];} | null>(null);
   const addCardTransition = (idx: number) => {
+    // Evaluate new color.
     let rgb;
     if (blendMode === "random") rgb = randRgbGen();
     else {
@@ -169,26 +167,26 @@ const Palette = () => {
       // Pick cards.
       let leftRgbColor;
       let rightRgbColor;
-      // -Add to the first. Blending the first card and black.
+      // -Add to the first position. Blending the first card and black.
       if (!idx) leftRgbColor = [0, 0, 0];
       else {
         leftRgbColor = inverter(
             (cards.find((card) => card.order === idx - 1) as CardType).color,
         );
       }
-      // -Add to the last. Blending the last card and white.
+      // -Add to the last position. Blending the last card and white.
       if (idx === numOfCards) rightRgbColor = [255, 255, 255];
       else {
         rightRgbColor = inverter(
             (cards.find((card) => card.order === idx) as CardType).color,
         );
       }
-      // Blend
       rgb = blenders[blendMode](
           leftRgbColor, rightRgbColor, colorSpace,
       );
     }
     document.body.style.backgroundColor = rgb2hex(rgb);
+    // Transition: shrink and move card and enpty space is new card
     const size = isSmall ? "height" : "width";
     const length = `${toPercent(1 / (numOfCards + 1), 2)}%`;
     for (let i = 0; i < numOfCards; i++) {
@@ -198,6 +196,7 @@ const Palette = () => {
         `${toPercent((cards[i].order + bias) / (numOfCards + 1), 2)}%`
       );
     }
+    // Trigger side effect when !isExcutingTrans.some()
     setIsExcutingTrans(Array.from({length: numOfCards}, () => true));
     addCardObj.current = {idx, rgb};
     setIsEventEnd(false);
@@ -400,8 +399,8 @@ const Palette = () => {
       document.body.style.backgroundColor = "";
       setTimeout(() => setAddCardStep(1), 50);
     } else if (removeCardIdx.current !== null) { // After remove card.
-      // Step 2. Call delete card action. Index `numOfCards - 1` of card DOM
-      // will be delete. Have to set the style to new position.
+      // Call "delCard" action. Card of Index `numOfCards - 1` will be delete.
+      // Have to set the style to new position.
       const cardIdx = removeCardIdx.current;
       dispatch(delCard(cardIdx));
       removeTransitionDuration();
@@ -432,22 +431,18 @@ const Palette = () => {
         return <Card key={`card${i}`}
           ref={(el) => cardRefs.current[i] = (el as HTMLDivElement)}
           cardId={i}
-          numOfCards={numOfCards}
           card={card}
           cardStyle={cardStyle}
           position={cardsPos[i]}
-          isExcutingTrans={someCardIsExcutingTrans || !isEventEnd}
+          isExcutingTrans={!isEventEnd}
           removeCardTransition={() => removeCardTransition(i)}
           handleTransitionEnd={() => handleTransitionEnd(i)}
-          handleDraggingCard={
-            ((e: React.MouseEvent<HTMLDivElement>) =>
-              handleDraggingCard(e, i)) as MouseHandler
-          }
+          handleDraggingCard={(e) => handleDraggingCard(e, i)}
         />;
       })}
       <InsertRegions
         addCardTransition={addCardTransition}
-        isExcutingTrans={someCardIsExcutingTrans || !isEventEnd}
+        isExcutingTrans={!isEventEnd}
       />
     </main>
   );
