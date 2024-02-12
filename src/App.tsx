@@ -42,7 +42,7 @@ const App = () => {
     setIsMasking(!isfavShowing);
   };
 
-  const {cards, isReordering} = useAppSelector(selectPlt);
+  const {cards, isPending: isReordering} = useAppSelector(selectPlt);
   const preventKeydown = (
     cards.some((card) => card.isEditing) ||
     isReordering ||

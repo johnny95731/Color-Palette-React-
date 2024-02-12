@@ -69,6 +69,22 @@ export const hasSameKeys = (obj1: object, obj2: object): boolean => {
 };
 
 /**
+ * Evaluate length that are divided evenly by `num`.
+ * @param num Total number.
+ */
+export const evalLength = (num: number): string => {
+  return `${toPercent(1 / num, 2)}%`;
+};
+
+/**
+ * Divide evenly by `num` and return the `idx`-th position.
+ * @param num Total number.
+ */
+export const evalPosition = (idx: number, num: number): string => {
+  return `${toPercent(idx / num, 2)}%`;
+};
+
+/**
  * Capitalize a text.
  */
 export const capitalize = (text: string) => {

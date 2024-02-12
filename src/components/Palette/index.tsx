@@ -1,12 +1,15 @@
 import React, {
   useRef, useCallback, useMemo, useEffect, useContext, useState,
+  useLayoutEffect,
 } from "react";
 
 import Card from "./card.tsx";
 import Icon from "../Customs/Icons.tsx";
 import css from "./index.scss";
 // Utils
-import {toPercent} from "@/common/utils/helpers.ts";
+import {
+  evalLength, evalPosition, round,
+} from "@/common/utils/helpers.ts";
 import {blenders} from "@/common/utils/blend.ts";
 import {INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS} from "@/common/utils/constants.ts";
 import {getSpaceTrans, randRgbGen, rgb2hex} from "@/common/utils/colors.ts";
@@ -15,11 +18,11 @@ import {
   useAppDispatch, useAppSelector, selectPlt, selectSettings,
 } from "@/features";
 import {
-  addCard, delCard, moveCard, resetOrder, setIsReordering,
+  addCard, delCard, moveCard, resetOrder, setIsPending,
 } from "@/features/slices/pltSlice.ts";
 import MediaContext from "@/features/mediaContext.ts";
 // Types
-import type {CardType} from "@/features/types/pltType.ts";
+import type {CardHandle} from "./card.tsx";
 
 // Other components
 const InsertRegions = ({
@@ -34,10 +37,9 @@ const InsertRegions = ({
   const {isSmall, pos} = useContext(MediaContext);
 
   const positions = useMemo(() => {
-    const step = 1 / numOfCards;
     return Array.from({length: numOfCards + 1}, (_, i) => {
       const style: {[key: string]: string} = {};
-      style[pos] = `${toPercent(i * step, 2)}%`;
+      style[pos] = evalPosition(i, numOfCards);
       return style;
     });
   }, [numOfCards, isSmall]);
@@ -76,10 +78,11 @@ const InsertRegions = ({
 const Palette = () => {
   // States / consts
   const dispatch = useAppDispatch();
-  const {cards, numOfCards, colorSpace, blendMode} = useAppSelector(selectPlt);
+  const {
+    cards, numOfCards, colorSpace, blendMode, isPending,
+  } = useAppSelector(selectPlt);
   const {border, transition} = useAppSelector(selectSettings);
-  const {windowSize, isSmall, pos, clientPos, bound} = useContext(MediaContext);
-  const prevCardNum = useRef(numOfCards);
+  const {windowSize, isSmall, clientPos, bound} = useContext(MediaContext);
 
   const dragIdx = useRef<{
       /**
@@ -93,10 +96,9 @@ const Palette = () => {
   }>({
     draggingIdx: null, finalIdx: null,
   });
-  const cardRefs = useRef<HTMLDivElement[]>([]);
+  const cardRefs = useRef<CardHandle[]>([]);
 
-  const cardStyle = {
-    [isSmall ? "height" : "width"]: `${toPercent(1 / numOfCards, 2)}%`,
+  const borderStyle: React.CSSProperties = {
     borderWidth: border.width,
     borderColor: border.show ? border.color : "",
   };
@@ -108,39 +110,38 @@ const Palette = () => {
     return {
       cardLength,
       cardsPos: Array.from({length: numOfCards},
-          (_, i) => `${toPercent(i / numOfCards, 2)}%`,
+          (_, i) => evalPosition(i, numOfCards),
       ),
     };
   }, [...windowSize, numOfCards]);
 
-  const {resetPosition, removeTransitionDuration} = useMemo(() => {
+  const {
+    resetPosition, removeTransitionDuration, resetTransitionDuration,
+  } = useMemo(() => {
     return {
       resetPosition() {
         for (let i = 0; i < numOfCards; i++) {
           if (i === dragIdx.current.draggingIdx) continue;
-          cardRefs.current[i].style[pos] = `${toPercent(i / numOfCards, 2)}%`;
+          cardRefs.current[i].setPos(cardsPos[i]);
         }
       },
       removeTransitionDuration() {
         for (let i = 0; i < numOfCards; i++) {
-          cardRefs.current[i].style.transitionDuration = "";
+          cardRefs.current[i].setTransDuration("none");
+        }
+      },
+      resetTransitionDuration() {
+        for (let i = 0; i < numOfCards; i++) {
+          if (i === dragIdx.current.draggingIdx) continue;
+          cardRefs.current[i].setTransDuration("reset");
         }
       },
     };
-  }, [isSmall, numOfCards]);
-
-  const resetTransitionDuration = () => {
-    for (let i = 0; i < numOfCards; i++) {
-      cardRefs.current[i].style.transitionDuration = (
-        `${transition.pos}ms, ${transition.pos}ms, ${transition.color}ms`
-      );
-    }
-  };
-  useEffect(() => resetTransitionDuration(), []); // Init transition duration.
+  }, [numOfCards]);
 
   // Add card, remove card, and drag card have transition event.
   // The state is for checking the transition is end.
-  const [isExcutingTrans, setIsExcutingTrans] = useState<boolean[]>(() =>
+  const [isInTrans, setIsInTrans] = useState<boolean[]>(() =>
     Array.from({length: INIT_NUM_OF_CARDS}, () => false),
   );
   // After transition end, some side effect will happen. This state is present
@@ -148,7 +149,7 @@ const Palette = () => {
   const [isEventEnd, setIsEventEnd] = useState(true);
 
   const handleTransitionEnd = (cardIdx: number) => {
-    setIsExcutingTrans((prev) => {
+    setIsInTrans((prev) => {
       const newState = [...prev];
       newState[cardIdx] = false;
       return newState;
@@ -156,7 +157,6 @@ const Palette = () => {
   };
 
   // Transition before adding card.
-  const [addCardTrans, setAddCardStep] = useState<number>(() => 0);
   const addCardObj = useRef<{idx: number; rgb: number[];} | null>(null);
   const addCardTransition = (idx: number) => {
     // Evaluate new color.
@@ -169,92 +169,86 @@ const Palette = () => {
       let rightRgbColor;
       // -Add to the first position. Blending the first card and black.
       if (!idx) leftRgbColor = [0, 0, 0];
-      else {
-        leftRgbColor = inverter(
-            (cards.find((card) => card.order === idx - 1) as CardType).color,
-        );
-      }
+      else leftRgbColor = inverter(cards[idx - 1].color);
       // -Add to the last position. Blending the last card and white.
       if (idx === numOfCards) rightRgbColor = [255, 255, 255];
-      else {
-        rightRgbColor = inverter(
-            (cards.find((card) => card.order === idx) as CardType).color,
+      else rightRgbColor = inverter(cards[idx].color);
+      rgb = blenders[blendMode](leftRgbColor, rightRgbColor, colorSpace);
+    }
+    // Transition: shrink and move card and enpty space is new card
+    const length = evalLength(numOfCards + 1);
+    if (!transition.pos) { // no transition.
+      dispatch(addCard({idx, rgb}));
+      removeTransitionDuration();
+      for (let i = 0; i < numOfCards; i++) {
+        cardRefs.current[i].setSize(length);
+        cardRefs.current[i].setPos(
+            evalPosition(cards[i].order, numOfCards + 1),
         );
       }
-      rgb = blenders[blendMode](
-          leftRgbColor, rightRgbColor, colorSpace,
-      );
+      setTimeout(() => resetTransitionDuration(), 50);
+      return;
     }
-    document.body.style.backgroundColor = rgb2hex(rgb);
-    // Transition: shrink and move card and enpty space is new card
-    const size = isSmall ? "height" : "width";
-    const length = `${toPercent(1 / (numOfCards + 1), 2)}%`;
     for (let i = 0; i < numOfCards; i++) {
-      cardRefs.current[i].style[size] = length;
+      cardRefs.current[i].setSize(length);
       const bias = i >= idx ? 1 : 0;
-      cardRefs.current[i].style[pos] = (
-        `${toPercent((cards[i].order + bias) / (numOfCards + 1), 2)}%`
+      cardRefs.current[i].setPos(
+          evalPosition(cards[i].order + bias, numOfCards + 1),
       );
     }
+    resetTransitionDuration();
+    document.body.style.backgroundColor = rgb2hex(rgb);
     // Trigger side effect when !isExcutingTrans.some()
-    setIsExcutingTrans(Array.from({length: numOfCards}, () => true));
+    setIsInTrans(Array.from({length: numOfCards}, () => true));
     addCardObj.current = {idx, rgb};
-    setIsEventEnd(false);
   };
 
-  useEffect(() => {
-    if (addCardTrans === 1) { // Reset oder of cards.
-      removeTransitionDuration();
-      resetPosition();
-      setAddCardStep(2);
-    } else if (addCardTrans === 2) {
-      resetTransitionDuration();
-      addCardObj.current = null;
-      setIsEventEnd(true);
-      setAddCardStep(0);
-    }
-  }, [addCardTrans]);
-
   // Handle delete card.
-  const [removeCardStep, setRemoveCardStep] = useState<number>(() => 0);
+  const [removeTransStep, setRemoveTransStep] = useState(() => 0);
   const removeCardIdx = useRef<number | null>(null);
   /**
    * Transition before delete card object.
-   * @param cardIdx
+   * @param idx
    */
-  const removeCardTransition = (cardIdx: number) => {
-    const size = isSmall ? "height" : "width";
-    const newLength = `${toPercent(1 / (numOfCards - 1), 2)}%`;
-    const targetOrder = cards[cardIdx].order;
+  const removeCardTransition = (idx: number) => {
+    if (!transition.pos) { // no transition.
+      dispatch(delCard(idx));
+      removeTransitionDuration();
+      const newLength = evalLength(numOfCards - 1);
+      for (let i = 0; i < numOfCards - 1; i++) {
+        cardRefs.current[i].setPos(evalPosition(i, numOfCards - 1));
+        cardRefs.current[i].setSize(newLength);
+      }
+      setTimeout(() => {
+        for (let i = 0; i < numOfCards - 1; i++) {
+          cardRefs.current[i].setTransDuration("reset");
+        }
+      }, 50);
+      return;
+    }
+    resetTransitionDuration();
+    dispatch(setIsPending(true));
+    const newLength = evalLength(numOfCards - 1);
+    const targetOrder = cards[idx].order;
+    setIsInTrans(Array.from({length: numOfCards - 1}, () => true));
     // Shrink target card and expand other card.
     for (let i = 0; i < numOfCards; i++) {
-      if (i === cardIdx) {
-        cardRefs.current[i].style[size] = "0%";
-        cardRefs.current[i].style[pos] = (
-          `${toPercent((cards[i].order) / (numOfCards - 1), 2)}%`
+      if (i === idx) {
+        cardRefs.current[i].setSize("0%");
+        cardRefs.current[i].setPos(
+            evalPosition(cards[i].order, numOfCards - 1),
         );
         continue;
       }
       const bias = cards[i].order > targetOrder ? 1 : 0;
-      cardRefs.current[i].style[size] = newLength;
-      cardRefs.current[i].style[pos] = (
-        `${toPercent((cards[i].order - bias) / (numOfCards - 1), 2)}%`
+      cardRefs.current[i].setSize(newLength);
+      cardRefs.current[i].setPos(
+          evalPosition(cards[i].order - bias, numOfCards - 1),
       );
     }
-    setIsExcutingTrans(Array.from({length: numOfCards - 1}, () => true));
-    removeCardIdx.current = cardIdx;
+    removeCardIdx.current = idx;
     setIsEventEnd(false);
   };
-  useEffect(() => {
-    if (removeCardStep === 1) {
-      resetPosition();
-      setRemoveCardStep(2);
-    } else if (removeCardStep === 2) {
-      resetTransitionDuration();
-      setIsEventEnd(true);
-      setRemoveCardStep(0);
-    }
-  }, [removeCardStep]);
 
   // Drag events start
   /**
@@ -269,24 +263,27 @@ const Palette = () => {
     // Disable pull-to-refresh on mobile.
     document.body.style.overscrollBehavior = "none";
     // Cursor position when mouse down.
-    const nowPos = (
+    const cursorPos = (
       (e as React.MouseEvent)[clientPos] ||
       (e as React.TouchEvent).touches[0][clientPos]
     ) - bound[0];
-    dispatch(setIsReordering(true));
-    setIsExcutingTrans((prev) => {
-      const newState = [...prev];
-      newState[cardIdx] = true;
-      return newState;
-    });
+    dispatch(setIsPending(true));
+    if (transition.pos) {
+      setIsInTrans((prev) => {
+        const newState = [...prev];
+        newState[cardIdx] = true;
+        return newState;
+      });
+    }
     setIsEventEnd(false);
     dragIdx.current.draggingIdx = cardIdx;
     dragIdx.current.finalIdx = cardIdx;
+    resetTransitionDuration();
     const card = cardRefs.current[cardIdx];
-    card.style[pos] = `${nowPos - cardLength / 2}px`;
-    card.style.transitionDuration = "";
-    card.classList.add(css.dragging);
-  }, [numOfCards, isSmall, bound[0], cards]);
+    card.setPos(`${round(cursorPos - cardLength / 2)}px`);
+    card.setTransDuration("none");
+    card.element.classList.add(css.dragging);
+  }, [cardLength, isSmall, bound[0], cards, transition.pos]);
 
   /**
    * The event is triggered when the `<->` icon on a card is dragging and mouse
@@ -295,80 +292,78 @@ const Palette = () => {
   const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
     const idx = dragIdx.current.draggingIdx;
     if (idx === null) return;
-    const nowPos = (
+    const cursorPos = (
       (e as MouseEvent)[clientPos] ||
       (e as TouchEvent).touches[0][clientPos]
     ) - bound[0];
     // Mouse is not in range.
-    if (nowPos < 0 || nowPos > bound[1] - bound[0]) return;
+    if (cursorPos < 0 || cursorPos > bound[1] - bound[0]) return;
     const card = cardRefs.current[idx];
-    card.style[pos] = `${nowPos - cardLength / 2}px`;
+    card.setPos(`${round(cursorPos - cardLength / 2)}px`);
     // Order of card that cursor at.
-    const order = Math.floor(nowPos / cardLength);
+    const order = Math.floor(cursorPos / cardLength);
     const lastOrder = dragIdx.current.finalIdx as number;
     dragIdx.current.finalIdx = order;
 
-    // Change .order attribute.
+    // Change `.order` attribute.
     dispatch(moveCard({init: idx, final: order}));
-    // Update state: start transition.
-    setIsExcutingTrans((prev) => {
-      if (order === lastOrder) return prev;
-      const newState = [...prev];
-      // No exchange happened
-      const moveToRightSide = lastOrder < order;
-      if ( // Be away from origin place.
-        (idx > order && !moveToRightSide) ||
-        (idx < order && moveToRightSide)
-      ) {
-        newState[order] = true;
-      } else { // Close to origin place.
-        newState[lastOrder] = true;
-      }
-      return newState;
-    });
-  }, [cardLength, isSmall, ...bound]); // pos depends on `isSmall`.
+    // Update state: which card start transition.
+    if (transition.pos) {
+      setIsInTrans((prev) => {
+        if (order === lastOrder) return prev;
+        const newState = [...prev];
+        // No exchange happened
+        const moveToRightSide = lastOrder < order;
+        if ( // Be away from origin place.
+          (idx > order && !moveToRightSide) ||
+          (idx < order && moveToRightSide)
+        ) {
+          newState[order] = true;
+        } else { // Close to origin place.
+          newState[lastOrder] = true;
+        }
+        return newState;
+      });
+    }
+  }, [cardLength, isSmall, ...bound, transition.pos]);
 
-  useEffect(() => { // When cursor move into another card or mouse up.\
+  useEffect(() => { // When cursor move into another card.
+    if (dragIdx.current.finalIdx === null) return;
     for (let i = 0; i < numOfCards; i++) {
       if (i === dragIdx.current.draggingIdx) continue;
-      cardRefs.current[i].style[pos] = cardsPos[cards[i].order];
+      cardRefs.current[i].setPos(cardsPos[cards[i].order]);
     }
   }, [dragIdx.current.finalIdx]);
 
-  const [mouseUpStep, setMouseUpStep] = useState<number>(0);
+  const [mouseUpEffect, setMouseUpEffect] = useState<boolean>(false);
   /**
    * The event is triggered when release left buton.
    */
   const handleMouseUp = useCallback(() => {
     // Able pull-to-refresh on mobile.
     document.body.style.overscrollBehavior = "";
+    // `draggingIdx` and `finalIdx`setIsEventEnd are set to be non-null
+    // together when mouse down.
     const idx = dragIdx.current.draggingIdx;
-    if (idx === null) return;
-    // `nowDragging` and `finalOrder` are set to be non-null together when
-    // mouse down.
     const finalOrder = dragIdx.current.finalIdx as number;
-    // Update state.
     dragIdx.current.draggingIdx = null;
     dragIdx.current.finalIdx = null;
+    if (idx === null) return;
     // Remove class.
     const card = cardRefs.current[idx];
-    card.classList.remove(css.dragging);
+    card.element.classList.remove(css.dragging);
     // Dragging card move to target position.
-    card.style[pos] = `${toPercent(finalOrder / numOfCards, 2)}%`;
-    card.style.transitionDuration = `${transition.pos}ms, 0ms`;
-    setMouseUpStep(1);
-  }, [isSmall, numOfCards, transition.pos]);
-  // Side-effect when mouse-up transition is over..
-  useEffect(() => {
-    if (mouseUpStep < 2) return;
-    if (mouseUpStep === 2) {
-      dispatch(setIsReordering(false));
-      resetTransitionDuration();
-      setIsExcutingTrans((prev) => Array.from(prev, () => false));
+    card.setPos(evalPosition(finalOrder, numOfCards));
+    card.setTransDuration("pos");
+    setMouseUpEffect(true);
+    if (!transition.pos) {
+      removeTransitionDuration();
+      dispatch(resetOrder());
+      resetPosition();
       setIsEventEnd(true);
-      setMouseUpStep(0);
+      dispatch(setIsPending(false));
     }
-  }, [mouseUpStep]);
+  }, [numOfCards, transition.pos]);
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
@@ -384,55 +379,62 @@ const Palette = () => {
   }, [handleMouseMove, handleMouseUp]);
   // Drag events end
 
-  // Side effect when transition end.
-  const someCardIsExcutingTrans = isExcutingTrans.some((val) => val);
+  // Side effect when transition is over.
   useEffect(() => {
-    if (someCardIsExcutingTrans) return;
+    if (removeTransStep === 1) {
+      setIsEventEnd(true);
+      setRemoveTransStep(0);
+    }
+  }, [removeTransStep]);
+  useEffect(() => {
+    if (!isPending) {
+      resetTransitionDuration();
+      dispatch(setIsPending(false));
+    }
+  }, [isEventEnd]);
+  const someCardIsInTrans = isInTrans.some((val) => val);
+  useLayoutEffect(() => {
+    if (someCardIsInTrans) return;
     if (addCardObj.current !== null) { // After adding card.
       dispatch(addCard(addCardObj.current));
-      removeTransitionDuration();
-      for (let i = 0; i < numOfCards; i++) {
-        cardRefs.current[i].style[pos] = (
-          `${toPercent(i / (numOfCards + 1), 2)}%`
-        );
-      }
       document.body.style.backgroundColor = "";
-      setTimeout(() => setAddCardStep(1), 50);
+      for (let i = 0; i < numOfCards; i++) {
+        cardRefs.current[i].setPos(evalPosition(i, numOfCards + 1));
+      }
+      removeTransitionDuration();
+      addCardObj.current = null;
+      setIsEventEnd(true);
     } else if (removeCardIdx.current !== null) { // After remove card.
       // Call "delCard" action. Card of Index `numOfCards - 1` will be delete.
       // Have to set the style to new position.
-      const cardIdx = removeCardIdx.current;
-      dispatch(delCard(cardIdx));
-      removeTransitionDuration();
-      for (let i = 0; i < numOfCards - 1; i++) {
-        if (i < cardIdx) continue;
-        cardRefs.current[i].style[pos] = (
-          `${toPercent(i / (numOfCards - 1), 2)}%`
-        );
+      const idx = removeCardIdx.current;
+      for (let i = idx; i < numOfCards; i++) {
+        cardRefs.current[i].setPos(evalPosition(i, numOfCards - 1));
+        cardRefs.current[i].setTransDuration("none");
       }
       // Only index `cardIdx` is not newLength since `removeCardTransition`.
-      const size = isSmall ? "height" : "width";
-      const newLength = `${toPercent(1 / (numOfCards - 1), 2)}%`;
-      cardRefs.current[cardIdx].style[size] = newLength;
-      prevCardNum.current = numOfCards - 1;
+      const newLength = evalLength(numOfCards - 1);
+      cardRefs.current[idx].setSize(newLength);
+      dispatch(delCard(idx));
       removeCardIdx.current = null;
-      setTimeout(() => setRemoveCardStep(1), 50);
-    } else if (mouseUpStep === 1) { // After mouse up event.
-      // Prevent transition when state is updated.
+      setRemoveTransStep(1);
+    } else if (mouseUpEffect) { // After mouse up event.
       removeTransitionDuration();
       dispatch(resetOrder());
       resetPosition();
-      setTimeout(() => setMouseUpStep(2), 50);
+      dispatch(setIsPending(false));
+      setIsEventEnd(true);
+      setMouseUpEffect(false);
     }
-  }, [someCardIsExcutingTrans]);
+  }, [someCardIsInTrans, mouseUpEffect]);
   return (
     <main className={css.main}>
       {cards.map((card, i) => {
         return <Card key={`card${i}`}
-          ref={(el) => cardRefs.current[i] = (el as HTMLDivElement)}
+          ref={(el) => cardRefs.current[i] = el as CardHandle}
           cardId={i}
           card={card}
-          cardStyle={cardStyle}
+          borderStyle={borderStyle}
           position={cardsPos[i]}
           isExcutingTrans={!isEventEnd}
           removeCardTransition={() => removeCardTransition(i)}

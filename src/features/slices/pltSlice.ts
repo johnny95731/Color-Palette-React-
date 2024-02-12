@@ -47,9 +47,9 @@ type StateType = {
    */
   sortBy: OrderStateType;
   /**
-   * Cards is reordering. `true` if and only if dragging a card.
+   * Start dealing events.
    */
-  isReordering: boolean;
+  isPending: boolean;
   /**
    * Edit the palette.
    */
@@ -70,7 +70,7 @@ const initialState: StateType = {
   cards: Array.from({length: INIT_NUM_OF_CARDS},
       (_, i) => newCard(i, INIT_COLOR_SPACE)),
   sortBy: "random",
-  isReordering: false,
+  isPending: false,
   isEditingPlt: false,
   blendMode: "mean",
   colorSpace: INIT_COLOR_SPACE,
@@ -205,12 +205,12 @@ const cardSlice = createSlice({
       state.cards.sort((a, b) => a.order - b.order);
       state.cards.forEach((card, i) => card.order = i);
     },
-    setIsReordering: (state, action: {
+    setIsPending: (state, action: {
       payload: boolean;
       type: string;
     }) => {
       const newVal = action.payload;
-      state.isReordering = newVal;
+      state.isPending = newVal;
     },
     setPltIsEditing: (state, action: {
       payload: "start" | "reset" | "cancel";
@@ -290,7 +290,7 @@ const cardSlice = createSlice({
 
 export const {
   addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setIsEditing,
-  moveCard, setIsReordering, setPltIsEditing, setPlt, setColorSpace,
+  moveCard, setIsPending, setPltIsEditing, setPlt, setColorSpace,
   setBlendMode, adjustContrast, resetOrder,
 } = cardSlice.actions;
 export default cardSlice.reducer;
