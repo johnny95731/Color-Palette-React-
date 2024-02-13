@@ -12,6 +12,8 @@ import {
 import {
   getClosestName, hexTextEdited, copyHex,
   toPercent,
+  evalLength,
+  evalPosition,
 } from "@/common/utils/helpers.ts";
 // Stores
 import {
@@ -284,11 +286,11 @@ EditingDialog.displayName = "EditingWindow";
 type CardProps = {
   cardId: number;
   card: CardType;
-  borderStyle: React.CSSProperties;
+  styleInSettings: React.CSSProperties;
   position: string;
-  transRemoveCard: () => void;
-  handleTransitionEnd: () => void;
   startDraggingCard: MouseHandler;
+  handleRemoveCard: () => void;
+  handleTransitionEnd: () => void;
 }
 
 export type CardHandle = {
@@ -301,11 +303,11 @@ export type CardHandle = {
 const Card = forwardRef<CardHandle, CardProps>(({
   cardId,
   card,
-  borderStyle,
+  styleInSettings,
   position,
-  startDraggingCard: handleDraggingCard,
+  startDraggingCard,
   handleTransitionEnd,
-  transRemoveCard: removeCardTransition,
+  handleRemoveCard,
 },
 ref,
 ) => {
@@ -334,9 +336,7 @@ ref,
       () => `${toPercent(1 / numOfCards, 2)}%`,
   );
   const [cardPos, setCardPos] = useState(() => position);
-  const [transDuration, setTransDuration] = useState(() =>
-    `${transition.pos}ms, ${transition.pos}ms, ${transition.color}ms`,
-  );
+  const [transDuration, setTransDuration] = useState(() => "");
 
   useImperativeHandle(ref, () => {
     return {
@@ -350,23 +350,14 @@ ref,
       setTransDuration(action: "none" | "pos" | "color" | "reset") {
         switch (action) {
           case "none":
-            setTransDuration("");
-            break;
-          case "color":
-            setTransDuration(`0ms, 0ms, ${transition.color}ms`);
-            break;
-          case "pos":
-            setTransDuration(`${transition.pos}ms, 0ms`);
+            setTransDuration("none");
             break;
           case "reset":
-            setTransDuration(
-                `${transition.pos}ms, ${transition.pos
-                }ms, ${transition.color}ms`,
-            );
+            setTransDuration("");
         }
       },
     };
-  }, [transition]);
+  }, [transition, isSmall]);
 
   /**
    * Toolbar events.
@@ -390,14 +381,19 @@ ref,
     if (isEditing) editingDialogRef.current?.focus();
   }, [isEditing]);
 
+  useLayoutEffect(() => {
+    setCardPos(evalPosition(cardId, numOfCards));
+    setCardSize(evalLength(numOfCards));
+  }, [numOfCards]);
+
   return (
     <div className={css.cardContainer} ref={containerRef}
       style={{
-        ...borderStyle,
+        ...styleInSettings,
         backgroundColor: hex,
         [isSmall ? "height" : "width"]: cardSize,
         [pos]: cardPos,
-        transitionDuration: transDuration,
+        transitionProperty: transDuration,
       }}
       onTransitionEnd={handleTransitionEnd}
     >
@@ -406,8 +402,8 @@ ref,
         card={card}
         filterStyle={filterStyle}
         events={events}
-        handleDragReorder={handleDraggingCard}
-        removeCard={removeCardTransition}
+        handleDragReorder={startDraggingCard}
+        removeCard={handleRemoveCard}
       />
       {
         <div className={css.textDisplay}
