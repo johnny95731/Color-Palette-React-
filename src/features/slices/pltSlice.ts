@@ -182,22 +182,22 @@ const cardSlice = createSlice({
       const idx = action.payload;
       state.cards[idx].isEditing = !state.cards[idx].isEditing;
     },
-    moveCard: (state, action: {
-      payload: {init: number; final: number};
+    moveCardOrder: (state, action: {
+      payload: {cardIdx: number; to: number};
       type: string;
     }) => {
-      const {init, final} = action.payload;
-      const initOrder = state.cards[init].order;
-      if (initOrder <= final) {
+      const {cardIdx, to} = action.payload;
+      const initOrder = state.cards[cardIdx].order;
+      if (initOrder <= to) {
         state.cards.forEach((card) => {
-          if (card.order > initOrder && card.order <= final) card.order -= 1;
+          if (card.order > initOrder && card.order <= to) card.order -= 1;
         });
       } else {
         state.cards.forEach((card) => {
-          if (card.order >= final && card.order < initOrder) card.order += 1;
+          if (card.order >= to && card.order < initOrder) card.order += 1;
         });
       }
-      state.cards[init].order = final;
+      state.cards[cardIdx].order = to;
       state.sortBy = "random";
     },
     // Plt state
@@ -290,7 +290,7 @@ const cardSlice = createSlice({
 
 export const {
   addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setIsEditing,
-  moveCard, setIsPending, setPltIsEditing, setPlt, setColorSpace,
+  moveCardOrder, setIsPending, setPltIsEditing, setPlt, setColorSpace,
   setBlendMode, adjustContrast, resetOrder,
 } = cardSlice.actions;
 export default cardSlice.reducer;

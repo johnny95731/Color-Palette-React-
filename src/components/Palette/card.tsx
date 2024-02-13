@@ -285,11 +285,10 @@ type CardProps = {
   cardId: number;
   card: CardType;
   borderStyle: React.CSSProperties;
-  isExcutingTrans: boolean;
   position: string;
-  removeCardTransition: () => void;
+  transRemoveCard: () => void;
   handleTransitionEnd: () => void;
-  handleDraggingCard: MouseHandler;
+  startDraggingCard: MouseHandler;
 }
 
 export type CardHandle = {
@@ -303,18 +302,17 @@ const Card = forwardRef<CardHandle, CardProps>(({
   cardId,
   card,
   borderStyle,
-  isExcutingTrans,
   position,
-  handleDraggingCard,
+  startDraggingCard: handleDraggingCard,
   handleTransitionEnd,
-  removeCardTransition,
+  transRemoveCard: removeCardTransition,
 },
 ref,
 ) => {
   // States / consts
   const dispatch = useAppDispatch();
   const {color, hex, isEditing} = card;
-  const {colorSpace, numOfCards} = useAppSelector(selectPlt);
+  const {colorSpace, numOfCards, isPending} = useAppSelector(selectPlt);
   const {transition} = useAppSelector(selectSettings);
   const {isSmall, pos} = useContext(MediaContext);
 
@@ -327,10 +325,10 @@ ref,
 
   const filterStyle = useMemo(() => {
     return {
-      display: isExcutingTrans ? "none" : "",
+      display: isPending ? "none" : "",
       filter: isLight ? "" : "invert(1)",
     };
-  }, [isLight, isExcutingTrans]);
+  }, [isLight, isPending]);
 
   const [cardSize, setCardSize] = useState(
       () => `${toPercent(1 / numOfCards, 2)}%`,
