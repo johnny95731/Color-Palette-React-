@@ -150,14 +150,14 @@ const Header = ({
     handleMixingModeChanged: handleBlendChanged, handleEditModeChanged,
   } = useMemo(() => {
     return {
-      handleMixingModeChanged: (
+      handleMixingModeChanged(
           newMode: BlendingType,
-      ) => {
+      ) {
         dispatch(setBlendMode(newMode));
       },
-      handleEditModeChanged: (
+      handleEditModeChanged(
           newMode: ColorSpacesType,
-      ) => {
+      ) {
         dispatch(setColorSpace(newMode));
       },
     };

@@ -22,7 +22,6 @@ export const round = (num: number, digits: number = 0): number => {
   return Math.round(10**(digits) * num) / 10**(digits);
 };
 
-
 /**
  * Convert a number `val` to percentage form, that is, `val*100%`.
  * @param num A number.
@@ -44,6 +43,22 @@ export const clip = (num: number, min?: number, max?: number): number => {
   if (max !== undefined && num > max) return max;
   else if (min !== undefined && num < min) return min;
   else return num;
+};
+
+/**
+ * Linear mapping a number from a range to another range.
+ * @param val The value that be transform.
+ * @param min Minimum of original range.
+ * @param max Maximum of original range.
+ * @param newMin Minimum of new range.
+ * @param newMax Maximum of new range.
+ */
+export const rangeMapping = (
+    val: number, min: number, max: number,
+    newMin: number, newMax: number,
+) => {
+  const ratio = clip((val - min) / (max - min), 0, 1);
+  return newMin + ratio * (newMax - newMin);
 };
 
 /**

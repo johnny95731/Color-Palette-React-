@@ -1,4 +1,4 @@
-import {identity, mod} from "./helpers.ts";
+import {identity, mod, round, toPercent} from "./helpers.ts";
 import {
   RGB_MAXES, HSL_MAXES, HSB_MAXES, CMY_MAXES, CMYK_MAXES,
 } from "@/common/utils/constants.ts";
@@ -81,9 +81,9 @@ export const rgb2hsl = (rgb: number[]): number[] => {
  */
 export const rgb2hsb = (rgb: number[]): number[] => {
   const [hue, min, max] = rgb2hue(rgb);
-  const sat = max ? ((max - min) / max) / RGB_MAXES : 0;
+  const sat = max ? ((max - min) / max) : 0;
   const bri = max / RGB_MAXES;
-  return [hue, HSB_MAXES[1] *sat, HSB_MAXES[2] * bri];
+  return [hue, HSB_MAXES[1] * sat, HSB_MAXES[2] * bri];
 };
 
 /**
@@ -124,7 +124,7 @@ export const rgb2cmyk = (rgb: number[]): number[] => {
  */
 export const hsb2rgb = (hsb: number[]): number[] => {
   if (hsb[1] === 0) {
-    return hsb.map(() => hsb[2]);
+    return hsb.map(() => hsb[2] / HSB_MAXES[2] * RGB_MAXES);
   }
   const temp = [...hsb];
   // Normalize to [0, 1].
@@ -142,7 +142,7 @@ export const hsb2rgb = (hsb: number[]): number[] => {
   else if (temp[0] < 240) rgbPrime = [0, X, C];
   else if (temp[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val) => RGB_MAXES * (val + m));
+  return rgbPrime.map((val) => round(RGB_MAXES * (val + m), 2));
 };
 
 /**
@@ -152,7 +152,7 @@ export const hsb2rgb = (hsb: number[]): number[] => {
  */
 export const hsl2rgb = (hsl: number[]): number[] => {
   if (hsl[1] === 0) {
-    return hsl.map(() => hsl[2]);
+    return hsl.map(() => hsl[2] / HSB_MAXES[2] * RGB_MAXES);
   }
   const temp = [...hsl];
   // Normalize to [0, 1].
@@ -170,7 +170,7 @@ export const hsl2rgb = (hsl: number[]): number[] => {
   else if (temp[0] < 240) rgbPrime = [0, X, C];
   else if (temp[0] < 300) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val) => RGB_MAXES * (val + m));
+  return rgbPrime.map((val) => round(RGB_MAXES * (val + m), 2));
 };
 
 /**
@@ -240,20 +240,6 @@ export const isValidHex = (hex: string): boolean => {
   return true;
 };
 
-
-// Generators
-/**
- * Generate an RGB color.
- * @return {number[]} [R, G, B]
- */
-export const randRgbGen = (): number[] => {
-  const rgb = new Array(3);
-  for (let i = 0; i < 3; i ++) {
-    rgb[i] = Math.floor(Math.random() * (RGB_MAXES + 1));
-  }
-  return rgb;
-};
-
 /**
  * Returns informations about color space which will be display under hex code
  * and be used in edit mode.
@@ -317,6 +303,38 @@ export const getSpaceTrans = (space: ColorSpacesType): ColorSpaceTrans => {
         inverter: identity,
       };
   }
+};
+
+
+// Generators
+/**
+ * Generate an RGB color.
+ * @return {number[]} [R, G, B]
+ */
+export const randRgbGen = (): number[] => {
+  const rgb = new Array(3);
+  for (let i = 0; i < 3; i ++) {
+    rgb[i] = Math.floor(Math.random() * (RGB_MAXES + 1));
+  }
+  return rgb;
+};
+
+/**
+ * Generate a linear gradient along an axis for a given color and space.
+ */
+export const gradientGen = (
+    colors: number[], axis: number, space: ColorSpacesType,
+) => {
+  const {inverter} = getSpaceTrans(space);
+  const {maxes} = getSpaceInfos(space);
+  const gradLength = Math.ceil(maxes[axis] / 8);
+  const grads: string[] = [];
+  const arr = [...colors];
+  for (let j = 0; j < gradLength; j++) {
+    arr.splice(axis, 1, j * 8);
+    grads.push(`${rgb2hex(inverter(arr))} ${toPercent(j/gradLength)}%`);
+  }
+  return `linear-gradient(90deg, ${grads.join(", ")})`;
 };
 
 

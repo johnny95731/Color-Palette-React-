@@ -1,6 +1,25 @@
-import React, {useEffect, useState, useRef, useCallback, useMemo} from "react";
+import React, {
+  useEffect, useState, useRef, useCallback, useLayoutEffect,
+} from "react";
 import css from "./slider.scss";
-import {toPercent, clip, round} from "@/common/utils/helpers";
+import {clip, round, rangeMapping} from "@/common/utils/helpers";
+
+const pointSize = Number(css["point-size"].slice(0, -2));
+const pointRadius = pointSize / 2;
+
+type SliderProps = {
+  min?: number;
+  max?: number;
+  defaultValue?: number;
+  value?: number;
+  digit?: number;
+  step?: number;
+  showRange?: boolean;
+  showVal?: boolean;
+  trackerBackground?: string;
+  pointBackground?: string;
+  onChange?: (val: number) => void;
+}
 
 const Slider = ({
   min = 0,
@@ -10,55 +29,59 @@ const Slider = ({
   digit = 3,
   step,
   showRange = true,
+  showVal = true,
+  trackerBackground,
+  pointBackground,
   onChange,
-}: {
-  min?: number;
-  max?: number;
-  defaultValue?: number;
-  value?: number;
-  digit?: number;
-  step?: number;
-  showRange?: boolean;
-  onChange?: (val: number) => void;
-}) => {
+}: SliderProps) => {
   const trackerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState<boolean>(() => false);
-  /**
-   * Lenth of range.
-   */
-  const range = useMemo(() => max - min, [min, max]);
+
   const [currentVal, setCurrentVal] = useState<number>(() => {
     const val = defaultValue ?
         defaultValue :
         (value ? value : (max + min) / 2);
     return clip(val, min, max);
   });
-  /**
-   * Left position of indicator.
-   */
-  const pos = `${toPercent((currentVal - min) / range, 2)}%`;
-  // Handle prop `value` changed
-  useEffect(() => {
-    if (value === undefined) return;
-    const val = round(clip(value, min, max), digit);
-    if (val === currentVal) return;
-    setCurrentVal(val);
-    if (onChange) onChange(val);
-  }, [value, min, max]);
-  // Step increment function. If num < 0, then becomes decrement.
-  const increment = useMemo(() => {
-    const unitVal = step ? step : 10**(-digit);
-    const increment = (num: number = 1) => {
-      setCurrentVal((prev) =>(
-        round(
-            clip(prev + num * unitVal, min, max),
-            digit,
-        )
+  const [pos, setPos] = useState<number>(() => pointRadius);
+
+  const updateValue = useCallback((newVal: number, pos?: number) => {
+    setCurrentVal(newVal);
+    if (onChange) onChange(newVal);
+    if (pos === undefined) {
+      const rect = trackerRef.current?.getBoundingClientRect() as DOMRect;
+      pos = round(rangeMapping(
+          newVal, min, max,
+          pointRadius, rect.right - rect.left - pointRadius,
       ));
-    };
-    return increment;
-  }, [step, digit, min, max]);
+    }
+    setPos(pos);
+  }, [min, max, onChange]);
+
+  useLayoutEffect(() => {
+    updateValue(currentVal);
+  }, []);
+
+  // Handle prop `value`, `min`, and `max` changed.
+  useLayoutEffect(() => {
+    const newVal = round(
+        clip(value !== undefined ? value : currentVal, min, max),
+        digit,
+    );
+    if (newVal === currentVal) return;
+    updateValue(newVal);
+  }, [value, min, max, onChange]);
+
+  // Step increment function. If num < 0, then becomes decrement.
+  const increment = (num: number = 1) => {
+    const unitVal = step ? step : 10**(-digit);
+    const newVal = round(
+        clip(currentVal + num * unitVal, min, max),
+        digit,
+    );
+    updateValue(newVal);
+  };
 
   // onChange event => Drag or key down.
   // -Mouse down / Touch start.
@@ -68,23 +91,27 @@ const Slider = ({
   ) => {
     if (!e.type.endsWith("move")) { // touch start / mouse down
       (e.currentTarget as HTMLDivElement).focus();
-      if (tooltipRef.current === e.target) return; // Prevent draggint tooltip.
+      if (tooltipRef.current === e.target) return; // Prevent dragging tooltip.
       setIsDragging(true);
     } else if (!isDragging) return;
     const rect = trackerRef.current?.getBoundingClientRect() as DOMRect;
     // Get cursor position.
-    const clientX = e.type.startsWith("touch") ?
-        (e as TouchEvent).touches[0].clientX :
-        (e as MouseEvent).clientX;
+    const clientX = (
+      (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX
+    );
     // Evaluate value.
-    const percent = clip((clientX - rect.left) / rect.width, 0, 1) * range;
+    const pointPos = clip(
+        clientX - rect.left, pointRadius, rect.width - pointRadius,
+    );
+    const valBias = rangeMapping(
+        pointPos, pointRadius, rect.width - pointRadius,
+        0, max - min,
+    );
     let val: number;
-    if (step) val = round(min + Math.floor(percent / step) * step, digit);
-    else val = round(min + percent, digit);
-    // Emit event.
-    if (onChange) onChange(val);
-    setCurrentVal(val);
-  }, [isDragging, max, min, trackerRef.current]);
+    if (step) val = round(min + Math.floor(valBias / step) * step, digit);
+    else val = round(min + valBias, digit);
+    updateValue(val, pointPos);
+  }, [isDragging, max, min, onChange]);
 
   // -Mouse up / Touch end.
   const handleDragEnd = useCallback(() => setIsDragging(false), []);
@@ -109,14 +136,17 @@ const Slider = ({
   }, []);
   // -Key down
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowLeft") increment(-1);
-    else if (e.key == "ArrowRight") increment();
+    if (e.key == "ArrowRight") increment();
+    else if (e.key === "ArrowLeft") increment(-1);
   };
   // end: onChange event
 
   return (
     <div className={css.sliderWrapper}>
       <div className={css.tracker} ref={trackerRef} tabIndex={-1}
+        style={{
+          background: trackerBackground,
+        }}
         onMouseDown={handleDrag}
         onTouchStart={handleDrag}
         onKeyDown={handleKeyDown}
@@ -127,16 +157,21 @@ const Slider = ({
             <span className={css.limit}>{max}</span>
           </>
         }
-        <div className={css.indicator}
-          style={{left: pos}}
+        <div className={css.point}
+          style={{
+            left: `${pos}px`,
+            background: pointBackground,
+          }}
         >
-          <div className={css.tooltip} ref={tooltipRef}
-            style={{
-              display: isDragging ? "block" : "",
-            }}
-          >
-            {currentVal}
-          </div>
+          {showVal &&
+            <div className={css.tooltip} ref={tooltipRef}
+              style={{
+                display: isDragging ? "block" : "",
+              }}
+            >
+              {currentVal}
+            </div>
+          }
         </div>
       </div>
     </div>

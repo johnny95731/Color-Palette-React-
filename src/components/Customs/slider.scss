@@ -8,14 +8,17 @@
   background-color: transparent;
 }
 
+$point-size: 14px;
 .tracker {
+  // position
   position: relative;
-  left: 7px;
   top: 50%;
   transform: translateY(-50%);
+  // shape
   height: 6px;
-  width: calc(100% - 14px);
+  width: 100%;
   border-radius: $radius-lg;
+
   background-color: $color5;
   cursor: pointer;
   user-select: none;
@@ -24,9 +27,9 @@
   }
 }
 
-.indicator {
+.point {
   @extend %center;
-  height: 14px;
+  height: $point-size;
   aspect-ratio: 1 / 1;
   border: solid 3px white;
   outline: solid 1px $color5;
@@ -81,3 +84,6 @@
   }
 }
 
+:export {
+  point-size: $point-size
+}

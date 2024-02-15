@@ -1,24 +1,22 @@
 import React, {
   useMemo, useEffect, useCallback, forwardRef, useRef, useContext, useState,
   useLayoutEffect, useImperativeHandle,
+  Fragment,
 } from "react";
 import css from "./card.scss";
 import Icon from "../Customs/Icons.tsx";
+import Slider from "../Customs/Slider.tsx";
 // utils
 import {
-  rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos,
-  getSpaceTrans,
+  rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos, getSpaceTrans,
+  gradientGen,
 } from "@/common/utils/colors.ts";
 import {
-  getClosestName, hexTextEdited, copyHex,
-  toPercent,
-  evalLength,
-  evalPosition,
+  getClosestName, hexTextEdited, copyHex, evalLength, evalPosition,
 } from "@/common/utils/helpers.ts";
 // Stores
 import {
-  useAppDispatch, useAppSelector, selectPlt, selectFavorites,
-  selectSettings,
+  useAppDispatch, useAppSelector, selectPlt, selectFavorites, selectSettings,
 } from "@/features";
 import {
   refreshCard, editCard, setIsLock, setIsEditing,
@@ -32,45 +30,54 @@ import type {CardType, ColorSpacesType} from "types/pltType.ts";
 
 // Other Components
 const ToolBar = ({
+  cardIdx,
   numOfCards,
   card,
   filterStyle,
-  events,
-  handleDragReorder,
+  startDraggingCard,
   removeCard,
 }: {
+  cardIdx: number;
   numOfCards: number;
   card: CardType;
   filterStyle: {filter: string} | undefined;
-  events: {
-    [key: string]: () => void;
-  }
-  handleDragReorder: MouseHandler | TouchHandler;
+  startDraggingCard: MouseHandler | TouchHandler;
   removeCard: () => void;
 }) => {
   // States / consts
-  const favState = useAppSelector(selectFavorites);
+  const {colors: favColors, isInit} = useAppSelector(selectFavorites);
   const isFav = useMemo(() => {
-    return favState.colors.includes(card.hex);
-  }, [card.hex, favState.colors.length, favState.isInit[0]]);
+    return favColors.includes(card.hex);
+  }, [card.hex, favColors.length, isInit[0]]);
   const dispatch = useAppDispatch();
 
   const {opacity, cursor} = useMemo(() => {
-    if (numOfCards === 2) {
-      return {
+    return numOfCards === 2 ?
+      {
         opacity: "0",
         cursor: "default",
-      };
-    } else {
-      return {
+      } :
+      {
         opacity: "",
         cursor: "pointer",
       };
-    }
   }, [numOfCards]);
 
-  const ifFavIcon = isFav ? "fav" : "unfav";
+  const events = useMemo(() => {
+    return {
+      refreshCard: () => {
+        dispatch(refreshCard(cardIdx));
+      },
+      isLockChanged: () => {
+        dispatch(setIsLock(cardIdx));
+      },
+      isEditingChanged: () => {
+        dispatch(setIsEditing(cardIdx));
+      },
+    };
+  }, [cardIdx]);
 
+  const ifFavIcon = isFav ? "fav" : "unfav";
   const handleFavClick = () => {
     dispatch(favColorsChanged(card.hex));
   };
@@ -98,8 +105,8 @@ const ToolBar = ({
           ...filterStyle,
           cursor: "grab",
         }}
-        onMouseDown={handleDragReorder as MouseHandler}
-        onTouchStart={handleDragReorder as TouchHandler}
+        onMouseDown={startDraggingCard as MouseHandler}
+        onTouchStart={startDraggingCard as TouchHandler}
       />
       <Icon type="refresh"
         style={filterStyle}
@@ -114,18 +121,21 @@ const ToolBar = ({
 };
 
 const EditingDialog = forwardRef<HTMLDivElement, any>(({
-  cardId,
+  cardIdx,
   card,
   colorSpace,
-  colorArr,
+  roundedColor,
 }: {
-  cardId: number;
+  cardIdx: number;
   card: CardType;
   colorSpace: ColorSpacesType
-  colorArr: number[];
+  roundedColor: number[];
 }, ref,
 ) => {
   const dispatch = useAppDispatch();
+  const {color, isEditing} = card;
+
+  const hexInputRef = useRef<HTMLInputElement>(null);
 
   const {labels, maxes, converter, inverter} = useMemo(() => {
     return {
@@ -150,12 +160,12 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       const rgb = hex2rgb(text);
       if (!rgb) return;
       const newColor = converter(rgb);
-      dispatch(editCard({idx: cardId, color: newColor}));
-      let slider;
+      dispatch(editCard({idx: cardIdx, color: newColor}));
+      let slider: HTMLInputElement | null;
       for (let i = 0; i < 4; i++) {
         slider = (
-          document.getElementById(`card${cardId}-slider${i}`) as
-          HTMLInputElement
+          document.getElementById(`card${cardIdx}-slider${i}`) as
+          HTMLInputElement | null
         );
         if (slider) slider.value = String(newColor[i]);
       }
@@ -169,25 +179,20 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   /**
    * Slider changed event.
    */
-  const handleSliderChange = (
-      e: React.ChangeEvent<HTMLInputElement>,
-      idx: number) => {
-    const target = e.target;
-    const newColorArr = [...card.color];
-    newColorArr[idx] = Number(target.value);
-    dispatch(editCard({idx: cardId, color: newColorArr}));
+  const handleSliderChange = (newVal: number, colorAxis: number) => {
+    const newColor = [...color];
+    newColor[colorAxis] = newVal;
+    dispatch(editCard({idx: cardIdx, color: newColor}));
     // Set hex to hex input.
-    const textInput = (
-      document.getElementById(`card${cardId}-hex`) as HTMLInputElement
-    );
-    const rgb = inverter(newColorArr);
+    const textInput = hexInputRef.current as HTMLInputElement;
+    const rgb = inverter(newColor);
     textInput.value = rgb2hex(rgb);
   };
 
   const handleDialogBlurred = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (card.isEditing && e.relatedTarget === null) {
+    if (isEditing && e.relatedTarget === null) {
       handleHexEditingFinished(e);
-      dispatch(setIsEditing(cardId));
+      dispatch(setIsEditing(cardIdx));
     }
   };
 
@@ -227,50 +232,38 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       container.style[pos] = "";
       container.style[endPos] = "";
     }
-  }, [card.isEditing, ...windowSize]);
+  }, [isEditing, ...windowSize]);
   // Check container is out of window or not.
-
-  // Change slider value when color space changed.
-  useEffect(() => {
-    if (card.isEditing) {
-      let slider;
-      for (let i = 0; i < 4; i++) {
-        slider = (
-          document.getElementById(`card${cardId}-slider${i}`)
-        );
-        if (slider) (slider as HTMLInputElement).value = String(colorArr[i]);
-      }
-    }
-  }, [colorSpace, colorArr]);
 
   return (
     <div className={css.editing} ref={ref}
       tabIndex={-1}
       onBlur={handleDialogBlurred}
     >
-      <div style={{backgroundColor: card.hex}}>
-      </div>
-      <input type="text" maxLength={7}
+      <div style={{backgroundColor: card.hex}} />
+      <input type="text" ref={hexInputRef} maxLength={7}
         defaultValue={card.hex}
-        id={`card${cardId}-hex`}
         className={css.hexInput}
         onChange={hexTextEdited}
         onBlur={handleHexEditingFinished}
         onKeyDown={handleHexEditingFinished}
       />
-      <div className={css.sliders} >
+      <div className={css.sliderContainer} >
         {
-          colorArr.map((val, i) => {
-            const name = `card${cardId}-slider${i}`;
+          roundedColor.map((val, i) => {
             return (
-              <label key={`card${cardId}-label${i}`}>
-                {`${labels[i]}: ${val}`}
-                <input key={name} id={name}
-                  type="range" min="0" max={maxes[i]} step={0.01}
-                  defaultValue={val}
-                  onChange={(e) => handleSliderChange(e, i)}
+              <Fragment key={`card${cardIdx}-fragment${i}`}>
+                <label key={`card${cardIdx}-label${i}`}>
+                  {`${labels[i]}: ${val}`}
+                </label>
+                <Slider key={`card${cardIdx}-slider${i}`}
+                  showRange={false} showVal={false}
+                  trackerBackground={gradientGen(color, i, colorSpace)}
+                  max={maxes[i]} step={1} digit={0}
+                  value={val}
+                  onChange={(value) => handleSliderChange(value, i)}
                 />
-              </label>
+              </Fragment>
             );
           })
         }
@@ -282,9 +275,8 @@ EditingDialog.displayName = "EditingWindow";
 
 
 // Main component
-
 type CardProps = {
-  cardId: number;
+  cardIdx: number;
   card: CardType;
   styleInSettings: React.CSSProperties;
   position: string;
@@ -301,7 +293,7 @@ export type CardHandle = {
 }
 
 const Card = forwardRef<CardHandle, CardProps>(({
-  cardId,
+  cardIdx,
   card,
   styleInSettings,
   position,
@@ -312,7 +304,6 @@ const Card = forwardRef<CardHandle, CardProps>(({
 ref,
 ) => {
   // States / consts
-  const dispatch = useAppDispatch();
   const {color, hex, isEditing} = card;
   const {colorSpace, numOfCards, isPending} = useAppSelector(selectPlt);
   const {transition} = useAppSelector(selectSettings);
@@ -320,9 +311,8 @@ ref,
 
   const containerRef = useRef<HTMLDivElement>(null);
   const editingDialogRef = useRef<HTMLDivElement>(null);
-
-
-  const colorArr = color.map((val) => Math.round(val));
+  // console.log(hex, color);
+  const roundedColor = color.map((val) => Math.round(val));
   const isLight = rgb2gray(hex2rgb(hex) as number[]) > 127;
 
   const filterStyle = useMemo(() => {
@@ -332,9 +322,7 @@ ref,
     };
   }, [isLight, isPending]);
 
-  const [cardSize, setCardSize] = useState(
-      () => `${toPercent(1 / numOfCards, 2)}%`,
-  );
+  const [cardSize, setCardSize] = useState(() => evalLength(numOfCards));
   const [cardPos, setCardPos] = useState(() => position);
   const [transDuration, setTransDuration] = useState(() => "");
 
@@ -347,7 +335,7 @@ ref,
       setPos(pos: string) {
         setCardPos(pos);
       },
-      setTransDuration(action: "none" | "pos" | "color" | "reset") {
+      setTransDuration(action: "none" | "reset") {
         switch (action) {
           case "none":
             setTransDuration("none");
@@ -359,32 +347,15 @@ ref,
     };
   }, [transition, isSmall]);
 
-  /**
-   * Toolbar events.
-   */
-  const events = useMemo(() => {
-    return {
-      refreshCard: () => {
-        dispatch(refreshCard(cardId));
-      },
-      isLockChanged: () => {
-        dispatch(setIsLock(cardId));
-      },
-      isEditingChanged: () => {
-        dispatch(setIsEditing(cardId));
-      },
-    };
-  }, [cardId]);
+  useLayoutEffect(() => {
+    setCardPos(evalPosition(cardIdx, numOfCards));
+    setCardSize(evalLength(numOfCards));
+  }, [numOfCards]);
 
   // Focus the dialog when open it.
   useEffect(() => {
     if (isEditing) editingDialogRef.current?.focus();
   }, [isEditing]);
-
-  useLayoutEffect(() => {
-    setCardPos(evalPosition(cardId, numOfCards));
-    setCardSize(evalLength(numOfCards));
-  }, [numOfCards]);
 
   return (
     <div className={css.cardContainer} ref={containerRef}
@@ -398,11 +369,11 @@ ref,
       onTransitionEnd={handleTransitionEnd}
     >
       <ToolBar
+        cardIdx={cardIdx}
         numOfCards={numOfCards}
         card={card}
         filterStyle={filterStyle}
-        events={events}
-        handleDragReorder={startDraggingCard}
+        startDraggingCard={startDraggingCard}
         removeCard={handleRemoveCard}
       />
       {
@@ -424,7 +395,7 @@ ref,
             {
               colorSpace === "name" ?
                 getClosestName(color) :
-                `${colorSpace}(${colorArr.toString()})`
+                `${colorSpace}(${roundedColor.toString()})`
             }
           </div>
         </div>
@@ -432,10 +403,10 @@ ref,
       {
         isEditing &&
         <EditingDialog ref={editingDialogRef}
-          cardId={cardId}
+          cardIdx={cardIdx}
           card={card}
           colorSpace={colorSpace}
-          colorArr={colorArr}
+          roundedColor={roundedColor}
         />
       }
     </div>

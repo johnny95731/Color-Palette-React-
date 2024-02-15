@@ -41,19 +41,14 @@ const InsertRegions = ({
         undefined
   );
   return (
-    <div id="insertRegion"
-      style={displayStyle}
-    >
+    <div style={displayStyle} >
       {Array.from({length: numOfCards + 1}, (_, i) => {
         return (
           <div key={`insert${i}`}
-            tabIndex={-1}
             className={css.insertWrapper}
             style={{[pos]: positions[i]}}
           >
-            <div
-              onClick={() => handleAddCard(i)}
-            >
+            <div onClick={() => handleAddCard(i)} >
               <Icon type={"insert"} />
             </div>
           </div>
@@ -67,9 +62,7 @@ const InsertRegions = ({
 const Palette = () => {
   // States / consts
   const dispatch = useAppDispatch();
-  const {
-    cards, numOfCards, colorSpace, blendMode,
-  } = useAppSelector(selectPlt);
+  const {cards, numOfCards, colorSpace, blendMode} = useAppSelector(selectPlt);
   const {border, transition} = useAppSelector(selectSettings);
   const {windowSize, isSmall, clientPos, bound} = useContext(MediaContext);
 
@@ -79,7 +72,7 @@ const Palette = () => {
        */
       draggingIdx: number | null;
       /**
-       * Final position(order) that cursor at.
+       * Final index(order) that cursor at.
        */
       finalIdx: number | null;
   }>({
@@ -87,7 +80,7 @@ const Palette = () => {
   });
   const cardRefs = useRef<CardHandle[]>([]);
 
-  const borderStyle: React.CSSProperties = {
+  const styleInSettings: React.CSSProperties = {
     borderWidth: border.width,
     borderColor: border.show ? border.color : "",
     transitionDuration: (
@@ -159,7 +152,6 @@ const Palette = () => {
     });
   };
 
-  // Transition before adding card.
   /**
    * Infomation that be used in some events like mouseup(dragging end), add a
    * card, or remove card.
@@ -187,7 +179,6 @@ const Palette = () => {
       else rightRgbColor = inverter(cards[idx].color);
       rgb = blenders[blendMode](leftRgbColor, rightRgbColor, colorSpace);
     }
-    const length = evalLength(numOfCards + 1);
     if (!transition.pos) { // no transition.
       dispatch(addCard({idx, rgb}));
       removeTransition();
@@ -197,12 +188,11 @@ const Palette = () => {
     document.body.style.backgroundColor = rgb2hex(rgb);
     eventInfo.current = {event: "add", idx, rgb};
     // Transition: shrink and move card. The enpty space is new card
+    const length = evalLength(numOfCards + 1);
     for (let i = 0; i < numOfCards; i++) {
       cardRefs.current[i].setSize(length);
       const bias = i >= idx ? 1 : 0;
-      cardRefs.current[i].setPos(
-          evalPosition(cards[i].order + bias, numOfCards + 1),
-      );
+      cardRefs.current[i].setPos(evalPosition(i + bias, numOfCards + 1));
     }
     // Trigger side effect when !isInTrans.some()
     setIsInTrans(Array.from({length: numOfCards}, () => true));
@@ -222,21 +212,16 @@ const Palette = () => {
       setTimeout(() => resetTransition(numOfCards - 1), 50);
       return;
     }
-    dispatch(setIsPending(true));
     const newLength = evalLength(numOfCards - 1);
-    setIsInTrans(Array.from({length: numOfCards - 1}, () => true));
     // Shrink target card and expand other card.
     for (let i = 0; i < numOfCards; i++) {
-      if (i === idx) {
-        cardRefs.current[i].setSize("0%");
-        cardRefs.current[i].setPos(evalPosition(i, numOfCards - 1));
-        continue;
-      }
+      cardRefs.current[i].setSize(i === idx ? "0%" : newLength);
       const bias = i > idx ? 1 : 0;
-      cardRefs.current[i].setSize(newLength);
       cardRefs.current[i].setPos(evalPosition(i - bias, numOfCards - 1));
     }
     eventInfo.current = {event: "remove", idx};
+    setIsInTrans(Array.from({length: numOfCards - 1}, () => true));
+    dispatch(setIsPending(true));
     setIsEventEnd(false);
   };
 
@@ -302,11 +287,9 @@ const Palette = () => {
         // Change `.order` attribute.
         dispatch(moveCardOrder({cardIdx: idx, to: order}));
         // Update state: which card start transition.
-        if (transition.pos) {
+        if (transition.pos && order !== lastOrder) {
           setIsInTrans((prev) => {
-            if (order === lastOrder) return prev;
             const newState = [...prev];
-            // No exchange happened
             const moveToRightSide = lastOrder < order;
             if ( // Be away from origin place.
               (order < idx && !moveToRightSide) ||
@@ -412,9 +395,9 @@ const Palette = () => {
       {cards.map((card, i) => {
         return <Card key={`card${i}`}
           ref={(el) => cardRefs.current[i] = el as CardHandle}
-          cardId={i}
+          cardIdx={i}
           card={card}
-          styleInSettings={borderStyle}
+          styleInSettings={styleInSettings}
           position={positions[i]}
           handleRemoveCard={() => handleRemoveCard(i)}
           handleTransitionEnd={() => handleTransitionEnd(i)}
