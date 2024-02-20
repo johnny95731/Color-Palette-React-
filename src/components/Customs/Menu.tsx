@@ -6,7 +6,7 @@ import css from "./menu.scss";
 import {showPopupMenu} from "@/common/utils/helpers.ts";
 // Types
 import type {MouseHandler, FocusHandler} from "types/eventHandler.ts";
-import type {iconType} from "./Icons.tsx";
+import type {IconType} from "./Icons.tsx";
 
 const Menu = ({
   children,
@@ -17,7 +17,7 @@ const Menu = ({
 }: {
   children: React.ReactNode;
   className?: string;
-  iconType?: iconType;
+  iconType?: IconType;
   title: string;
   contentClass?: string;
 }): React.JSX.Element => {

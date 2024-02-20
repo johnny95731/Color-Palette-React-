@@ -20,6 +20,8 @@ import BookmarkUrl from "@/assets/icons/bookmarks.svg?url";
 import ListUrl from "@/assets/icons/list.svg?url";
 import caretUrl from "@/assets/icons/caret-left-fill.svg?url";
 import SettingUrl from "@/assets/icons/gear.svg?url";
+import PlayUrl from "@/assets/icons/play.svg?url";
+import PauseUrl from "@/assets/icons/pause-fill.svg?url";
 import {MouseHandler, TouchHandler} from "../../common/types/eventHandler";
 
 
@@ -43,9 +45,11 @@ const urls = {
   list: ListUrl,
   caret: caretUrl,
   setting: SettingUrl,
+  play: PlayUrl,
+  pause: PauseUrl,
 } as const;
 
-export type iconType = keyof typeof urls;
+export type IconType = keyof typeof urls;
 
 
 const Icon = ({
@@ -56,7 +60,7 @@ const Icon = ({
   onMouseDown,
   onTouchStart,
 }: {
-  type: iconType;
+  type: IconType;
   className?: string;
   style?: object;
   onClick?: MouseHandler | undefined;

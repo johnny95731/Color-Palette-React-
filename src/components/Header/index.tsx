@@ -13,12 +13,14 @@ import {
 } from "@/common/utils/constants";
 // Stores
 import {
-  useAppDispatch, useAppSelector, selectPlt,
+  useAppDispatch, useAppSelector, selectPlt, selectSettings,
 } from "@/features";
-import {setColorSpace, setBlendMode} from "slices/pltSlice";
+import {
+  setColorSpace, setBlendMode, setIsPlaying, refreshCard,
+} from "slices/pltSlice";
 import MediaContext from "@/features/mediaContext.ts";
 // types
-import type {iconType} from "../Customs/Icons.tsx";
+import type {IconType} from "../Customs/Icons.tsx";
 import type {MouseHandler} from "types/eventHandler.ts";
 import type {
   SortActionType, ColorSpacesType, BlendingType,
@@ -47,7 +49,7 @@ const SettingMenu = ({
   hotkeys = [],
   handleClick,
 }: {
-  iconType: iconType;
+  iconType: IconType;
   title?: string;
   contents: readonly string[];
   currentVal: typeof contents[number];
@@ -89,6 +91,47 @@ const SettingMenu = ({
         ))
       }
     </Menu>
+  );
+};
+
+const Play = () => {
+  const dispatch = useAppDispatch();
+  const {isPlaying} = useAppSelector(selectPlt);
+  const {transition: {color}} = useAppSelector(selectSettings);
+
+  const isRunning = useRef<boolean>(false);
+  const timeoutId = useRef<number | null>(null);
+  const refresh = () => {
+    dispatch(refreshCard(-1));
+    timeoutId.current = window.setTimeout(() => {
+      isRunning.current && refresh();
+    }, Math.max(color, 1000));
+  };
+  const haldleClick = () => {
+    dispatch(setIsPlaying());
+    if (isPlaying) {
+      isRunning.current = false;
+      if (timeoutId.current !== null) window.clearTimeout(timeoutId.current);
+      timeoutId.current = null;
+    } else {
+      isRunning.current = true;
+      refresh();
+    }
+  };
+  useEffect(() => {
+    if (isPlaying) {
+      if (timeoutId.current !== null) window.clearTimeout(timeoutId.current);
+      timeoutId.current = window.setTimeout(() => {
+        isRunning.current && refresh();
+      }, Math.max(color, 1000));
+    }
+  }, [color]);
+
+  return (
+    <span className={`${css.btn} ${css.playBtn}`} onClick={haldleClick} >
+      <Icon type={isPlaying ? "pause" : "play"} />
+      {isPlaying ? "Pause" : "Play"}
+    </span>
   );
 };
 
@@ -215,6 +258,7 @@ const Header = ({
             handleClick={handleEditModeChanged as (option: string) => void}
             letterCase="all-caps"
           />
+          <Play />
           <div className={css.empty}></div>
           {/* Float right */}
           <Bookmarks onClick={showFavOffcanvas} />

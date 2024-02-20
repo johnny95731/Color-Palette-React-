@@ -324,7 +324,7 @@ ref,
 
   const [cardSize, setCardSize] = useState(() => evalLength(numOfCards));
   const [cardPos, setCardPos] = useState(() => position);
-  const [transDuration, setTransDuration] = useState(() => "");
+  const [transProperty, setTransProperty] = useState(() => "");
 
   useImperativeHandle(ref, () => {
     return {
@@ -338,10 +338,10 @@ ref,
       setTransDuration(action: "none" | "reset") {
         switch (action) {
           case "none":
-            setTransDuration("none");
+            setTransProperty("none");
             break;
           case "reset":
-            setTransDuration("");
+            setTransProperty("");
         }
       },
     };
@@ -364,7 +364,7 @@ ref,
         backgroundColor: hex,
         [isSmall ? "height" : "width"]: cardSize,
         [pos]: cardPos,
-        transitionProperty: transDuration,
+        transitionProperty: transProperty,
       }}
       onTransitionEnd={handleTransitionEnd}
     >

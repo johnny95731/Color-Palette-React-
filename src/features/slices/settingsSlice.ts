@@ -58,26 +58,26 @@ const settingssSlice = createSlice({
   name: "settings",
   initialState,
   reducers: {
-    setBorder: (state, action: {
+    setBorder(state, action: {
       payload: {
         attr: keyof BorderStyleType;
         val: number | string | boolean;
       };
       type: string;
-    }) => {
+    }) {
       const {attr, val} = action.payload;
       // @ts-expect-error Ignore checking `attr`.
       state.border[attr] = val;
       // Update store
       localStorage.setItem("border", JSON.stringify(state.border));
     },
-    setTransition: (state, action: {
+    setTransition(state, action: {
       payload: {
         attr: keyof TransitionType;
         val: number;
       };
       type: string;
-    }) => {
+    }) {
       const {attr, val} = action.payload;
       state.transition[attr] = val;
       // Update store

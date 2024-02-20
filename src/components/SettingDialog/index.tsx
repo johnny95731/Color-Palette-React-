@@ -6,10 +6,8 @@ import Icon from "../Customs/Icons.tsx";
 import css from "./index.scss";
 // Utils
 import {
-  CURRENT_OPTION_WEIGHT, SETTINGS, BORDER_COLOR, BORDER_MAX_WIDTH,
-  CONTRAST_METHODS,
-  GAMMA_MAX,
-  MULTIPLICATION_MAX,
+  CURRENT_OPTION_WEIGHT, BORDER_COLOR, BORDER_MAX_WIDTH, CONTRAST_METHODS,
+  GAMMA_MAX, MULTIPLICATION_MAX, TRANSITION_MAX_POS, TRANSITION_MAX_COLOR,
 } from "@/common/utils/constants.ts";
 // Store
 import {
@@ -46,9 +44,7 @@ const CardPage = () => {
       val: isOn,
     }));
   };
-  const handleWidth = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const target = e.currentTarget;
-    const val = Number(target.value);
+  const handleWidth = (val: number) => {
     setCurrentWidth(val);
     dispatch(setBorder({
       attr: "width",
@@ -78,8 +74,7 @@ const CardPage = () => {
       {showBorder &&
         <>
           <label className={css.subOption}>┠ Width(px)</label>
-          <input type="number" min="1" max={BORDER_MAX_WIDTH}
-            className={css.subOption}
+          <Slider min={1} max={BORDER_MAX_WIDTH} step={1}
             value={currentWidth}
             onChange={handleWidth}
           />
@@ -91,68 +86,59 @@ const CardPage = () => {
       }
       <h6>Transition</h6>
       <label>Position(ms)</label>
-      <Slider min={0} max={1000} digit={0} step={50}
+      <Slider min={0} max={TRANSITION_MAX_POS} digit={0} step={50}
         value={posTime} onChange={(e) => handleTransitionChanged(e, "pos")}
       />
       <label>Color(ms)</label>
-      <Slider min={0} max={2000} digit={0} step={50}
+      <Slider min={0} max={TRANSITION_MAX_COLOR} digit={0} step={50}
         value={colorTime} onChange={(e) => handleTransitionChanged(e, "color")}
       />
     </>
   );
 };
 
-
-const ContrastPage = () => {
+type ContrastArgsType = {
+  method: ContrastMethods;
+  coeff: number;
+}
+const ContrastPage = ({
+  contrastArgs,
+  contrastChanged,
+}: {
+  contrastArgs: ContrastArgsType;
+  contrastChanged: (newObj: Partial<ContrastArgsType>) => void;
+}) => {
   const dispatch = useAppDispatch();
-  const [method, setMethod] = useState<ContrastMethods>(CONTRAST_METHODS[0]);
-  const [coeff, setCoeff] = useState(() => 1);
-
-  const selectMethod = (method: string) => {
-    setMethod(method as ContrastMethods);
-    dispatch(adjustContrast({
-      method,
-      gamma: coeff,
-    }));
-  };
-  const contrastCoeffChanged = (val: number) => {
-    setCoeff(val);
-    dispatch(adjustContrast({
-      method: method,
-      gamma: val,
-    }));
-  };
-  const handleApply = useCallback(() => {
-    dispatch(setPltIsEditing("start"));
-    selectMethod(CONTRAST_METHODS[0]);
-    contrastCoeffChanged(1);
+  const contrastBtnEvent = useCallback((ev: "start" | "reset") => {
+    dispatch(setPltIsEditing(ev));
+    contrastChanged({coeff: 1});
   }, []);
-  const handleReset = useCallback(() => {
-    dispatch(setPltIsEditing("reset"));
-    selectMethod(CONTRAST_METHODS[0]);
-    contrastCoeffChanged(1);
-  }, []);
-  const max = method === "gamma" ? GAMMA_MAX : MULTIPLICATION_MAX;
+  const max = contrastArgs.method === "gamma" ? GAMMA_MAX : MULTIPLICATION_MAX;
   return (
     <>
       <label>Method</label>
-      <Select options={CONTRAST_METHODS} value={method}
-        onSelect={selectMethod}
+      <Select options={CONTRAST_METHODS} value={contrastArgs.method}
+        onSelect={(newVal) => contrastChanged({
+          method: newVal as ContrastMethods,
+        })}
       />
       <label>
-        {method === "gamma" ? "gamma" : "scale"}
+        {contrastArgs.method === "gamma" ? "gamma" : "scale"}
       </label>
-      <Slider min={0} max={max} value={coeff}
-        onChange={contrastCoeffChanged}
+      <Slider min={0} max={max} value={contrastArgs.coeff}
+        onChange={(newVal) => contrastChanged({
+          method: contrastArgs.method,
+          coeff: newVal,
+        })}
       />
       <div className={css.buttons}>
         <button type="button" className={css.applyBtn}
-          onClick={handleApply}
+          onClick={() => contrastBtnEvent("start")}
         >
           Apply
         </button>
         <button type="button" className={css.resetBtn}
-          onClick={handleReset}
+          onClick={() => contrastBtnEvent("reset")}
         >
           Reset
         </button>
@@ -161,6 +147,7 @@ const ContrastPage = () => {
   );
 };
 
+const SETTINGS = ["Card", "Contrast"] as const;
 
 const SettingDialog = ({
   showingChanged,
@@ -168,18 +155,32 @@ const SettingDialog = ({
   showingChanged: () => void;
 }) => {
   const dispatch = useAppDispatch();
+  const [contrastArgs, setContrastArgs] = useState<ContrastArgsType>({
+    method: CONTRAST_METHODS[0],
+    coeff: 1,
+  });
+  const contrastChanged = (newObj: Partial<ContrastArgsType>) => {
+    setContrastArgs((prev) => Object.assign({}, prev, newObj));
+    dispatch(adjustContrast({...contrastArgs}));
+  };
+
   const [page, setPage] = useState(() => 0);
   const pageChanged = (i: number) => {
     setPage(i);
     // Page 1 is contrast.
-    dispatch(setPltIsEditing(i === 1 ? "start" : "cancel"));
+    if (i === 1) {
+      dispatch(setPltIsEditing("start"));
+      contrastChanged(contrastArgs);
+    } else if (page === 1) dispatch(setPltIsEditing("cancel"));
   };
 
   return (
     <div className={css.settingDialog} >
-      <h5>Settings</h5>
-      <Icon type="close" onClick={showingChanged}/>
-      <div className={css.sidebar}>
+      <header className={css.header}>
+        <h5>Settings</h5>
+        <Icon type="close" onClick={showingChanged}/>
+      </header>
+      <div className={css.menubar}>
         {
           SETTINGS.map((opt, i) => (
             <div key={`setting-${opt}`}
@@ -193,7 +194,12 @@ const SettingDialog = ({
       </div>
       <div className={css.content}>
         {page === 0 && <CardPage />}
-        {page === 1 && <ContrastPage />}
+        {page === 1 &&
+          <ContrastPage
+            contrastArgs={contrastArgs}
+            contrastChanged={contrastChanged}
+          />
+        }
       </div>
     </div>
   );

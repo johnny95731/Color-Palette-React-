@@ -63,6 +63,10 @@ type StateType = {
    * mode.
    */
   colorSpace: ColorSpacesType;
+  /**
+   * Randomly play palettes.
+   */
+  isPlaying: boolean;
 }
 
 const initialState: StateType = {
@@ -74,6 +78,7 @@ const initialState: StateType = {
   isEditingPlt: false,
   blendMode: "mean",
   colorSpace: INIT_COLOR_SPACE,
+  isPlaying: false,
 };
 
 const cardSlice = createSlice({
@@ -81,13 +86,13 @@ const cardSlice = createSlice({
   initialState,
   reducers: {
     // Card actions
-    addCard: (state, action: {
+    addCard(state, action: {
       payload: {
         idx: number;
         rgb: number[];
       };
       type: string;
-    }) => {
+    }) {
       if (state.numOfCards == MAX_NUM_OF_CARDS) return state;
       const {idx, rgb} = action.payload;
       const cards = state.cards;
@@ -98,10 +103,10 @@ const cardSlice = createSlice({
       cards.splice(idx, 0, cardState);
       state.numOfCards = cards.length;
     },
-    delCard: (state, action: {
+    delCard(state, action: {
       payload: number;
       type: string;
-    }) => {
+    }) {
       if (state.numOfCards === 2) return state;
       const idx = action.payload;
       const removedOrder = state.cards.splice(idx, 1)[0].order;
@@ -110,10 +115,10 @@ const cardSlice = createSlice({
         if (card.order > removedOrder) card.order -= 1;
       });
     },
-    refreshCard: (state, action: {
+    refreshCard(state, action: {
       payload: number;
       type: string;
-    }) => {
+    }) {
       const idx = action.payload;
       if (idx >= 0 && !state.cards[idx].isLock) {
         state.cards[idx] = newCard(state.cards[idx].order, state.colorSpace);
@@ -125,23 +130,23 @@ const cardSlice = createSlice({
       }
       state.sortBy = "random";
     },
-    editCard: (state, action: {
+    editCard(state, action: {
       payload: {
         idx: number;
         color: number[];
       };
       type: string;
-    }) => {
+    }) {
       const {idx, color} = action.payload;
       const {inverter} = getSpaceTrans(state.colorSpace);
       state.cards[idx].hex = rgb2hex(inverter(color));
       state.cards[idx].color = color;
       state.sortBy = "random";
     },
-    sortCards: (state, action: {
+    sortCards(state, action: {
       payload: SortActionType;
       type: string;
-    }) => {
+    }) {
       const sortBy = action.payload;
       const {inverter} = getSpaceTrans(state.colorSpace);
       switch (sortBy) {
@@ -168,24 +173,24 @@ const cardSlice = createSlice({
       }
       state.cards.forEach((card, i) => card.order = i);
     },
-    setIsLock: (state, action: {
+    setIsLock(state, action: {
       payload: number;
       type: string;
-    }) => {
+    }) {
       const idx = action.payload;
       state.cards[idx].isLock = !state.cards[idx].isLock;
     },
-    setIsEditing: (state, action: {
+    setIsEditing(state, action: {
       payload: number;
       type: string;
-    }) => {
+    }) {
       const idx = action.payload;
       state.cards[idx].isEditing = !state.cards[idx].isEditing;
     },
-    moveCardOrder: (state, action: {
+    moveCardOrder(state, action: {
       payload: {cardIdx: number; to: number};
       type: string;
-    }) => {
+    }) {
       const {cardIdx, to} = action.payload;
       const initOrder = state.cards[cardIdx].order;
       if (initOrder <= to) {
@@ -201,39 +206,39 @@ const cardSlice = createSlice({
       state.sortBy = "random";
     },
     // Plt state
-    resetOrder: (state) => {
+    resetOrder(state) {
       state.cards.sort((a, b) => a.order - b.order);
       state.cards.forEach((card, i) => card.order = i);
     },
-    setIsPending: (state, action: {
+    setIsPending(state, action: {
       payload: boolean;
       type: string;
-    }) => {
+    }) {
       const newVal = action.payload;
       state.isPending = newVal;
     },
-    setPltIsEditing: (state, action: {
+    setPltIsEditing(state, action: {
       payload: "start" | "reset" | "cancel";
       type: string;
-    }) => {
+    }) {
       const val = action.payload;
       state.isEditingPlt = val !== "cancel";
       if (val === "start") {
-        state.cards.forEach((val, i) => {
-          state.cards[i].originHex = val.hex;
-          state.cards[i].originColor = val.color;
+        state.cards.forEach((card) => {
+          card.originHex = card.hex;
+          card.originColor = card.color;
         });
       } else { // "reset" and "cancel"
-        state.cards.forEach((val, i) => {
-          state.cards[i].hex = val.originHex;
-          state.cards[i].color = val.originColor;
+        state.cards.forEach((card) => {
+          card.hex = card.originHex;
+          card.color = card.originColor;
         });
       }
     },
-    setPlt: (state, action: {
+    setPlt(state, action: {
       payload: string[];
       type: string;
-    }) => {
+    }) {
       const plt = action.payload;
       state.cards = plt.map((hex, i) => newCard(
           i, state.colorSpace, hex2rgb(hex) as number[],
@@ -241,32 +246,30 @@ const cardSlice = createSlice({
       state.numOfCards = plt.length;
       state.sortBy = "random";
     },
-    setColorSpace: (state, action: {
+    setColorSpace(state, action: {
       payload: ColorSpacesType;
       type: string;
-    }) => {
-      const {inverter} = getSpaceTrans(state.colorSpace); // Convert to RGB.
-      // Convert to target space.
-      const {converter} = getSpaceTrans(action.payload);
+    }) {
       state.colorSpace = action.payload;
+      const {converter} = getSpaceTrans(action.payload);
       for (let i = 0; i < state.numOfCards; i++) {
-        const rgb = inverter(state.cards[i].color);
+        const rgb = hex2rgb(state.cards[i].hex) as number[];
         state.cards[i].color = converter(rgb);
       }
     },
-    setBlendMode: (state, action: {
+    setBlendMode(state, action: {
       payload: BlendingType;
       type: string;
-    }) => {
+    }) {
       state.blendMode = action.payload;
     },
-    adjustContrast: (state, action: {
+    adjustContrast(state, action: {
       payload: {
         method: string;
         gamma?: number;
       };
       type: string;
-    }) => {
+    }) {
       if (!state.isEditingPlt) return state;
       const {method, gamma} = action.payload;
       const {converter, inverter} = getSpaceTrans(state.colorSpace);
@@ -285,12 +288,15 @@ const cardSlice = createSlice({
         state.cards[i].hex = rgb2hex(newRgbs[i]);
       }
     },
+    setIsPlaying(state) {
+      state.isPlaying = !state.isPlaying;
+    },
   },
 });
 
 export const {
   addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setIsEditing,
   moveCardOrder, setIsPending, setPltIsEditing, setPlt, setColorSpace,
-  setBlendMode, adjustContrast, resetOrder,
+  setBlendMode, adjustContrast, resetOrder, setIsPlaying,
 } = cardSlice.actions;
 export default cardSlice.reducer;

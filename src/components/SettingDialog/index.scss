@@ -1,9 +1,6 @@
 @import "@/assets/commons.scss";
 
 .settingDialog {
-  display: grid;
-  grid-template-rows: 32px 1fr;
-  grid-template-columns: 110px 1fr 29px;
   // position
   position: absolute;
   top: 50%;
@@ -15,19 +12,22 @@
   width: 320px;
   border-radius: $radius-lg;
   overflow: hidden;
+}
 
-  background-color: $color2;
+$header-height: 34px;
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $header-height;
+  width: 100%;
+  background-color: $color5;
   >h5 {
-    // position
-    grid-row-start: 1;
-    grid-row-end: 2;
-    grid-column-start: 1;
-    grid-column-end: 2;
     // shape
-    padding: 8px 10px 10px;
+    padding: 0px 10px 0px;
     margin: 0;
-    // color
-    color: $color4;
+    // color and text
+    color: $color2;
     text-align: center;
     font-size: var(--font-subheading);
     font-weight: $boldWeight;
@@ -35,38 +35,32 @@
     user-select: none;
   }
   >:global(.icon) {
-    // position
-    grid-row-start: 1;
-    grid-row-end: 2;
-    grid-column-start: 3;
-    grid-column-end: 4;
-    justify-self: flex-end;
+    height: 21px;
     margin: 6px;
     // shape
     height: 13px;
     padding: 4px;
     border-radius: $radius-lg;
 
-    background-color: $color1;
+    filter: invert(1);
     &:hover {
-      background-color: $color2;
+      filter: invert(0);
+      background-color: $color3;
     }
   }
 }
 
-.sidebar {
-  display: flex;
-  grid-column-start: 2;
-  grid-column-end: 3;
-
+.menubar {
+  display: inline-flex;
+  flex: 1 1 auto;
+  height: 25px;
+  width: 100%;
+  
   user-select: none;
+  background-color: $color2;
   >div {
-    display: block;
-    margin-top: auto;
-
-    border-radius: $radius-sm;
+    border-radius: $radius-sm $radius-sm 0 0;
     padding: 5px 10px;
-    box-sizing: border-box;
 
     font-size: var(--font-sm);
     cursor: pointer;
@@ -96,9 +90,9 @@
   grid-column-start: 1;
   grid-column-end: 4;
   // shape
-  height: 100%;
+  height: 341px;
   width: 100%;
-  padding: 15px 20px 10px;
+  padding: 3px 20px 10px;
   box-sizing: border-box;
 
   background-color: $color1;
@@ -130,9 +124,6 @@
 }
 
 .subOption {
-  // layout
-  @extend %optionLayout;
-  row-gap: 5px;
   // position
   &label {
     grid-column-start: 1;

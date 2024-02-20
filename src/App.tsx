@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useEffect, useCallback} from "react";
+import React, {useState, useMemo, useEffect, useCallback, useRef} from "react";
 
 import Header from "./components/Header";
 import Palette from "./components/Palette";
@@ -26,6 +26,7 @@ const App = () => {
   const [isSettingsShowing, setIsSettingsShowing] = useState(() => false);
   const [isfavShowing, setFavShowing] = useState<boolean>(() => false);
   const [isMasking, setIsMasking] = useState<boolean>(() => false);
+  const isInEvent = useRef<boolean>(false);
 
   const handleClickMask = useCallback(() => {
     setIsSettingsShowing(false);
@@ -43,7 +44,7 @@ const App = () => {
   };
 
   const {cards, isPending} = useAppSelector(selectPlt);
-  const preventKeydown = (
+  isInEvent.current = (
     cards.some((card) => card.isEditing) ||
     isPending ||
     isMasking
@@ -65,19 +66,13 @@ const App = () => {
     dispatch(initColors());
     dispatch(initPlts());
     // `preload` class for preventing annimation occurs on page load.
-    const body = document.body;
     setTimeout(() => {
-      body.classList.remove("preload");
+      document.body.classList.remove("preload");
     }, 500);
-  }, []);
-
-  useEffect(() => {
     // Connect hotkey.
-    const body = document.body;
     const keyDownEvent = (e: KeyboardEvent) => {
       // Prevent trigger hotkey/shortcut when editing card.
-      if (preventKeydown) return;
-
+      if (isInEvent.current || e.ctrlKey || e.altKey || e.shiftKey) return;
       switch (e.key.toLowerCase()) {
         case " ":
           refreshPlt();
@@ -93,9 +88,9 @@ const App = () => {
           break;
       }
     };
-    body.addEventListener("keydown", keyDownEvent);
-    return () => body.removeEventListener("keydown", keyDownEvent);
-  }, [preventKeydown]);
+    document.body.addEventListener("keydown", keyDownEvent);
+    return () => document.body.removeEventListener("keydown", keyDownEvent);
+  }, []);
 
   return (
     <MediaProvider>

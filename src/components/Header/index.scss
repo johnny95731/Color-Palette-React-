@@ -58,6 +58,7 @@
   margin: 0 2px;
   float: left;
   border-radius: $radius-lg;
+  box-sizing: border-box;
   background-color: inherit;
   cursor: pointer;
   :global(.icon) {
@@ -76,7 +77,6 @@
     min-height: 30px;
     width: 100%;
     padding: 7px 0;
-    box-sizing: border-box;
     &:hover, &:focus {
       background-color: $color3;
     }
@@ -96,4 +96,8 @@
 .btnMenu {
   @extend %btn;
   padding: 5px 6px 5px 8px;
+}
+
+.playBtn {
+  width: 75px;
 }

@@ -38,10 +38,10 @@ const favSlice = createSlice({
   name: "favorites",
   initialState,
   reducers: {
-    favColorsChanged: (state, action:{
+    favColorsChanged(state, action:{
       payload: string;
       type: string;
-    }) => {
+    }) {
       const targetHex = action.payload;
       const isIncluding = state.colors.includes(targetHex);
       // Update database
@@ -64,10 +64,10 @@ const favSlice = createSlice({
         state.colors.push(targetHex);
       }
     },
-    favPltsChanged: (state, action:{
+    favPltsChanged(state, action:{
       payload: string;
       type: string;
-    }) => {
+    }) {
       const targetPlt = action.payload;
       // Update database
       update<string[]>(STORE_FAV_PLTS, (prev) => {

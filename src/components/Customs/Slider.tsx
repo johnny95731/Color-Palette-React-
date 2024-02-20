@@ -39,9 +39,9 @@ const Slider = ({
   const [isDragging, setIsDragging] = useState<boolean>(() => false);
 
   const [currentVal, setCurrentVal] = useState<number>(() => {
-    const val = defaultValue ?
+    const val = defaultValue !== undefined ?
         defaultValue :
-        (value ? value : (max + min) / 2);
+        (value !== undefined ? value : (max + min) / 2);
     return clip(val, min, max);
   });
   const [pos, setPos] = useState<number>(() => pointRadius);
