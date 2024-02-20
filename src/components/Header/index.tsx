@@ -16,7 +16,7 @@ import {
   useAppDispatch, useAppSelector, selectPlt, selectSettings,
 } from "@/features";
 import {
-  setColorSpace, setBlendMode, setIsPlaying, refreshCard,
+  setColorSpace, setBlendMode, refreshCard, setIsPending,
 } from "slices/pltSlice";
 import MediaContext from "@/features/mediaContext.ts";
 // types
@@ -96,41 +96,36 @@ const SettingMenu = ({
 
 const Play = () => {
   const dispatch = useAppDispatch();
-  const {isPlaying} = useAppSelector(selectPlt);
   const {transition: {color}} = useAppSelector(selectSettings);
 
   const isRunning = useRef<boolean>(false);
-  const timeoutId = useRef<number | null>(null);
-  const refresh = () => {
-    dispatch(refreshCard(-1));
-    timeoutId.current = window.setTimeout(() => {
-      isRunning.current && refresh();
+  const intervalId = useRef<number | null>(null);
+  const intervalPlay = () => {
+    intervalId.current = window.setInterval(() => {
+      isRunning.current && dispatch(refreshCard(-1));
     }, Math.max(color, 1000));
   };
   const haldleClick = () => {
-    dispatch(setIsPlaying());
-    if (isPlaying) {
-      isRunning.current = false;
-      if (timeoutId.current !== null) window.clearTimeout(timeoutId.current);
-      timeoutId.current = null;
+    if (isRunning.current) {
+      if (intervalId.current !== null) window.clearInterval(intervalId.current);
+      intervalId.current = null;
     } else {
-      isRunning.current = true;
-      refresh();
+      intervalPlay();
+      dispatch(refreshCard(-1));
     }
+    isRunning.current = !isRunning.current;
+    dispatch(setIsPending(isRunning.current));
   };
   useEffect(() => {
-    if (isPlaying) {
-      if (timeoutId.current !== null) window.clearTimeout(timeoutId.current);
-      timeoutId.current = window.setTimeout(() => {
-        isRunning.current && refresh();
-      }, Math.max(color, 1000));
-    }
+    if (!isRunning.current) return;
+    if (intervalId.current !== null) window.clearInterval(intervalId.current);
+    intervalPlay();
   }, [color]);
 
   return (
     <span className={`${css.btn} ${css.playBtn}`} onClick={haldleClick} >
-      <Icon type={isPlaying ? "pause" : "play"} />
-      {isPlaying ? "Pause" : "Play"}
+      <Icon type={isRunning.current ? "pause" : "play"} />
+      {isRunning.current ? "Pause" : "Play"}
     </span>
   );
 };

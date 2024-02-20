@@ -63,10 +63,6 @@ type StateType = {
    * mode.
    */
   colorSpace: ColorSpacesType;
-  /**
-   * Randomly play palettes.
-   */
-  isPlaying: boolean;
 }
 
 const initialState: StateType = {
@@ -78,7 +74,6 @@ const initialState: StateType = {
   isEditingPlt: false,
   blendMode: "mean",
   colorSpace: INIT_COLOR_SPACE,
-  isPlaying: false,
 };
 
 const cardSlice = createSlice({
@@ -288,15 +283,12 @@ const cardSlice = createSlice({
         state.cards[i].hex = rgb2hex(newRgbs[i]);
       }
     },
-    setIsPlaying(state) {
-      state.isPlaying = !state.isPlaying;
-    },
   },
 });
 
 export const {
   addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setIsEditing,
   moveCardOrder, setIsPending, setPltIsEditing, setPlt, setColorSpace,
-  setBlendMode, adjustContrast, resetOrder, setIsPlaying,
+  setBlendMode, adjustContrast, resetOrder,
 } = cardSlice.actions;
 export default cardSlice.reducer;
