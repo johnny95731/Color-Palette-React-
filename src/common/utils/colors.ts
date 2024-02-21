@@ -130,8 +130,7 @@ export const rgb2xyz = (rgb: number[]): number[] => {
     const std = val / RGB_MAXES;
     return std > 0.04045 ? ((std+0.055)/1.055)**2.4 : std / 12.92;
   });
-  const arr = RGB2XYZ_COEFF.map((row) => dot(row, linearRgb) * XYZ_MAXES);
-  return arr;
+  return RGB2XYZ_COEFF.map((row) => dot(row, linearRgb) * XYZ_MAXES);
 };
 
 
