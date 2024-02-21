@@ -1,6 +1,6 @@
-import {identity, mod, round, toPercent} from "./helpers.ts";
+import {clip, dot, identity, mod, round, toPercent} from "./helpers.ts";
 import {
-  RGB_MAXES, HSL_MAXES, HSB_MAXES, CMY_MAXES, CMYK_MAXES,
+  RGB_MAXES, HSL_MAXES, HSB_MAXES, CMY_MAXES, CMYK_MAXES, XYZ_MAXES,
 } from "@/common/utils/constants.ts";
 import type {ColorSpaceInfos, ColorSpaceTrans} from "types/utilTypes.ts";
 import type {ColorSpacesType} from "types/pltType.ts";
@@ -115,6 +115,25 @@ export const rgb2cmyk = (rgb: number[]): number[] => {
   return cmy;
 };
 
+const RGB2XYZ_COEFF = [
+  [0.4124, 0.3576, 0.1805],
+  [0.2126, 0.7152, 0.0722],
+  [0.0193, 0.1192, 0.9505],
+];
+/**
+ * Convert RGB to CIE XYZ.
+ * @param {number[]} rgb RGB color array.
+ * @return {number[]} CIE XYZ color array.
+ */
+export const rgb2xyz = (rgb: number[]): number[] => {
+  const linearRgb = rgb.map((val) => {
+    const std = val / RGB_MAXES;
+    return std > 0.04045 ? ((std+0.055)/1.055)**2.4 : std / 12.92;
+  });
+  const arr = RGB2XYZ_COEFF.map((row) => dot(row, linearRgb) * XYZ_MAXES);
+  return arr;
+};
+
 
 // To RGB.
 /**
@@ -200,43 +219,52 @@ export const cmyk2rgb = (cmyk: number[]): number[] => {
   return rgb;
 };
 
+const XYZ2RGB_COEFF = [
+  [3.2406, -1.5372, -0.4986],
+  [-0.9689, 1.8758, 0.0415],
+  [0.0557, -0.2040, 1.0570],
+] as const;
+/**
+ * Convert CIE XYZ to RGB.
+ * @param {number[]} xyz RGB color array.
+ * @return {number[]} RGB color array.
+ */
+export const xyz2rgb = (xyz: number[]): number[] => {
+  return XYZ2RGB_COEFF.map((row) => {
+    const linearRgb = dot(row, xyz) / XYZ_MAXES;
+    const rgb = linearRgb > 0.0031308 ?
+        1.055 * linearRgb**(1/2.4) - 0.055 :
+        12.92 * linearRgb;
+    return clip(rgb * RGB_MAXES, 0, RGB_MAXES);
+  });
+};
+
 /**
  * Convert Hex color to RGB color.
  * @param {String} hex Hex color string.
  * @return {number[]} rgb
  */
-export const hex2rgb = (hex: string): number[] | null => {
-  if (hex.startsWith("#")) {
-    hex = hex.slice(1);
+export const hex2rgb = (hex: string): number[] => {
+  hex = hex.replace(/[^0-9A-F]/ig, "");
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
   }
-  const nonHex = hex.replace(/[^0-9A-F]/ig, "");
-  if ((!nonHex.length)) return null; // All words are not hex.
-  switch (hex.length) {
-    case 3:
-      return hex.split("").map((str) => parseInt(str+str, 16));
-    case 6:
-      return [
-        parseInt(hex.slice(0, 2), 16),
-        parseInt(hex.slice(2, 4), 16),
-        parseInt(hex.slice(4, 6), 16),
-      ];
-    default:
-      return null;
-  }
+  const num = parseInt(hex, 16);
+  return [num >> 16, (num >> 8) & 255, num & 255];
 };
 
 // Validator
 /**
  * Verify the string whether is a (3 channel, no alpha channel) Hex color.
- * @param {String} hex String that need to be verified.
+ * @param {String} str String that need to be verified.
  * @return {Boolean} Validity of string.
  */
-export const isValidHex = (hex: string): boolean => {
-  if (typeof hex !== "string") return false;
-  if (hex.startsWith("#")) hex = hex.slice(1);
-  if (![3, 6].includes(hex.length)) return false;
-  const nonHex = hex.match(/[^0-9A-F]/i);
-  if ((nonHex !== null)) return false;
+export const isValidHex = (str: string): boolean => {
+  if (typeof str !== "string") return false;
+  if (str.startsWith("#")) str = str.slice(1);
+  if (![3, 6].includes(str.length)) return false;
+  const nonHex = str.match(/[^0-9A-F]/i);
+  if (nonHex !== null) return false;
   return true;
 };
 
@@ -268,6 +296,11 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos => {
         labels: ["Cyan", "Magenta", "Yellow", "Black"],
         maxes: [CMYK_MAXES, CMYK_MAXES, CMYK_MAXES, CMYK_MAXES],
       };
+    case "xyz":
+      return {
+        labels: ["x", "y", "z"],
+        maxes: [XYZ_MAXES, XYZ_MAXES, XYZ_MAXES],
+      };
     default: // "rgb" and "name"
       return {
         labels: ["Red", "Green", "Blue"],
@@ -296,6 +329,11 @@ export const getSpaceTrans = (space: ColorSpacesType): ColorSpaceTrans => {
       return {
         converter: rgb2cmyk,
         inverter: cmyk2rgb,
+      };
+    case "xyz":
+      return {
+        converter: rgb2xyz,
+        inverter: xyz2rgb,
       };
     default: // "rgb" and "name"
       return {

@@ -10,7 +10,7 @@ export const CURRENT_OPTION_WEIGHT: React.CSSProperties = {
  * Support color spaces.
  */
 export const COLOR_SPACES = [
-  "rgb", "name", "hsl", "hsb", "cmy", "cmyk",
+  "rgb", "name", "hsl", "hsb", "cmy", "cmyk", "xyz",
 ] as const;
 
 /**
@@ -41,6 +41,7 @@ export const HSL_MAXES = [359, 100, 100] as const;
 export const HSB_MAXES = [359, 100, 100] as const;
 export const CMY_MAXES = 100;
 export const CMYK_MAXES = 100;
+export const XYZ_MAXES = 100;
 
 /**
  * Initial number of color in palette.

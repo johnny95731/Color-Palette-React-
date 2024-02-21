@@ -311,7 +311,6 @@ ref,
 
   const containerRef = useRef<HTMLDivElement>(null);
   const editingDialogRef = useRef<HTMLDivElement>(null);
-  // console.log(hex, color);
   const roundedColor = color.map((val) => Math.round(val));
   const isLight = rgb2gray(hex2rgb(hex) as number[]) > 127;
 

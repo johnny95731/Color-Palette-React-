@@ -62,6 +62,15 @@ export const rangeMapping = (
 };
 
 /**
+ * Dot product of two arrays.
+ */
+export const dot = (a: readonly number[], b: readonly number[]): number => {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += a[i] * b[i];
+  return s;
+};
+
+/**
  * Check whether two object has same keys.
  */
 export const hasSameKeys = (obj1: object, obj2: object): boolean => {
@@ -176,9 +185,9 @@ export const hexTextEdited = (
     e: React.ChangeEvent<HTMLInputElement>,
 ): void => {
   const textInput = e.currentTarget;
-  let text = (textInput.value).toUpperCase();
-  text = text.replace(/[^A-F0-9]/g, "");
-  textInput.value = `#${text}`;
+  let text = (textInput.value);
+  text = text.replace(/[^A-F0-9]/ig, "");
+  textInput.value = `#${text.toUpperCase()}`;
 };
 /**
  * Copy Hex text to clipboard (excludes "#").
