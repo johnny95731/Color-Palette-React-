@@ -48,7 +48,7 @@ const Slider = ({
 
   const updateValue = useCallback((newVal: number, pos?: number) => {
     setCurrentVal(newVal);
-    if (onChange) onChange(newVal);
+    if (newVal !== currentVal && onChange) onChange(newVal);
     if (pos === undefined) {
       const rect = trackerRef.current?.getBoundingClientRect() as DOMRect;
       pos = round(rangeMapping(
@@ -69,7 +69,6 @@ const Slider = ({
         clip(value !== undefined ? value : currentVal, min, max),
         digit,
     );
-    if (newVal === currentVal) return;
     updateValue(newVal);
   }, [value, min, max, onChange]);
 

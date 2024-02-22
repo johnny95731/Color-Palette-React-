@@ -51,18 +51,18 @@ const Select = ({
         {currentVal}
         <img src={TriangleUrl} alt="clickable" className={css.triangle} />
       </div>
-      <div className={contentClass}>
+      <ul className={contentClass}>
         {
           options.map((val) => (
-            <div key={`Option ${val}`}
+            <li key={`Option ${val}`}
               onClick={handleSelect}
               style={val === currentVal ? CURRENT_OPTION_WEIGHT : undefined}
             >
               {val}
-            </div>
+            </li>
           ))
         }
-      </div>
+      </ul>
     </span>
   );
 };

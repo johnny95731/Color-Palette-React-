@@ -261,21 +261,21 @@ const cardSlice = createSlice({
     adjustContrast(state, action: {
       payload: {
         method: string;
-        gamma?: number;
+        coeff?: number;
       };
       type: string;
     }) {
       if (!state.isEditingPlt) return state;
-      const {method, gamma} = action.payload;
+      const {method, coeff} = action.payload;
       const {converter, inverter} = getSpaceTrans(state.colorSpace);
       const originRgbs = state.cards.map((card) => inverter(card.originColor));
       let newRgbs = originRgbs;
       switch (method) {
         case "multiplication":
-          newRgbs = scaling(originRgbs, gamma as number) as number[][];
+          newRgbs = scaling(originRgbs, coeff as number) as number[][];
           break;
         case "gamma":
-          newRgbs = gammaCorrection(originRgbs, gamma as number) as number[][];
+          newRgbs = gammaCorrection(originRgbs, coeff as number) as number[][];
           break;
       }
       for (let i = 0; i < state.numOfCards; i++) {

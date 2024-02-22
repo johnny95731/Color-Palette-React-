@@ -82,7 +82,7 @@
     }
   }
 }
-.list {
+.listIcon {
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -96,9 +96,12 @@
 
 .btnMenu {
   @extend %btn;
-  padding: 5px 6px 5px 8px;
+  padding: 5px 6px 5px 9px;
 }
 
 .playBtn {
   width: 75px;
+  @include small {
+    width: 100%;
+  }
 }

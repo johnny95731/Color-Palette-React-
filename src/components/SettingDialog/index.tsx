@@ -161,7 +161,7 @@ const SettingDialog = ({
   });
   const contrastChanged = (newObj: Partial<ContrastArgsType>) => {
     setContrastArgs((prev) => Object.assign({}, prev, newObj));
-    dispatch(adjustContrast({...contrastArgs}));
+    dispatch(adjustContrast(contrastArgs));
   };
 
   const [page, setPage] = useState(() => 0);

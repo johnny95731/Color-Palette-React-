@@ -80,14 +80,14 @@ const SettingMenu = ({
     >
       {
         menuItems.map((item, i) => (
-          <div key={`${iconType}${item.name}`}
+          <li key={`${iconType}${item.name}`}
             style={item.style}
             onClick={() => handleClick(item.val)}
           >
             {`${item.name}${
               hotkeys[i] ? ` (${hotkeys[i]})` : ""
             }`}
-          </div>
+          </li>
         ))
       }
     </Menu>
@@ -202,7 +202,7 @@ const Header = ({
   }, []);
 
   useEffect(() => {
-    const content = menuContentRef.current as HTMLDivElement;
+    const content = menuContentRef.current as HTMLElement;
     if (isSmall) {
       menuRef.current?.classList.add(menuCss.popupMenu);
       content.classList.add(menuCss.mobileMenuContent);
@@ -233,8 +233,7 @@ const Header = ({
         onClick={isSmall ? (showPopupMenu as MouseHandler) : undefined}
       >
         {
-          isSmall &&
-          <Icon type="list" className={css.list} />
+          isSmall && <Icon type="list" />
         }
         <div ref={menuContentRef}>
           {/* Float left */}

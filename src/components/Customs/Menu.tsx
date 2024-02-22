@@ -18,7 +18,7 @@ const Menu = ({
   children: React.ReactNode;
   className?: string;
   iconType?: IconType;
-  title: string;
+  title?: string;
   contentClass?: string;
 }): React.JSX.Element => {
   return (
@@ -32,9 +32,9 @@ const Menu = ({
         {title}
         <img src={TriangleUrl} alt="clickable" className={css.triangle} />
       </div>
-      <div className={contentClass}>
+      <ul className={contentClass}>
         {children}
-      </div>
+      </ul>
     </span>
   );
 };
