@@ -1,3 +1,4 @@
 // Ignore .js files not in `src` folder.
 /**/*.js
 !/src/*.js
+.eslintrc.cjs
