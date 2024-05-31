@@ -108,7 +108,9 @@ export const rgb2cmy = (rgb: number[]): number[] => {
 export const rgb2cmyk = (rgb: number[]): number[] => {
   const k = (RGB_MAXES - Math.max(...rgb)); // k in [0, RGB_MAXES].
   // Tolerance = 0.5. <input(range)> have decimals.
-  if (CMYK_MAXES - k < 0.5) return [0, 0, 0, CMYK_MAXES];
+  if (CMYK_MAXES - CMYK_MAXES * k / RGB_MAXES < 0.5) {
+    return [0, 0, 0, CMYK_MAXES];
+  }
   const kConst = CMYK_MAXES / (RGB_MAXES - k); // Scaling to [0, CMYK_MAXES].
   const cmy = rgb.map((val) => (RGB_MAXES - val - k) * kConst);
   cmy.push(k * (CMYK_MAXES / RGB_MAXES));
