@@ -3,7 +3,7 @@ import React, {
   useLayoutEffect, useImperativeHandle,
   Fragment,
 } from "react";
-import css from "./card.scss";
+import css from "./card.module.scss";
 import Icon from "../Customs/Icons.tsx";
 import Slider from "../Customs/Slider.tsx";
 // utils

@@ -1,6 +1,6 @@
 import React, {useState, useMemo} from "react";
 import Icon from "../Customs/Icons.tsx";
-import css from "./index.scss";
+import css from "./index.module.scss";
 // utils
 import {rgb2gray, hex2rgb, isValidHex} from "@/common/utils/colors.ts";
 import {copyHex} from "@/common/utils/helpers.ts";

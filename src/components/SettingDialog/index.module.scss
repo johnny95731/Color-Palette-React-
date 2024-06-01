@@ -1,4 +1,4 @@
-@import "@/assets/commons.scss";
+@import "@/assets/commons.module.scss";
 
 .settingDialog {
   // position
@@ -96,7 +96,7 @@ $header-height: 34px;
   box-sizing: border-box;
 
   background-color: $color1;
-  >label:not(), >div:not(), >input:not() {
+  >label, >div, >input {
     max-height: min-content;
     font-size: var(--font-body);
   }

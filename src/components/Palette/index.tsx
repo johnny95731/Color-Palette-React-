@@ -4,7 +4,7 @@ import React, {
 
 import Card from "./card.tsx";
 import Icon from "../Customs/Icons.tsx";
-import css from "./index.scss";
+import css from "./index.module.scss";
 // Utils
 import {
   evalLength, evalPosition, round,

@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useMemo} from "react";
 import MediaContext from "./mediaContext.ts";
-import commonCss from "@/assets/commons.scss";
+import commonCss from "@/assets/commons.module.scss";
 import {MediaContextType} from "./types/mediaType.ts";
 
 /**

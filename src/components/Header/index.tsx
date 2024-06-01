@@ -1,8 +1,8 @@
 import React, {useContext, useEffect, useMemo, useRef} from "react";
 import Icon from "../Customs/Icons.tsx";
 import Menu from "../Customs/Menu.tsx";
-import css from "./index.scss";
-import menuCss from "../Customs/menu.scss";
+import css from "./index.module.scss";
+import menuCss from "../Customs/menu.module.scss";
 // Utils / Consts
 import {
   capitalize, preventDefault, showPopupMenu,

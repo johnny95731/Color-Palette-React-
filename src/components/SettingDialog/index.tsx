@@ -3,7 +3,7 @@ import Select from "../Customs/Select.tsx";
 import Slider from "../Customs/Slider.tsx";
 import Switch from "../Customs/Switch.tsx";
 import Icon from "../Customs/Icons.tsx";
-import css from "./index.scss";
+import css from "./index.module.scss";
 // Utils
 import {
   CURRENT_OPTION_WEIGHT, BORDER_COLOR, BORDER_MAX_WIDTH, CONTRAST_METHODS,

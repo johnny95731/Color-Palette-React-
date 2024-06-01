@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import Palette from "./components/Palette";
 import SettingDialog from "./components/SettingDialog";
 import FavOffcanvas from "./components/FavOffcanvas";
-import "./App.scss";
+import "./App.module.scss";
 // Stores
 import {
   useAppDispatch, useAppSelector, selectPlt,

@@ -2,3 +2,5 @@
 /**/*.js
 !/src/*.js
 .eslintrc.cjs
+vite.config.mts
+vite-env.d.ts

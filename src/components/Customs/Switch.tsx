@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from "react";
-import css from "./switch.scss";
+import css from "./switch.module.scss";
 
 const switchStyle = {
   on: {

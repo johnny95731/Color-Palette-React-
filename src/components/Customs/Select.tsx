@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import TriangleUrl from "@/assets/icons/triangle-down.svg?url";
-import css from "./menu.scss";
+import css from "./menu.module.scss";
 import {showPopupMenu} from "@/common/utils/helpers.ts";
 import {MouseHandler, FocusHandler} from "types/eventHandler.ts";
 import {CURRENT_OPTION_WEIGHT} from "@/common/utils/constants";

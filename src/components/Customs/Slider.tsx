@@ -1,9 +1,9 @@
 import React, {
   useEffect, useState, useRef, useCallback, useLayoutEffect,
 } from "react";
-import css from "./slider.scss";
-import {clip, round, rangeMapping} from "@/common/utils/helpers";
-
+import css from "./slider.module.scss";
+import {clip, round, rangeMapping} from "@/common/utils/helpers.ts";
+console.log(typeof css);
 const pointSize = Number(css["point-size"].slice(0, -2));
 const pointRadius = pointSize / 2;
 
