@@ -1,10 +1,10 @@
 import React, {
   useEffect, useState, useRef, useCallback, useLayoutEffect,
-} from "react";
-import css from "./slider.module.scss";
-import {clip, round, rangeMapping} from "@/common/utils/helpers.ts";
+} from 'react';
+import css from './slider.module.scss';
+import { clip, round, rangeMapping } from '@/common/utils/helpers.ts';
 console.log(typeof css);
-const pointSize = Number(css["point-size"].slice(0, -2));
+const pointSize = Number(css['point-size'].slice(0, -2));
 const pointRadius = pointSize / 2;
 
 type SliderProps = {
@@ -88,7 +88,7 @@ const Slider = ({
   const handleDrag = useCallback((
       e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent,
   ) => {
-    if (!e.type.endsWith("move")) { // touch start / mouse down
+    if (!e.type.endsWith('move')) { // touch start / mouse down
       (e.currentTarget as HTMLDivElement).focus();
       if (tooltipRef.current === e.target) return; // Prevent dragging tooltip.
       setIsDragging(true);
@@ -117,26 +117,26 @@ const Slider = ({
 
   useEffect(() => {
     const body = document.body;
-    body.addEventListener("mousemove", handleDrag);
-    body.addEventListener("touchmove", handleDrag);
+    body.addEventListener('mousemove', handleDrag);
+    body.addEventListener('touchmove', handleDrag);
     return () => {
-      body.removeEventListener("mousemove", handleDrag);
-      body.removeEventListener("touchmove", handleDrag);
+      body.removeEventListener('mousemove', handleDrag);
+      body.removeEventListener('touchmove', handleDrag);
     };
   }, [handleDrag]);
   useEffect(() => {
     const body = document.body;
-    body.addEventListener("mouseup", handleDragEnd);
-    body.addEventListener("touchend", handleDragEnd);
+    body.addEventListener('mouseup', handleDragEnd);
+    body.addEventListener('touchend', handleDragEnd);
     return () => {
-      body.removeEventListener("mouseup", handleDragEnd);
-      body.removeEventListener("touchend", handleDragEnd);
+      body.removeEventListener('mouseup', handleDragEnd);
+      body.removeEventListener('touchend', handleDragEnd);
     };
   }, []);
   // -Key down
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key == "ArrowRight") increment();
-    else if (e.key === "ArrowLeft") increment(-1);
+    if (e.key == 'ArrowRight') increment();
+    else if (e.key === 'ArrowLeft') increment(-1);
   };
   // end: onChange event
 
@@ -165,7 +165,7 @@ const Slider = ({
           {showVal &&
             <div className={css.tooltip} ref={tooltipRef}
               style={{
-                display: isDragging ? "block" : "",
+                display: isDragging ? 'block' : '',
               }}
             >
               {currentVal}

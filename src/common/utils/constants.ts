@@ -10,26 +10,26 @@ export const CURRENT_OPTION_WEIGHT: React.CSSProperties = {
  * Support color spaces.
  */
 export const COLOR_SPACES = [
-  "rgb", "name", "hsl", "hsb", "cmy", "cmyk", "xyz",
+  'rgb', 'name', 'hsl', 'hsb', 'cmy', 'cmyk', 'xyz',
 ] as const;
 
 /**
  * Support blend modes.
  */
 export const BLEND_MODES = [
-  "mean", "brighter", "deeper", "soft light", "random",
+  'mean', 'brighter', 'deeper', 'soft light', 'random',
 ] as const;
 
 /**
  * Actions for sorting palette colors.
  */
-export const SORTING_ACTIONS = ["gray", "random", "inversion"] as const;
+export const SORTING_ACTIONS = ['gray', 'random', 'inversion'] as const;
 
 /**
  * Methods of adjusting contrast.
  */
 export const CONTRAST_METHODS = [
-  "multiplication", "gamma",
+  'multiplication', 'gamma',
 ] as const;
 
 export const MULTIPLICATION_MAX = 10;
@@ -52,12 +52,12 @@ export const MIN_NUM_OF_CARDS = 2;
 /**
  * Initial color space in palette.
  */
-export const INIT_COLOR_SPACE = "rgb";
+export const INIT_COLOR_SPACE = 'rgb';
 
 
 // Settings consts.
 export const BORDER_MAX_WIDTH = 10 as const;
-export const BORDER_COLOR = ["white", "gray", "black"] as const;
+export const BORDER_COLOR = ['white', 'gray', 'black'] as const;
 
 export const TRANSITION_MAX_POS = 1000;
 export const TRANSITION_MAX_COLOR = 3000;

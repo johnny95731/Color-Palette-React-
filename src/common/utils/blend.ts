@@ -1,8 +1,8 @@
-import {getSpaceTrans} from "./colors.ts";
-import {HSL_MAXES} from "./constants.ts";
-import {elementwiseMean} from "./helpers.ts";
-import {Blender} from "types/utilTypes.ts";
-import type {ColorSpacesType} from "types/pltType.ts";
+import { getSpaceTrans } from './colors.ts';
+import { HSL_MAXES } from './constants.ts';
+import { elementwiseMean } from './helpers.ts';
+import { Blender } from 'types/utilTypes.ts';
+import type { ColorSpacesType } from 'types/pltType.ts';
 
 /**
  * Blending two colors by evaluate their average.
@@ -14,7 +14,7 @@ import type {ColorSpacesType} from "types/pltType.ts";
 export const meanBlend = (
     color1: number[], color2: number[], colorSpace: ColorSpacesType,
 ): number[] => {
-  const {converter, inverter} = getSpaceTrans(colorSpace);
+  const { converter, inverter } = getSpaceTrans(colorSpace);
   const newColor = elementwiseMean(
       converter(color1), converter(color2),
   );
@@ -54,7 +54,7 @@ const blendNGamma = (
   const sacleCoeff = HSL_MAXES.slice(1).map(
       (val) => Math.pow(val, (1 - gamma)));
   const mean = elementwiseMean(color1, color2);
-  const {converter, inverter} = getSpaceTrans("hsl");
+  const { converter, inverter } = getSpaceTrans('hsl');
   const [hue, sat, lum] = converter(mean);
   const newSat = Math.pow(sat, gamma) * sacleCoeff[0];
   const newLum = Math.pow(lum, gamma) * sacleCoeff[1];
@@ -67,8 +67,8 @@ const deeperBlend: Blender = (color1, color2) => {
 };
 
 export const blenders = Object.freeze({
-  "mean": meanBlend,
-  "brighter": brighter,
-  "deeper": deeperBlend,
-  "soft light": softLightBlend,
+  'mean': meanBlend,
+  'brighter': brighter,
+  'deeper': deeperBlend,
+  'soft light': softLightBlend,
 });

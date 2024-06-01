@@ -1,15 +1,15 @@
-import {createSlice, createAsyncThunk} from "@reduxjs/toolkit";
-import {get, update, set} from "idb-keyval";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { get, update, set } from 'idb-keyval';
 
 import {
   favoritesDb, STORE_FAV_COLORS, STORE_FAV_PLTS,
-} from "@/common/utils/database.ts";
+} from '@/common/utils/database.ts';
 
 
-export const initColors = createAsyncThunk("favorites/initColors",
+export const initColors = createAsyncThunk('favorites/initColors',
     () => get<string[]>(STORE_FAV_COLORS, favoritesDb),
 );
-export const initPlts = createAsyncThunk("favorites/initPlts",
+export const initPlts = createAsyncThunk('favorites/initPlts',
     () => get<string[]>(STORE_FAV_PLTS, favoritesDb),
 );
 
@@ -35,7 +35,7 @@ const initialState: stateType = {
 };
 
 const favSlice = createSlice({
-  name: "favorites",
+  name: 'favorites',
   initialState,
   reducers: {
     favColorsChanged(state, action:{
@@ -103,7 +103,7 @@ const favSlice = createSlice({
           state.isInit[0] = true;
         })
         .addCase(initColors.rejected, (state, action) => {
-          console.error("Colors store:", action.error.message);
+          console.error('Colors store:', action.error.message);
           state.isInit[0] = true;
         })
         // Initialize plts
@@ -117,12 +117,12 @@ const favSlice = createSlice({
           state.isInit[1] = true;
         })
         .addCase(initPlts.rejected, (state, action) => {
-          console.error("Palettes store:", action.error.message);
+          console.error('Palettes store:', action.error.message);
           state.isInit[1] = true;
         });
   },
 });
 
-export const {favColorsChanged, favPltsChanged} = favSlice.actions;
+export const { favColorsChanged, favPltsChanged } = favSlice.actions;
 export default favSlice.reducer;
 

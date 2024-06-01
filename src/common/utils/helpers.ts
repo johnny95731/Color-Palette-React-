@@ -1,4 +1,4 @@
-import NAMED_COLORS from "./named-color.json";
+import NAMED_COLORS from './named-color.json';
 
 /**
  * The modulo function. Equivalent to
@@ -84,9 +84,9 @@ export const hasSameKeys = (obj1: object, obj2: object): boolean => {
   // Deep check
   for (const key of allKeys) {
     // @ts-expect-error Already deal `undefined` case.
-    const item1 = typeof obj1[key] === "object" ? obj1[key] : {};
+    const item1 = typeof obj1[key] === 'object' ? obj1[key] : {};
     // @ts-expect-error Already deal `undefined` case.
-    const item2 = typeof obj2[key] === "object" ? obj2[key] : {};
+    const item2 = typeof obj2[key] === 'object' ? obj2[key] : {};
     if (!hasSameKeys(item1, item2)) false;
   }
   return true;
@@ -112,11 +112,11 @@ export const evalPosition = (idx: number, num: number): string => {
  * Capitalize a text.
  */
 export const capitalize = (text: string) => {
-  const words = text.split(" ");
+  const words = text.split(' ');
   words.forEach((str, i, arr) => {
     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
   });
-  return words.join(" ");
+  return words.join(' ');
 };
 
 /**
@@ -125,7 +125,7 @@ export const capitalize = (text: string) => {
  * @returns {keyof typeof NAMED_COLORS}
  */
 export const getClosestName = (rgb: number[]) => {
-  let name: string = "";
+  let name: string = '';
   let minDist = Infinity;
   let dist: number;
   for (const [key, vals] of Object.entries(NAMED_COLORS)) {
@@ -186,7 +186,7 @@ export const hexTextEdited = (
 ): void => {
   const textInput = e.currentTarget;
   let text = (textInput.value);
-  text = text.replace(/[^A-F0-9]/ig, "");
+  text = text.replace(/[^A-F0-9]/ig, '');
   textInput.value = `#${text.toUpperCase()}`;
 };
 /**
@@ -199,8 +199,8 @@ export const copyHex = (
   const target = e.currentTarget;
   if (!target) return;
   const text = target.innerText;
-  const brIdx = text.indexOf("\n"); // index of break.
-  const start = text.startsWith("#") ? 1 : 0;
+  const brIdx = text.indexOf('\n'); // index of break.
+  const start = text.startsWith('#') ? 1 : 0;
   let hex: string;
   if (brIdx > -1) {
     hex = text.slice(start, brIdx);
@@ -210,7 +210,7 @@ export const copyHex = (
   try {
     navigator.clipboard.writeText(hex);
   } catch (err) {
-    console.error("copy hex:", err);
+    console.error('copy hex:', err);
   }
 };
 
@@ -219,8 +219,8 @@ export const showPopupMenu = (
 ) => {
   const target = e.currentTarget;
   const content = target.lastChild as HTMLElement;
-  if ((e as React.FocusEvent).type === "blur") {
-    content.style.maxHeight = "";
+  if ((e as React.FocusEvent).type === 'blur') {
+    content.style.maxHeight = '';
     return;
   }
   /**
@@ -239,10 +239,10 @@ export const showPopupMenu = (
     e.stopPropagation();
   }
   const height = content.style.maxHeight;
-  if (height === "") {
-    content.style.maxHeight = "100vh";
+  if (height === '') {
+    content.style.maxHeight = '100vh';
   } else {
-    content.style.maxHeight = "";
+    content.style.maxHeight = '';
     target.blur();
   }
 };

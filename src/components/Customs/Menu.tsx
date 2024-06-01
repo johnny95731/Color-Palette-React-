@@ -1,18 +1,18 @@
-import React from "react";
-import Icon from "./Icons.tsx";
-import TriangleUrl from "@/assets/icons/triangle-down.svg?url";
-import styles from "./menu.module.scss";
+import React from 'react';
+import Icon from './Icons.tsx';
+import TriangleUrl from '@/assets/icons/triangle-down.svg?url';
+import styles from './menu.module.scss';
 // Utils
-import {showPopupMenu} from "@/common/utils/helpers.ts";
+import { showPopupMenu } from '@/common/utils/helpers.ts';
 // Types
-import type {MouseHandler, FocusHandler} from "types/eventHandler.ts";
-import type {IconType} from "./Icons.tsx";
+import type { MouseHandler, FocusHandler } from 'types/eventHandler.ts';
+import type { IconType } from './Icons.tsx';
 
 const Menu = ({
   children,
   className,
   iconType,
-  title = "",
+  title = '',
   contentClass = styles.menuContent,
 }: {
   children: React.ReactNode;
@@ -22,7 +22,7 @@ const Menu = ({
   contentClass?: string;
 }): React.JSX.Element => {
   return (
-    <span className={`${className ? className : ""} ${styles.popupMenu}`}
+    <span className={`${className ? className : ''} ${styles.popupMenu}`}
       tabIndex={-1}
       onClick={showPopupMenu as MouseHandler}
       onBlur={showPopupMenu as FocusHandler}

@@ -2,30 +2,30 @@ import React, {
   useMemo, useEffect, useCallback, forwardRef, useRef, useContext, useState,
   useLayoutEffect, useImperativeHandle,
   Fragment,
-} from "react";
-import css from "./card.module.scss";
-import Icon from "../Customs/Icons.tsx";
-import Slider from "../Customs/Slider.tsx";
+} from 'react';
+import css from './card.module.scss';
+import Icon from '../Customs/Icons.tsx';
+import Slider from '../Customs/Slider.tsx';
 // utils
 import {
   rgb2gray, rgb2hex, hex2rgb, isValidHex, getSpaceInfos, getSpaceTrans,
   gradientGen,
-} from "@/common/utils/colors.ts";
+} from '@/common/utils/colors.ts';
 import {
   getClosestName, hexTextEdited, copyHex, evalLength, evalPosition,
-} from "@/common/utils/helpers.ts";
+} from '@/common/utils/helpers.ts';
 // Stores
 import {
   useAppDispatch, useAppSelector, selectPlt, selectFavorites, selectSettings,
-} from "@/features";
+} from '@/features';
 import {
   refreshCard, editCard, setIsLock, setIsEditing,
-} from "@/features/slices/pltSlice.ts";
-import {favColorsChanged} from "slices/favSlice.ts";
-import MediaContext from "@/features/mediaContext.ts";
+} from '@/features/slices/pltSlice.ts';
+import { favColorsChanged } from 'slices/favSlice.ts';
+import MediaContext from '@/features/mediaContext.ts';
 // types
-import type {MouseHandler, TouchHandler} from "types/eventHandler.ts";
-import type {CardType, ColorSpacesType} from "types/pltType.ts";
+import type { MouseHandler, TouchHandler } from 'types/eventHandler.ts';
+import type { CardType, ColorSpacesType } from 'types/pltType.ts';
 
 
 // Other Components
@@ -45,21 +45,21 @@ const ToolBar = ({
   removeCard: () => void;
 }) => {
   // States / consts
-  const {colors: favColors, isInit} = useAppSelector(selectFavorites);
+  const { colors: favColors, isInit } = useAppSelector(selectFavorites);
   const isFav = useMemo(() => {
     return favColors.includes(card.hex);
   }, [card.hex, favColors.length, isInit[0]]);
   const dispatch = useAppDispatch();
 
-  const {opacity, cursor} = useMemo(() => {
+  const { opacity, cursor } = useMemo(() => {
     return numOfCards === 2 ?
       {
-        opacity: "0",
-        cursor: "default",
+        opacity: '0',
+        cursor: 'default',
       } :
       {
-        opacity: "",
-        cursor: "pointer",
+        opacity: '',
+        cursor: 'pointer',
       };
   }, [numOfCards]);
 
@@ -77,7 +77,7 @@ const ToolBar = ({
     };
   }, [cardIdx]);
 
-  const ifFavIcon = isFav ? "fav" : "unfav";
+  const ifFavIcon = isFav ? 'fav' : 'unfav';
   const handleFavClick = () => {
     dispatch(favColorsChanged(card.hex));
   };
@@ -92,7 +92,7 @@ const ToolBar = ({
         }}
         onClick={removeCard}
       />
-      <Icon type={card.isLock ? "lock" : "unlock"}
+      <Icon type={card.isLock ? 'lock' : 'unlock'}
         style={filterStyle}
         onClick={events.isLockChanged}
       />
@@ -103,7 +103,7 @@ const ToolBar = ({
       <Icon type="move"
         style={{
           ...filterStyle,
-          cursor: "grab",
+          cursor: 'grab',
         }}
         onMouseDown={startDraggingCard as MouseHandler}
         onTouchStart={startDraggingCard as TouchHandler}
@@ -133,11 +133,11 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
 }, ref,
 ) => {
   const dispatch = useAppDispatch();
-  const {color, isEditing} = card;
+  const { color, isEditing } = card;
 
   const hexInputRef = useRef<HTMLInputElement>(null);
 
-  const {labels, maxes, converter, inverter} = useMemo(() => {
+  const { labels, maxes, converter, inverter } = useMemo(() => {
     return {
       ...getSpaceInfos(colorSpace),
       ...getSpaceTrans(colorSpace),
@@ -151,7 +151,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       e: React.FocusEvent<HTMLInputElement>
          | React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    if (e.type === "keydown" && (e as React.KeyboardEvent).key !== "Enter") {
+    if (e.type === 'keydown' && (e as React.KeyboardEvent).key !== 'Enter') {
       return;
     }
     const textInput = e.currentTarget;
@@ -160,7 +160,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       const rgb = hex2rgb(text);
       if (!rgb) return;
       const newColor = converter(rgb);
-      dispatch(editCard({idx: cardIdx, color: newColor}));
+      dispatch(editCard({ idx: cardIdx, color: newColor }));
       let slider: HTMLInputElement | null;
       for (let i = 0; i < 4; i++) {
         slider = (
@@ -182,7 +182,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   const handleSliderChange = (newVal: number, colorAxis: number) => {
     const newColor = [...color];
     newColor[colorAxis] = newVal;
-    dispatch(editCard({idx: cardIdx, color: newColor}));
+    dispatch(editCard({ idx: cardIdx, color: newColor }));
     // Set hex to hex input.
     const textInput = hexInputRef.current as HTMLInputElement;
     const rgb = inverter(newColor);
@@ -197,17 +197,17 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
   };
 
   // Check container is out of window or not.
-  const {windowSize, isSmall, pos, bound} = useContext(MediaContext);
-  const {endPos, resetPos} = useMemo(() => {
+  const { windowSize, isSmall, pos, bound } = useContext(MediaContext);
+  const { endPos, resetPos } = useMemo(() => {
     if (isSmall) {
       return {
-        endPos: "bottom",
-        resetPos: ["left", "right"],
+        endPos: 'bottom',
+        resetPos: ['left', 'right'],
       } as const;
     } else {
       return {
-        endPos: "right",
-        resetPos: ["top", "bottom"],
+        endPos: 'right',
+        resetPos: ['top', 'bottom'],
       } as const;
     }
   }, [pos, ...windowSize]);
@@ -216,21 +216,21 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
     const container = ref.current as HTMLDivElement;
     const rect = container.getBoundingClientRect();
     // Reset style
-    container.style[resetPos[0]] = "";
-    container.style[resetPos[1]] = "";
+    container.style[resetPos[0]] = '';
+    container.style[resetPos[1]] = '';
     if (isSmall) return;
     // Adjust pos if container is out of window.
     if (rect[pos] <= bound[0]) {
-      container.style.transform = "none";
-      container.style[pos] = "0";
+      container.style.transform = 'none';
+      container.style[pos] = '0';
     } else if ((rect[endPos]) >= bound[1]) {
-      container.style.transform = "none";
-      container.style[pos] = "auto";
-      container.style[endPos] = "0";
+      container.style.transform = 'none';
+      container.style[pos] = 'auto';
+      container.style[endPos] = '0';
     } else {
-      container.style.transform = "";
-      container.style[pos] = "";
-      container.style[endPos] = "";
+      container.style.transform = '';
+      container.style[pos] = '';
+      container.style[endPos] = '';
     }
   }, [isEditing, ...windowSize]);
   // Check container is out of window or not.
@@ -240,7 +240,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
       tabIndex={-1}
       onBlur={handleDialogBlurred}
     >
-      <div style={{backgroundColor: card.hex}} />
+      <div style={{ backgroundColor: card.hex }} />
       <input type="text" ref={hexInputRef} maxLength={7}
         defaultValue={card.hex}
         className={css.hexInput}
@@ -271,7 +271,7 @@ const EditingDialog = forwardRef<HTMLDivElement, any>(({
     </div>
   );
 });
-EditingDialog.displayName = "EditingWindow";
+EditingDialog.displayName = 'EditingWindow';
 
 
 // Main component
@@ -289,7 +289,7 @@ export type CardHandle = {
   element: HTMLDivElement;
   setSize(size: string): void;
   setPos(pos: string): void;
-  setTransDuration(action: "none" | "pos" | "reset"): void;
+  setTransDuration(action: 'none' | 'pos' | 'reset'): void;
 }
 
 const Card = forwardRef<CardHandle, CardProps>(({
@@ -304,10 +304,10 @@ const Card = forwardRef<CardHandle, CardProps>(({
 ref,
 ) => {
   // States / consts
-  const {color, hex, isEditing} = card;
-  const {colorSpace, numOfCards, isPending} = useAppSelector(selectPlt);
-  const {transition} = useAppSelector(selectSettings);
-  const {isSmall, pos} = useContext(MediaContext);
+  const { color, hex, isEditing } = card;
+  const { colorSpace, numOfCards, isPending } = useAppSelector(selectPlt);
+  const { transition } = useAppSelector(selectSettings);
+  const { isSmall, pos } = useContext(MediaContext);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const editingDialogRef = useRef<HTMLDivElement>(null);
@@ -316,14 +316,14 @@ ref,
 
   const filterStyle = useMemo(() => {
     return {
-      display: isPending ? "none" : "",
-      filter: isLight ? "" : "invert(1)",
+      display: isPending ? 'none' : '',
+      filter: isLight ? '' : 'invert(1)',
     };
   }, [isLight, isPending]);
 
   const [cardSize, setCardSize] = useState(() => evalLength(numOfCards));
   const [cardPos, setCardPos] = useState(() => position);
-  const [transProperty, setTransProperty] = useState(() => "");
+  const [transProperty, setTransProperty] = useState(() => '');
 
   useImperativeHandle(ref, () => {
     return {
@@ -334,13 +334,13 @@ ref,
       setPos(pos: string) {
         setCardPos(pos);
       },
-      setTransDuration(action: "none" | "reset") {
+      setTransDuration(action: 'none' | 'reset') {
         switch (action) {
-          case "none":
-            setTransProperty("none");
+          case 'none':
+            setTransProperty('none');
             break;
-          case "reset":
-            setTransProperty("");
+          case 'reset':
+            setTransProperty('');
         }
       },
     };
@@ -361,7 +361,7 @@ ref,
       style={{
         ...styleInSettings,
         backgroundColor: hex,
-        [isSmall ? "height" : "width"]: cardSize,
+        [isSmall ? 'height' : 'width']: cardSize,
         [pos]: cardPos,
         transitionProperty: transProperty,
       }}
@@ -377,7 +377,7 @@ ref,
       />
       {
         <div className={css.textDisplay}
-          style={{opacity: isEditing ? "0" : ""}}
+          style={{ opacity: isEditing ? '0' : '' }}
         >
           <div className={css.hexText}
             onClick={copyHex}
@@ -392,7 +392,7 @@ ref,
           >
             <Icon type="copy" />
             {
-              colorSpace === "name" ?
+              colorSpace === 'name' ?
                 getClosestName(color) :
                 `${colorSpace}(${roundedColor.toString()})`
             }
@@ -411,5 +411,5 @@ ref,
     </div>
   );
 });
-Card.displayName = "Card";
+Card.displayName = 'Card';
 export default Card;

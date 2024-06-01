@@ -1,14 +1,14 @@
-import React, {useState, useMemo} from "react";
-import Icon from "../Customs/Icons.tsx";
-import css from "./index.module.scss";
+import React, { useState, useMemo } from 'react';
+import Icon from '../Customs/Icons.tsx';
+import css from './index.module.scss';
 // utils
-import {rgb2gray, hex2rgb, isValidHex} from "@/common/utils/colors.ts";
-import {copyHex} from "@/common/utils/helpers.ts";
+import { rgb2gray, hex2rgb, isValidHex } from '@/common/utils/colors.ts';
+import { copyHex } from '@/common/utils/helpers.ts';
 // Stores
-import {selectPlt, selectFavorites} from "@/features";
-import {useAppDispatch, useAppSelector} from "@/features";
-import {setPlt} from "@/features/slices/pltSlice.ts";
-import {favColorsChanged, favPltsChanged} from "slices/favSlice.ts";
+import { selectPlt, selectFavorites } from '@/features';
+import { useAppDispatch, useAppSelector } from '@/features';
+import { setPlt } from '@/features/slices/pltSlice.ts';
+import { favColorsChanged, favPltsChanged } from 'slices/favSlice.ts';
 
 // Other Components
 const ColorBlock = ({
@@ -29,13 +29,13 @@ const ColorBlock = ({
     <li className={css.colorBlock}
       style={{
         backgroundColor: hex,
-        color: isLight ? "#000" : "#fff",
+        color: isLight ? '#000' : '#fff',
       }}
     >
       <div onClick={copyHex}>
         <Icon type="copy"
           style={{
-            filter: isLight ? "" : "invert(1)",
+            filter: isLight ? '' : 'invert(1)',
           }}
         />
         {hex}
@@ -52,7 +52,7 @@ const PaletteBlock = ({
 }: {
   plt: string;
 }) => {
-  const colors = plt.split("-").map((hex) => `#${hex}`);
+  const colors = plt.split('-').map((hex) => `#${hex}`);
   const diff = useMemo(() => {
     // Round to 2nd decimal place. Reprecent in percentage.
     return Math.round(10000 / colors.length) / 100;
@@ -77,7 +77,7 @@ const PaletteBlock = ({
 
   return (
     <li className={css.paletteBlock}>
-      <div style={{background: `linear-gradient(90deg, ${bgGrad})`}} >
+      <div style={{ background: `linear-gradient(90deg, ${bgGrad})` }} >
         <div className={css.caretWrapper} >
           <Icon type="caret" onClick={applyingPlt} />
         </div>
@@ -99,8 +99,8 @@ const AddFavPlt = ({
   changePage: () => void;
 }) => {
   // States / consts
-  const {cards} = useAppSelector(selectPlt);
-  const plt = cards.map((state) => state.hex.slice(1)).join("-");
+  const { cards } = useAppSelector(selectPlt);
+  const plt = cards.map((state) => state.hex.slice(1)).join('-');
   const favPltList = useAppSelector(selectFavorites).plts;
   const isFavPlt = favPltList.includes(plt);
   const dispatch = useAppDispatch();
@@ -114,13 +114,13 @@ const AddFavPlt = ({
   const state = useMemo(() => {
     if (isFavPlt) {
       return {
-        icon: "unfavorPallete",
-        text: "Remove Pallete",
+        icon: 'unfavorPallete',
+        text: 'Remove Pallete',
       } as const;
     } else {
       return {
-        icon: "favorPallete",
-        text: "Append Pallete",
+        icon: 'favorPallete',
+        text: 'Append Pallete',
       } as const;
     }
   }, [isFavPlt]);
@@ -135,7 +135,7 @@ const AddFavPlt = ({
 };
 
 // Main component
-const pageLabels: string[] = ["Colors", "Palettes"];
+const pageLabels: string[] = ['Colors', 'Palettes'];
 const FavOffcanvas = ({
   isShowing,
   showingChanged,
@@ -150,7 +150,7 @@ const FavOffcanvas = ({
   return (
     <div className={css.favOffcanvas}
       style={{
-        transform: isShowing ? "translateX(-100%)" : "",
+        transform: isShowing ? 'translateX(-100%)' : '',
       }}
     >
       <nav className={css.menuBar}>
@@ -187,5 +187,5 @@ const FavOffcanvas = ({
     </div>
   );
 };
-FavOffcanvas.displayName = "FavOffcanvas";
+FavOffcanvas.displayName = 'FavOffcanvas';
 export default FavOffcanvas;

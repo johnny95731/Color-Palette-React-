@@ -1,21 +1,21 @@
-import React, {useMemo, useState} from "react";
-import css from "./switch.module.scss";
+import React, { useMemo, useState } from 'react';
+import css from './switch.module.scss';
 
 const switchStyle = {
   on: {
-    left: "calc(100% - 5px)",
-    transform: "translate(-100%, -50%)",
+    left: 'calc(100% - 5px)',
+    transform: 'translate(-100%, -50%)',
   },
   off: {
-    left: "5px",
-    transform: "translateY(-50%)",
+    left: '5px',
+    transform: 'translateY(-50%)',
   },
 };
 
 const Switch = ({
   onClick,
   defaultValue = false,
-  text = ["On", "Off"],
+  text = ['On', 'Off'],
 }: {
   onClick?: (isOn: boolean) => void;
   defaultValue?: boolean;
@@ -31,11 +31,11 @@ const Switch = ({
   };
   const msg = useMemo(() => text ? text : null, []);
   return (
-    <div className={`${css.wrapper} ${isOn ? css.active : ""}`}
+    <div className={`${css.wrapper} ${isOn ? css.active : ''}`}
       onClick={handleClick}
     >
       <div className={css.circle}
-        style={switchStyle[isOn ? "on" : "off"]}
+        style={switchStyle[isOn ? 'on' : 'off']}
       />
       {
         msg &&

@@ -1,9 +1,9 @@
-import {clip, dot, identity, mod, round, toPercent} from "./helpers.ts";
+import { clip, dot, identity, mod, round, toPercent } from './helpers.ts';
 import {
   RGB_MAXES, HSL_MAXES, HSB_MAXES, CMY_MAXES, CMYK_MAXES, XYZ_MAXES,
-} from "@/common/utils/constants.ts";
-import type {ColorSpaceInfos, ColorSpaceTrans} from "types/utilTypes.ts";
-import type {ColorSpacesType} from "types/pltType.ts";
+} from '@/common/utils/constants.ts';
+import type { ColorSpaceInfos, ColorSpaceTrans } from 'types/utilTypes.ts';
+import type { ColorSpacesType } from 'types/pltType.ts';
 
 // From RGB.
 /**
@@ -12,7 +12,7 @@ import type {ColorSpacesType} from "types/pltType.ts";
  * @return {String} Hex color.
  */
 export const rgb2hex = (rgb: number[]): string => {
-  let hex6 = "#";
+  let hex6 = '#';
   for (let i = 0; i < 3; i ++) {
     const int = Math.floor(rgb[i]);
     hex6 += int < 16 ? `0${int.toString(16)}` : int.toString(16);
@@ -215,7 +215,7 @@ export const cmyk2rgb = (cmyk: number[]): number[] => {
   // Const relate to k.
   const kConst = (RGB_MAXES / CMYK_MAXES) * (CMYK_MAXES - cmyk[3]);
   const rgb = Array.from(
-      {length: 3}, (_, i) => kConst * (1 - cmyk[i] / CMYK_MAXES),
+      { length: 3 }, (_, i) => kConst * (1 - cmyk[i] / CMYK_MAXES),
   );
   return rgb;
 };
@@ -246,7 +246,7 @@ export const xyz2rgb = (xyz: number[]): number[] => {
  * @return {number[]} rgb
  */
 export const hex2rgb = (hex: string): number[] => {
-  hex = hex.replace(/[^0-9A-F]/ig, "");
+  hex = hex.replace(/[^0-9A-F]/ig, '');
   if (hex.length === 3) {
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
   }
@@ -261,8 +261,8 @@ export const hex2rgb = (hex: string): number[] => {
  * @return {Boolean} Validity of string.
  */
 export const isValidHex = (str: string): boolean => {
-  if (typeof str !== "string") return false;
-  if (str.startsWith("#")) str = str.slice(1);
+  if (typeof str !== 'string') return false;
+  if (str.startsWith('#')) str = str.slice(1);
   if (![3, 6].includes(str.length)) return false;
   const nonHex = str.match(/[^0-9A-F]/i);
   if (nonHex !== null) return false;
@@ -277,61 +277,61 @@ export const isValidHex = (str: string): boolean => {
  */
 export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos => {
   switch (space) {
-    case "hsl":
+    case 'hsl':
       return {
-        labels: ["Hue", "Saturation", "Luminance"],
+        labels: ['Hue', 'Saturation', 'Luminance'],
         maxes: [...HSL_MAXES],
       };
-    case "hsb": // hsb = hsv
+    case 'hsb': // hsb = hsv
       return {
-        labels: ["Hue", "Saturation", "Brightness"],
+        labels: ['Hue', 'Saturation', 'Brightness'],
         maxes: [...HSB_MAXES],
       };
-    case "cmy":
+    case 'cmy':
       return {
-        labels: ["Cyan", "Magenta", "Yellow"],
+        labels: ['Cyan', 'Magenta', 'Yellow'],
         maxes: [CMY_MAXES, CMY_MAXES, CMY_MAXES],
       };
-    case "cmyk":
+    case 'cmyk':
       return {
-        labels: ["Cyan", "Magenta", "Yellow", "Black"],
+        labels: ['Cyan', 'Magenta', 'Yellow', 'Black'],
         maxes: [CMYK_MAXES, CMYK_MAXES, CMYK_MAXES, CMYK_MAXES],
       };
-    case "xyz":
+    case 'xyz':
       return {
-        labels: ["x", "y", "z"],
+        labels: ['x', 'y', 'z'],
         maxes: [XYZ_MAXES, XYZ_MAXES, XYZ_MAXES],
       };
     default: // "rgb" and "name"
       return {
-        labels: ["Red", "Green", "Blue"],
+        labels: ['Red', 'Green', 'Blue'],
         maxes: [RGB_MAXES, RGB_MAXES, RGB_MAXES],
       };
   }
 };
 export const getSpaceTrans = (space: ColorSpacesType): ColorSpaceTrans => {
   switch (space) {
-    case "hsl":
+    case 'hsl':
       return {
         converter: rgb2hsl,
         inverter: hsl2rgb,
       };
-    case "hsb": // hsb = hsv
+    case 'hsb': // hsb = hsv
       return {
         converter: rgb2hsb,
         inverter: hsb2rgb,
       };
-    case "cmy":
+    case 'cmy':
       return {
         converter: rgb2cmy,
         inverter: cmy2rgb,
       };
-    case "cmyk":
+    case 'cmyk':
       return {
         converter: rgb2cmyk,
         inverter: cmyk2rgb,
       };
-    case "xyz":
+    case 'xyz':
       return {
         converter: rgb2xyz,
         inverter: xyz2rgb,
@@ -364,8 +364,8 @@ export const randRgbGen = (): number[] => {
 export const gradientGen = (
     colors: number[], axis: number, space: ColorSpacesType,
 ) => {
-  const {inverter} = getSpaceTrans(space);
-  const {maxes} = getSpaceInfos(space);
+  const { inverter } = getSpaceTrans(space);
+  const { maxes } = getSpaceInfos(space);
   const gradLength = Math.ceil(maxes[axis] / 8);
   const grads: string[] = [];
   const arr = [...colors];
@@ -373,7 +373,7 @@ export const gradientGen = (
     arr.splice(axis, 1, j * 8);
     grads.push(`${rgb2hex(inverter(arr))} ${toPercent(j/gradLength)}%`);
   }
-  return `linear-gradient(90deg, ${grads.join(", ")})`;
+  return `linear-gradient(90deg, ${grads.join(', ')})`;
 };
 
 
@@ -403,7 +403,7 @@ export const scaling = (rgbs: number[][], c: number): typeof rgbs => {
 export const gammaCorrection = (
     rgb: number[] | number[][], gamma: number,
 ): typeof rgb => {
-  if (typeof rgb[0] === "number") {
+  if (typeof rgb[0] === 'number') {
     const normalizeCoeff = RGB_MAXES ** (1 - gamma);
     return (rgb as number[]).map((val) => normalizeCoeff * (val ** gamma));
   } else {

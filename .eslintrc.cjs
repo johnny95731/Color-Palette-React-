@@ -4,7 +4,6 @@ module.exports = {
     "es2021": true,
   },
   "extends": [
-    "google",
     "eslint:recommended",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/eslint-recommended",
@@ -19,10 +18,10 @@ module.exports = {
     "react", "@typescript-eslint",
   ],
   "rules": {
-    "quotes": ["error", "double"],
-    "linebreak-style": "off",
-    "max-len": ["error", {"code": 80}],
-    "semi": "error",
+    'linebreak-style': 'off',
+    'quotes': ['error', 'single'],
+    'object-curly-spacing': ['error', 'always'],
+    'semi': ['error', 'always'],
     "react/prop-types": "off",
     "no-use-before-define": "off",
     "valid-jsdoc": "off",

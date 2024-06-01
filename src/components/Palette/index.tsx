@@ -1,27 +1,27 @@
 import React, {
   useRef, useMemo, useEffect, useContext, useState, useLayoutEffect,
-} from "react";
+} from 'react';
 
-import Card from "./card.tsx";
-import Icon from "../Customs/Icons.tsx";
-import css from "./index.module.scss";
+import Card from './card.tsx';
+import Icon from '../Customs/Icons.tsx';
+import css from './index.module.scss';
 // Utils
 import {
   evalLength, evalPosition, round,
-} from "@/common/utils/helpers.ts";
-import {blenders} from "@/common/utils/blend.ts";
-import {INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS} from "@/common/utils/constants.ts";
-import {getSpaceTrans, randRgbGen, rgb2hex} from "@/common/utils/colors.ts";
+} from '@/common/utils/helpers.ts';
+import { blenders } from '@/common/utils/blend.ts';
+import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/common/utils/constants.ts';
+import { getSpaceTrans, randRgbGen, rgb2hex } from '@/common/utils/colors.ts';
 // Stores
 import {
   useAppDispatch, useAppSelector, selectPlt, selectSettings,
-} from "@/features";
+} from '@/features';
 import {
   addCard, delCard, moveCardOrder, resetOrder, setIsPending,
-} from "@/features/slices/pltSlice.ts";
-import MediaContext from "@/features/mediaContext.ts";
+} from '@/features/slices/pltSlice.ts';
+import MediaContext from '@/features/mediaContext.ts';
 // Types
-import type {CardHandle} from "./card.tsx";
+import type { CardHandle } from './card.tsx';
 
 // Other components
 const InsertRegions = ({
@@ -32,24 +32,24 @@ const InsertRegions = ({
   handleAddCard: (idx: number) => void;
 }) => {
   // States / consts
-  const {numOfCards, isPending} = useAppSelector(selectPlt);
-  const {pos} = useContext(MediaContext);
+  const { numOfCards, isPending } = useAppSelector(selectPlt);
+  const { pos } = useContext(MediaContext);
 
   const displayStyle = (
     (numOfCards === MAX_NUM_OF_CARDS || isPending) ?
-        {display: "none"} :
+        { display: 'none' } :
         undefined
   );
   return (
     <div style={displayStyle} >
-      {Array.from({length: numOfCards + 1}, (_, i) => {
+      {Array.from({ length: numOfCards + 1 }, (_, i) => {
         return (
           <div key={`insert${i}`}
             className={css.insertWrapper}
-            style={{[pos]: positions[i]}}
+            style={{ [pos]: positions[i] }}
           >
             <div onClick={() => handleAddCard(i)} >
-              <Icon type={"insert"} />
+              <Icon type={'insert'} />
             </div>
           </div>
         );
@@ -62,9 +62,9 @@ const InsertRegions = ({
 const Palette = () => {
   // States / consts
   const dispatch = useAppDispatch();
-  const {cards, numOfCards, colorSpace, blendMode} = useAppSelector(selectPlt);
-  const {border, transition} = useAppSelector(selectSettings);
-  const {windowSize, isSmall, clientPos, bound} = useContext(MediaContext);
+  const { cards, numOfCards, colorSpace, blendMode } = useAppSelector(selectPlt);
+  const { border, transition } = useAppSelector(selectSettings);
+  const { windowSize, isSmall, clientPos, bound } = useContext(MediaContext);
 
   const dragIdx = useRef<{
       /**
@@ -82,19 +82,19 @@ const Palette = () => {
 
   const styleInSettings: React.CSSProperties = {
     borderWidth: border.width,
-    borderColor: border.show ? border.color : "",
+    borderColor: border.show ? border.color : '',
     transitionDuration: (
       `${transition.pos}ms, ${transition.pos}ms, ${transition.color}ms`
     ),
   };
 
-  const {cardLength, positions} = useMemo(() => {
+  const { cardLength, positions } = useMemo(() => {
     const cardLength = (
       ((isSmall ? windowSize[0] : windowSize[1]) - bound[0]) / numOfCards
     );
     return {
       cardLength,
-      positions: Array.from({length: numOfCards + 1},
+      positions: Array.from({ length: numOfCards + 1 },
           (_, i) => evalPosition(i, numOfCards),
       ),
     };
@@ -123,13 +123,13 @@ const Palette = () => {
       },
       removeTransition() {
         for (let i = 0; i < numOfCards; i++) {
-          cardRefs.current[i].setTransDuration("none");
+          cardRefs.current[i].setTransDuration('none');
         }
       },
       resetTransition(end: number = numOfCards) {
         for (let i = 0; i < end; i++) {
           if (i === dragIdx.current.draggingIdx) continue;
-          cardRefs.current[i].setTransDuration("reset");
+          cardRefs.current[i].setTransDuration('reset');
         }
       },
     };
@@ -138,7 +138,7 @@ const Palette = () => {
   // Add card, remove card, and drag card have transition event.
   // The state is for checking the transition is end.
   const [isInTrans, setIsInTrans] = useState<boolean[]>(() =>
-    Array.from({length: INIT_NUM_OF_CARDS}, () => false),
+    Array.from({ length: INIT_NUM_OF_CARDS }, () => false),
   );
   // After transition end, some side effect will happen. This state is present
   // for checking the entire event and side effect is complete.
@@ -157,7 +157,7 @@ const Palette = () => {
    * card, or remove card.
    */
   const eventInfo = useRef<{
-    event: "mouseup" | "add" | "remove";
+    event: 'mouseup' | 'add' | 'remove';
     idx?: number;
     rgb?: number[];
   } | null
@@ -165,9 +165,9 @@ const Palette = () => {
   const handleAddCard = (idx: number) => {
     // Evaluate new color.
     let rgb;
-    if (blendMode === "random") rgb = randRgbGen();
+    if (blendMode === 'random') rgb = randRgbGen();
     else {
-      const {inverter} = getSpaceTrans(colorSpace);
+      const { inverter } = getSpaceTrans(colorSpace);
       // Pick cards.
       let leftRgbColor;
       let rightRgbColor;
@@ -180,13 +180,13 @@ const Palette = () => {
       rgb = blenders[blendMode](leftRgbColor, rightRgbColor, colorSpace);
     }
     if (!transition.pos) { // no transition.
-      dispatch(addCard({idx, rgb}));
+      dispatch(addCard({ idx, rgb }));
       removeTransition();
       setTimeout(() => resetTransition(), 50);
       return;
     }
     document.body.style.backgroundColor = rgb2hex(rgb);
-    eventInfo.current = {event: "add", idx, rgb};
+    eventInfo.current = { event: 'add', idx, rgb };
     // Transition: shrink and move card. The enpty space is new card
     const length = evalLength(numOfCards + 1);
     for (let i = 0; i < numOfCards; i++) {
@@ -195,7 +195,7 @@ const Palette = () => {
       cardRefs.current[i].setPos(evalPosition(i + bias, numOfCards + 1));
     }
     // Trigger side effect when !isInTrans.some()
-    setIsInTrans(Array.from({length: numOfCards}, () => true));
+    setIsInTrans(Array.from({ length: numOfCards }, () => true));
     dispatch(setIsPending(true));
     setIsEventEnd(false);
   };
@@ -215,18 +215,18 @@ const Palette = () => {
     const newLength = evalLength(numOfCards - 1);
     // Shrink target card and expand other card.
     for (let i = 0; i < numOfCards; i++) {
-      cardRefs.current[i].setSize(i === idx ? "0%" : newLength);
+      cardRefs.current[i].setSize(i === idx ? '0%' : newLength);
       const bias = i > idx ? 1 : 0;
       cardRefs.current[i].setPos(evalPosition(i - bias, numOfCards - 1));
     }
-    eventInfo.current = {event: "remove", idx};
-    setIsInTrans(Array.from({length: numOfCards - 1}, () => true));
+    eventInfo.current = { event: 'remove', idx };
+    setIsInTrans(Array.from({ length: numOfCards - 1 }, () => true));
     dispatch(setIsPending(true));
     setIsEventEnd(false);
   };
 
   // Drag events start
-  const {startDraggingCard, moveCard, endDraggingCard} = useMemo(() => {
+  const { startDraggingCard, moveCard, endDraggingCard } = useMemo(() => {
     const halfCardLength = cardLength / 2;
     // Rewrite `cursorPos / cardLength` to `cursorPos * cursorRationCoeff`.
     // Since division cost much time than multiplication.
@@ -242,9 +242,9 @@ const Palette = () => {
           e: React.MouseEvent | React.TouchEvent, cardIdx: number,
       ) {
         // Prevent pointer-event.
-        if (!e.type.startsWith("touch")) e.preventDefault();
+        if (!e.type.startsWith('touch')) e.preventDefault();
         // Disable pull-to-refresh on mobile.
-        document.body.style.overscrollBehavior = "none";
+        document.body.style.overscrollBehavior = 'none';
         // Cursor position when mouse down.
         const cursorPos = (
           (e as React.MouseEvent)[clientPos] ||
@@ -263,7 +263,7 @@ const Palette = () => {
         dragIdx.current.finalIdx = cardIdx;
         card = cardRefs.current[cardIdx];
         card.setPos(`${round(cursorPos - halfCardLength)}px`);
-        card.setTransDuration("none");
+        card.setTransDuration('none');
         card.element.classList.add(css.dragging);
       },
       /**
@@ -285,7 +285,7 @@ const Palette = () => {
         const lastOrder = dragIdx.current.finalIdx as number;
         dragIdx.current.finalIdx = order;
         // Change `.order` attribute.
-        dispatch(moveCardOrder({cardIdx: idx, to: order}));
+        dispatch(moveCardOrder({ cardIdx: idx, to: order }));
         // Update state: which card start transition.
         if (transition.pos && order !== lastOrder) {
           setIsInTrans((prev) => {
@@ -311,7 +311,7 @@ const Palette = () => {
         const card_ = card;
         card = null;
         // Able pull-to-refresh on mobile.
-        document.body.style.overscrollBehavior = "";
+        document.body.style.overscrollBehavior = '';
         // `draggingIdx` and `finalIdx`setIsEventEnd are set to be non-null
         // together when mouse down.
         const idx = dragIdx.current.draggingIdx;
@@ -330,8 +330,8 @@ const Palette = () => {
         }
         // Dragging card move to target position.
         card_.setPos(evalPosition(finalOrder, numOfCards));
-        card_.setTransDuration("reset");
-        eventInfo.current = {event: "mouseup"};
+        card_.setTransDuration('reset');
+        eventInfo.current = { event: 'mouseup' };
       },
     };
   }, [numOfCards, isSmall, bound, transition.pos]);
@@ -344,15 +344,15 @@ const Palette = () => {
   }, [dragIdx.current.finalIdx]);
 
   useEffect(() => {
-    window.addEventListener("mousemove", moveCard);
-    window.addEventListener("touchmove", moveCard);
-    window.addEventListener("mouseup", endDraggingCard);
-    window.addEventListener("touchend", endDraggingCard);
+    window.addEventListener('mousemove', moveCard);
+    window.addEventListener('touchmove', moveCard);
+    window.addEventListener('mouseup', endDraggingCard);
+    window.addEventListener('touchend', endDraggingCard);
     return () => {
-      window.removeEventListener("mousemove", moveCard);
-      window.removeEventListener("touchmove", moveCard);
-      window.removeEventListener("mouseup", endDraggingCard);
-      window.removeEventListener("touchend", endDraggingCard);
+      window.removeEventListener('mousemove', moveCard);
+      window.removeEventListener('touchmove', moveCard);
+      window.removeEventListener('mouseup', endDraggingCard);
+      window.removeEventListener('touchend', endDraggingCard);
     };
   }, [moveCard, endDraggingCard]);
   // All drag events is defined.
@@ -365,17 +365,17 @@ const Palette = () => {
     removeTransition();
     const start = eventInfo.current?.idx ? eventInfo.current.idx : 0;
     switch (eventInfo.current.event) {
-      case "add":
-        document.body.style.backgroundColor = "";
+      case 'add':
+        document.body.style.backgroundColor = '';
         dispatch(addCard({
           idx: start,
           rgb: eventInfo.current.rgb as number[],
         }));
         break;
-      case "remove":
+      case 'remove':
         dispatch(delCard(start));
         break;
-      case "mouseup":
+      case 'mouseup':
         dispatch(resetOrder());
         resetPosition();
     }

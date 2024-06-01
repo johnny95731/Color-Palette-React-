@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 /**
  * React mouse event handler. For connecting to JSX element.

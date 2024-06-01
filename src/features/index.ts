@@ -1,8 +1,8 @@
-import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
-import {configureStore} from "@reduxjs/toolkit";
-import cardSlice from "./slices/pltSlice";
-import favSlice from "./slices/favSlice";
-import settingsSlice from "./slices/settingsSlice";
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import cardSlice from './slices/pltSlice';
+import favSlice from './slices/favSlice';
+import settingsSlice from './slices/settingsSlice';
 
 const store = configureStore({
   reducer: {

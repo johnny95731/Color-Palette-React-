@@ -1,30 +1,30 @@
-import React, {useContext, useEffect, useMemo, useRef} from "react";
-import Icon from "../Customs/Icons.tsx";
-import Menu from "../Customs/Menu.tsx";
-import css from "./index.module.scss";
-import menuCss from "../Customs/menu.module.scss";
+import React, { useContext, useEffect, useMemo, useRef } from 'react';
+import Icon from '../Customs/Icons.tsx';
+import Menu from '../Customs/Menu.tsx';
+import css from './index.module.scss';
+import menuCss from '../Customs/menu.module.scss';
 // Utils / Consts
 import {
   capitalize, preventDefault, showPopupMenu,
-} from "@/common/utils/helpers.ts";
+} from '@/common/utils/helpers.ts';
 import {
   COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS,
   CURRENT_OPTION_WEIGHT,
-} from "@/common/utils/constants";
+} from '@/common/utils/constants';
 // Stores
 import {
   useAppDispatch, useAppSelector, selectPlt, selectSettings,
-} from "@/features";
+} from '@/features';
 import {
   setColorSpace, setBlendMode, refreshCard, setIsPending,
-} from "slices/pltSlice";
-import MediaContext from "@/features/mediaContext.ts";
+} from 'slices/pltSlice';
+import MediaContext from '@/features/mediaContext.ts';
 // types
-import type {IconType} from "../Customs/Icons.tsx";
-import type {MouseHandler} from "types/eventHandler.ts";
+import type { IconType } from '../Customs/Icons.tsx';
+import type { MouseHandler } from 'types/eventHandler.ts';
 import type {
   SortActionType, ColorSpacesType, BlendingType,
-} from "types/pltType";
+} from 'types/pltType';
 
 // Other components
 const RefreshAll = ({
@@ -45,7 +45,7 @@ const SettingMenu = ({
   title,
   contents,
   currentVal,
-  letterCase = "title",
+  letterCase = 'title',
   hotkeys = [],
   handleClick,
 }: {
@@ -53,7 +53,7 @@ const SettingMenu = ({
   title?: string;
   contents: readonly string[];
   currentVal: typeof contents[number];
-  letterCase?: "origin" | "title" | "all-caps";
+  letterCase?: 'origin' | 'title' | 'all-caps';
   hotkeys?: Array<string | undefined>;
   handleClick: (option: typeof contents[number]) => void
 }) => {
@@ -62,9 +62,9 @@ const SettingMenu = ({
      * Convert leter case.
      */
     let converter = (x: string) => x; // origin
-    if (letterCase === "all-caps") {
+    if (letterCase === 'all-caps') {
       converter = (str: string) => str.toUpperCase();
-    } else if (letterCase === "title") converter = capitalize;
+    } else if (letterCase === 'title') converter = capitalize;
     return Array.from(contents, (val) => ({
       val,
       name: converter(val),
@@ -85,7 +85,7 @@ const SettingMenu = ({
             onClick={() => handleClick(item.val)}
           >
             {`${item.name}${
-              hotkeys[i] ? ` (${hotkeys[i]})` : ""
+              hotkeys[i] ? ` (${hotkeys[i]})` : ''
             }`}
           </li>
         ))
@@ -96,7 +96,7 @@ const SettingMenu = ({
 
 const Play = () => {
   const dispatch = useAppDispatch();
-  const {transition: {color}} = useAppSelector(selectSettings);
+  const { transition: { color } } = useAppSelector(selectSettings);
 
   const isRunning = useRef<boolean>(false);
   const intervalId = useRef<number | null>(null);
@@ -124,8 +124,8 @@ const Play = () => {
 
   return (
     <span className={`${css.btn} ${css.playBtn}`} onClick={haldleClick} >
-      <Icon type={isRunning.current ? "pause" : "play"} />
-      {isRunning.current ? "Pause" : "Play"}
+      <Icon type={isRunning.current ? 'pause' : 'play'} />
+      {isRunning.current ? 'Pause' : 'Play'}
     </span>
   );
 };
@@ -138,7 +138,7 @@ const Bookmarks = ({
   onClick: () => void;
 }) => {
   return (
-    <span className={`${css.btn} ${isSmall ? "" : css.btnR}`}
+    <span className={`${css.btn} ${isSmall ? '' : css.btnR}`}
       onClick={onClick}
     >
       <Icon type="bookmark" />
@@ -155,7 +155,7 @@ const Settings = ({
   onClick: (e: React.MouseEvent) => void;
 }) => {
   return (
-    <span className={`${css.btn} ${isSmall ? "" : css.btnR}`}
+    <span className={`${css.btn} ${isSmall ? '' : css.btnR}`}
       onClick={onClick}
     >
       <Icon type="setting" />
@@ -179,8 +179,8 @@ const Header = ({
   // Consts
   const menuRef = useRef<HTMLDivElement>(null);
   const menuContentRef = useRef<HTMLDivElement>(null);
-  const {isSmall} = useContext(MediaContext);
-  const {sortBy, blendMode, colorSpace} = useAppSelector(selectPlt);
+  const { isSmall } = useContext(MediaContext);
+  const { sortBy, blendMode, colorSpace } = useAppSelector(selectPlt);
   const dispatch = useAppDispatch();
 
   // Events
@@ -211,16 +211,16 @@ const Header = ({
       menuRef.current?.classList.remove(menuCss.popupMenu);
       content.classList.remove(menuCss.mobileMenuContent);
       content.classList.remove(menuCss.menuContentR);
-      content.style.display = "";
+      content.style.display = '';
     }
   }, [isSmall]);
 
   useEffect(() => {
     menuRef.current?.addEventListener(
-        "contextmenu", preventDefault,
+        'contextmenu', preventDefault,
     );
     return () => menuRef.current?.addEventListener(
-        "contextmenu", preventDefault,
+        'contextmenu', preventDefault,
     );
   }, []);
 

@@ -6,6 +6,6 @@ declare module "*.svg?url" {
 }
 
 declare module "*.module.scss" {
-  const content: { [className: string]: string };
-  export default content;
+  const classes: Record<string, string>
+  export default classes;
 }

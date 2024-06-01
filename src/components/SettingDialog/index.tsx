@@ -1,23 +1,23 @@
-import React, {useCallback, useState} from "react";
-import Select from "../Customs/Select.tsx";
-import Slider from "../Customs/Slider.tsx";
-import Switch from "../Customs/Switch.tsx";
-import Icon from "../Customs/Icons.tsx";
-import css from "./index.module.scss";
+import React, { useCallback, useState } from 'react';
+import Select from '../Customs/Select.tsx';
+import Slider from '../Customs/Slider.tsx';
+import Switch from '../Customs/Switch.tsx';
+import Icon from '../Customs/Icons.tsx';
+import css from './index.module.scss';
 // Utils
 import {
   CURRENT_OPTION_WEIGHT, BORDER_COLOR, BORDER_MAX_WIDTH, CONTRAST_METHODS,
   GAMMA_MAX, MULTIPLICATION_MAX, TRANSITION_MAX_POS, TRANSITION_MAX_COLOR,
-} from "@/common/utils/constants.ts";
+} from '@/common/utils/constants.ts';
 // Store
 import {
   useAppDispatch, useAppSelector, selectSettings,
-} from "@/features";
-import {setPltIsEditing, adjustContrast} from "slices/pltSlice.ts";
-import {setBorder, setTransition} from "slices/settingsSlice";
+} from '@/features';
+import { setPltIsEditing, adjustContrast } from 'slices/pltSlice.ts';
+import { setBorder, setTransition } from 'slices/settingsSlice';
 // Types
-import type {TransitionType} from "types/settingType.ts";
-import type {ContrastMethods} from "types/pltType.ts";
+import type { TransitionType } from 'types/settingType.ts';
+import type { ContrastMethods } from 'types/pltType.ts';
 
 const currentPageStyle: React.CSSProperties = {
   ...CURRENT_OPTION_WEIGHT,
@@ -28,7 +28,7 @@ const currentPageStyle: React.CSSProperties = {
 
 const CardPage = () => {
   // States and handler
-  const {border, transition} = useAppSelector(selectSettings);
+  const { border, transition } = useAppSelector(selectSettings);
   // -Border states
   const [showBorder, setShowBorder] = useState<boolean>(() => border.show);
   const [currentWidth, setCurrentWidth] = useState<number>(() => border.width);
@@ -40,29 +40,29 @@ const CardPage = () => {
   const handleSwitchStyle = (isOn: boolean) => {
     setShowBorder(isOn);
     dispatch(setBorder({
-      attr: "show",
+      attr: 'show',
       val: isOn,
     }));
   };
   const handleWidth = (val: number) => {
     setCurrentWidth(val);
     dispatch(setBorder({
-      attr: "width",
+      attr: 'width',
       val,
     }));
   };
   const handleSelectColor = (val: string) => {
     dispatch(setBorder({
-      attr: "color",
+      attr: 'color',
       val,
     }));
   };
   const handleTransitionChanged = (
       val: number, attr: keyof TransitionType,
   ) => {
-    if (attr === "pos")setPosTime(val);
+    if (attr === 'pos')setPosTime(val);
     else setColorTime(val);
-    dispatch(setTransition({attr, val}));
+    dispatch(setTransition({ attr, val }));
   };
   return (
     <>
@@ -87,11 +87,11 @@ const CardPage = () => {
       <h6>Transition</h6>
       <label>Position(ms)</label>
       <Slider min={0} max={TRANSITION_MAX_POS} digit={0} step={50}
-        value={posTime} onChange={(e) => handleTransitionChanged(e, "pos")}
+        value={posTime} onChange={(e) => handleTransitionChanged(e, 'pos')}
       />
       <label>Color(ms)</label>
       <Slider min={0} max={TRANSITION_MAX_COLOR} digit={0} step={50}
-        value={colorTime} onChange={(e) => handleTransitionChanged(e, "color")}
+        value={colorTime} onChange={(e) => handleTransitionChanged(e, 'color')}
       />
     </>
   );
@@ -109,11 +109,11 @@ const ContrastPage = ({
   contrastChanged: (newObj: Partial<ContrastArgsType>) => void;
 }) => {
   const dispatch = useAppDispatch();
-  const contrastBtnEvent = useCallback((ev: "start" | "reset") => {
+  const contrastBtnEvent = useCallback((ev: 'start' | 'reset') => {
     dispatch(setPltIsEditing(ev));
-    contrastChanged({coeff: 1});
+    contrastChanged({ coeff: 1 });
   }, []);
-  const max = contrastArgs.method === "gamma" ? GAMMA_MAX : MULTIPLICATION_MAX;
+  const max = contrastArgs.method === 'gamma' ? GAMMA_MAX : MULTIPLICATION_MAX;
   return (
     <>
       <label>Method</label>
@@ -123,7 +123,7 @@ const ContrastPage = ({
         })}
       />
       <label>
-        {contrastArgs.method === "gamma" ? "gamma" : "scale"}
+        {contrastArgs.method === 'gamma' ? 'gamma' : 'scale'}
       </label>
       <Slider min={0} max={max} value={contrastArgs.coeff}
         onChange={(newVal) => contrastChanged({
@@ -133,12 +133,12 @@ const ContrastPage = ({
       />
       <div className={css.buttons}>
         <button type="button" className={css.applyBtn}
-          onClick={() => contrastBtnEvent("start")}
+          onClick={() => contrastBtnEvent('start')}
         >
           Apply
         </button>
         <button type="button" className={css.resetBtn}
-          onClick={() => contrastBtnEvent("reset")}
+          onClick={() => contrastBtnEvent('reset')}
         >
           Reset
         </button>
@@ -147,7 +147,7 @@ const ContrastPage = ({
   );
 };
 
-const SETTINGS = ["Card", "Contrast"] as const;
+const SETTINGS = ['Card', 'Contrast'] as const;
 
 const SettingDialog = ({
   showingChanged,
@@ -169,9 +169,9 @@ const SettingDialog = ({
     setPage(i);
     // Page 1 is contrast.
     if (i === 1) {
-      dispatch(setPltIsEditing("start"));
+      dispatch(setPltIsEditing('start'));
       contrastChanged(contrastArgs);
-    } else if (page === 1) dispatch(setPltIsEditing("cancel"));
+    } else if (page === 1) dispatch(setPltIsEditing('cancel'));
   };
 
   return (
