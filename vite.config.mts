@@ -7,6 +7,13 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './',
+  build: {
+    outDir: 'dist',
+    assetsDir: '',
+    sourcemap: false,
+    minify: true,
+  },
   plugins: [
     tsconfigPaths(),
     react(),
@@ -16,11 +23,6 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    // [
-    //   { find: "@", replacement: resolve(__dirname, "./src") },
-    //   { find: "types", replacement: `${resolve(__dirname, "./src/features/types")}; ${resolve(__dirname, "./src/common/types")}` },
-    //   { find: "slices", replacement: resolve(__dirname, "./src/features/slices") },
-    // ],
     extensions: [
       '.js',
       '.json',
@@ -35,7 +37,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        implementation: sass,
+        // implementation: sass,
       },
     },
   },
