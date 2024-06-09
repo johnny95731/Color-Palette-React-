@@ -35,7 +35,6 @@ $header-height: 34px;
     user-select: none;
   }
   >:global(.icon) {
-    height: 21px;
     margin: 6px;
     // shape
     height: 13px;
@@ -44,7 +43,7 @@ $header-height: 34px;
 
     filter: invert(1);
     &:hover {
-      filter: invert(0);
+      filter: none;
       background-color: $color3;
     }
   }

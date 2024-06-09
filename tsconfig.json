@@ -1,32 +1,11 @@
 {
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"],
-      "types/*": ["./src/features/types/*", "./src/common/types/*"],
-      "slices/*": ["./src/features/slices/*"],
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
     },
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "target": "es2022",
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "jsxFragmentFactory": "",
-    "module": "commonjs",
-    "baseUrl": "./",
-    "typeRoots": ["./types/", "./node_modules/@types/"],
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "skipLibCheck": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {hasSameKeys} from "@/common/utils/helpers";
+import {hasSameKeys} from "utils/helpers.ts";
 import type {BorderStyleType, TransitionType} from "types/settingType.ts";
 
 

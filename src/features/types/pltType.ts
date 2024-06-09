@@ -1,12 +1,12 @@
 import {
   SORTING_ACTIONS, COLOR_SPACES, BLEND_MODES, CONTRAST_METHODS,
-} from "@/common/utils/constants";
+} from 'utils/constants';
 
 
 /**
  * The current order of cards.
  */
-export type OrderStateType = "gray" | "random";
+export type OrderStateType = 'gray' | 'random';
 export type SortActionType = typeof SORTING_ACTIONS[number];
 /**
  * Support color spaces.
@@ -51,8 +51,4 @@ export type CardType = {
    * The card is in bookmarks.
    */
   isFav: boolean;
-  /**
-   * The card is in editing mode.
-   */
-  isEditing: boolean;
 };

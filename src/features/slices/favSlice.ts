@@ -3,7 +3,7 @@ import { get, update, set } from 'idb-keyval';
 
 import {
   favoritesDb, STORE_FAV_COLORS, STORE_FAV_PLTS,
-} from '@/common/utils/database.ts';
+} from 'utils/database.ts';
 
 
 export const initColors = createAsyncThunk('favorites/initColors',

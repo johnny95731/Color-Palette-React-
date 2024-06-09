@@ -1,6 +1,6 @@
-// Ignore .js files not in `src` folder.
-/**/*.js
-!/src/*.js
+// Ignore .ts files not in `src` folder.
+*.ts
+!/src/*.ts
 .eslintrc.cjs
 vite.config.mts
 vite-env.d.ts

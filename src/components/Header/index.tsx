@@ -1,16 +1,13 @@
-import React, { useContext, useEffect, useMemo, useRef } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 import Icon from '../Customs/Icons.tsx';
 import Menu from '../Customs/Menu.tsx';
 import css from './index.module.scss';
-import menuCss from '../Customs/menu.module.scss';
 // Utils / Consts
+import { capitalize } from 'utils/helpers.ts';
+import { preventDefault } from 'utils/eventHandler.ts';
 import {
-  capitalize, preventDefault, showPopupMenu,
-} from '@/common/utils/helpers.ts';
-import {
-  COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS,
-  CURRENT_OPTION_WEIGHT,
-} from '@/common/utils/constants';
+  COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS, CURRENT_OPTION_WEIGHT,
+} from 'utils/constants';
 // Stores
 import {
   useAppDispatch, useAppSelector, selectPlt, selectSettings,
@@ -21,25 +18,11 @@ import {
 import MediaContext from '@/features/mediaContext.ts';
 // types
 import type { IconType } from '../Customs/Icons.tsx';
-import type { MouseHandler } from 'types/eventHandler.ts';
 import type {
   SortActionType, ColorSpacesType, BlendingType,
 } from 'types/pltType';
 
 // Other components
-const RefreshAll = ({
-  onClick: haldleClick,
-}: {
-  onClick: () => void;
-}) => {
-  return (
-    <span className={css.btn} onClick={haldleClick}>
-      <Icon type="refresh" />
-      All
-    </span>
-  );
-};
-
 const SettingMenu = ({
   iconType,
   title,
@@ -72,7 +55,8 @@ const SettingMenu = ({
     }));
   }, [currentVal, letterCase, contents]);
   return (
-    <Menu className={css.btnMenu}
+    <Menu
+      className={css.btnMenu}
       iconType={iconType}
       title={
         title ? title : `${iconType[0].toUpperCase()}${iconType.slice(1)}`
@@ -94,7 +78,7 @@ const SettingMenu = ({
   );
 };
 
-const Play = () => {
+const Slides = () => {
   const dispatch = useAppDispatch();
   const { transition: { color } } = useAppSelector(selectSettings);
 
@@ -105,7 +89,7 @@ const Play = () => {
       isRunning.current && dispatch(refreshCard(-1));
     }, Math.max(color, 1000));
   };
-  const haldleClick = () => {
+  const handleClick = () => {
     if (isRunning.current) {
       if (intervalId.current !== null) window.clearInterval(intervalId.current);
       intervalId.current = null;
@@ -123,44 +107,112 @@ const Play = () => {
   }, [color]);
 
   return (
-    <span className={`${css.btn} ${css.playBtn}`} onClick={haldleClick} >
+    <button
+      className={css.btn}
+      onClick={handleClick}
+    >
       <Icon type={isRunning.current ? 'pause' : 'play'} />
-      {isRunning.current ? 'Pause' : 'Play'}
-    </span>
+      Slides
+    </button>
   );
 };
 
-const Bookmarks = ({
-  isSmall,
-  onClick,
+const Btns = ({
+  refreshPlt,
+  sortPlt,
+  showSettings,
+  showFavOffcanvas,
 }: {
-  isSmall?: boolean,
-  onClick: () => void;
+  refreshPlt: () => void;
+  sortPlt: (sortBy: SortActionType) => void;
+  showSettings: () => void;
+  showFavOffcanvas: () => void;
 }) => {
-  return (
-    <span className={`${css.btn} ${isSmall ? '' : css.btnR}`}
-      onClick={onClick}
-    >
-      <Icon type="bookmark" />
-      Bookmarks
-    </span>
-  );
-};
+  // Consts
+  const { sortBy, blendMode, colorSpace } = useAppSelector(selectPlt);
+  const dispatch = useAppDispatch();
 
-const Settings = ({
-  isSmall,
-  onClick,
-}: {
-  isSmall?: boolean,
-  onClick: (e: React.MouseEvent) => void;
-}) => {
+  // Events
+  const {
+    handleMixingModeChanged: handleBlendChanged, handleEditModeChanged,
+  } = useMemo(() => {
+    return {
+      handleMixingModeChanged(
+        newMode: BlendingType,
+      ) {
+        dispatch(setBlendMode(newMode));
+      },
+      handleEditModeChanged(
+        newMode: ColorSpacesType,
+      ) {
+        dispatch(setColorSpace(newMode));
+      },
+    };
+  }, []);
   return (
-    <span className={`${css.btn} ${isSmall ? '' : css.btnR}`}
-      onClick={onClick}
-    >
-      <Icon type="setting" />
-      Settings
-    </span>
+    <>
+      {/* Float left */}
+      <li>
+        <button
+          className={css.btn}
+          type='button'
+          onClick={refreshPlt}
+        >
+          <Icon type="refresh" />
+          All
+        </button>
+      </li>
+      <li>
+        <SettingMenu iconType="sort"
+          contents={SORTING_ACTIONS} currentVal={sortBy}
+          hotkeys={SORTING_ACTIONS.map((str) => str[0])}
+          handleClick={sortPlt as (option: string) => void}
+        />
+      </li>
+      <li>
+        <SettingMenu
+          iconType="blend"
+          contents={BLEND_MODES}
+          currentVal={blendMode}
+          handleClick={handleBlendChanged as (option: string) => void}
+        />
+      </li>
+      <li>
+        <SettingMenu
+          iconType="edit"
+          title="Space"
+          contents={COLOR_SPACES}
+          currentVal={colorSpace}
+          handleClick={handleEditModeChanged as (option: string) => void}
+          letterCase="all-caps"
+        />
+      </li>
+      <li>
+        <Slides />
+      </li>
+      <div className='spacer' />
+      {/* Float right */}
+      <li>
+        <button
+          className={css.btn}
+          type='button'
+          onClick={showFavOffcanvas}
+        >
+          <Icon type="bookmark" />
+          Bookmarks
+        </button>
+      </li>
+      <li>
+        <button
+          type='button'
+          className={css.btn}
+          onClick={showSettings}
+        >
+          <Icon type="setting" />
+          Settings
+        </button>
+      </li>
+    </>
   );
 };
 
@@ -177,88 +229,53 @@ const Header = ({
   showFavOffcanvas: () => void;
 }) => {
   // Consts
-  const menuRef = useRef<HTMLDivElement>(null);
-  const menuContentRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const { isSmall } = useContext(MediaContext);
-  const { sortBy, blendMode, colorSpace } = useAppSelector(selectPlt);
-  const dispatch = useAppDispatch();
-
-  // Events
-  const {
-    handleMixingModeChanged: handleBlendChanged, handleEditModeChanged,
-  } = useMemo(() => {
-    return {
-      handleMixingModeChanged(
-          newMode: BlendingType,
-      ) {
-        dispatch(setBlendMode(newMode));
-      },
-      handleEditModeChanged(
-          newMode: ColorSpacesType,
-      ) {
-        dispatch(setColorSpace(newMode));
-      },
-    };
-  }, []);
 
   useEffect(() => {
-    const content = menuContentRef.current as HTMLElement;
-    if (isSmall) {
-      menuRef.current?.classList.add(menuCss.popupMenu);
-      content.classList.add(menuCss.mobileMenuContent);
-      content.classList.add(menuCss.menuContentR);
-    } else {
-      menuRef.current?.classList.remove(menuCss.popupMenu);
-      content.classList.remove(menuCss.mobileMenuContent);
-      content.classList.remove(menuCss.menuContentR);
-      content.style.display = '';
-    }
-  }, [isSmall]);
-
-  useEffect(() => {
-    menuRef.current?.addEventListener(
-        'contextmenu', preventDefault,
-    );
-    return () => menuRef.current?.addEventListener(
-        'contextmenu', preventDefault,
-    );
+    headerRef.current?.addEventListener('contextmenu', preventDefault);
+    return () => headerRef.current?.removeEventListener('contextmenu', preventDefault);
   }, []);
 
   return (
-    <header className={css.header}>
+    <header
+      ref={headerRef}
+      className={css.header} 
+    >
       <h1 className={css.title}>
         Color Palette
       </h1>
-      <div className={css.menubar} ref={menuRef}
-        onClick={isSmall ? (showPopupMenu as MouseHandler) : undefined}
-      >
-        {
-          isSmall && <Icon type="list" />
-        }
-        <div ref={menuContentRef}>
-          {/* Float left */}
-          <RefreshAll onClick={refreshPlt} />
-          <SettingMenu iconType="sort"
-            contents={SORTING_ACTIONS} currentVal={sortBy}
-            hotkeys={SORTING_ACTIONS.map((str) => str[0])}
-            handleClick={sortPlt as (option: string) => void}
-          />
-          <SettingMenu iconType="blend"
-            contents={BLEND_MODES} currentVal={blendMode}
-            handleClick={handleBlendChanged as (option: string) => void}
-          />
-          <SettingMenu iconType="edit" title="Space"
-            contents={COLOR_SPACES} currentVal={colorSpace}
-            handleClick={handleEditModeChanged as (option: string) => void}
-            letterCase="all-caps"
-          />
-          <Play />
-          <div className={css.empty}></div>
-          {/* Float right */}
-          <Bookmarks onClick={showFavOffcanvas} />
-          <Settings onClick={showSettings} />
-        </div>
-      </div>
+      {
+        !isSmall ?
+          <div className={css.menuWrapper}>
+            <menu className={css.menubar}>
+              <Btns
+                refreshPlt={refreshPlt}
+                sortPlt={sortPlt}
+                showSettings={showSettings}
+                showFavOffcanvas={showFavOffcanvas}
+              />
+            </menu>
+          </div> :
+          <>
+            <div className='spacer' />
+            <Menu
+              className={css.menuWrapper}
+              titleClass={css.menubarTitle}
+              contentClass={css.menubar}
+              iconType='list'
+              isMobile={true}
+              showTriangle={false}
+            >
+              <Btns
+                refreshPlt={refreshPlt}
+                sortPlt={sortPlt}
+                showSettings={showSettings}
+                showFavOffcanvas={showFavOffcanvas}
+              />
+            </Menu>
+          </>
+      }
     </header>
   );
 };

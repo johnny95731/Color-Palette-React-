@@ -8,12 +8,12 @@ import css from './index.module.scss';
 import {
   CURRENT_OPTION_WEIGHT, BORDER_COLOR, BORDER_MAX_WIDTH, CONTRAST_METHODS,
   GAMMA_MAX, MULTIPLICATION_MAX, TRANSITION_MAX_POS, TRANSITION_MAX_COLOR,
-} from '@/common/utils/constants.ts';
+} from 'utils/constants.ts';
 // Store
 import {
   useAppDispatch, useAppSelector, selectSettings,
 } from '@/features';
-import { setPltIsEditing, adjustContrast } from 'slices/pltSlice.ts';
+import { setIsAdjustingPlt, adjustContrast } from 'slices/pltSlice.ts';
 import { setBorder, setTransition } from 'slices/settingsSlice';
 // Types
 import type { TransitionType } from 'types/settingType.ts';
@@ -58,7 +58,7 @@ const CardPage = () => {
     }));
   };
   const handleTransitionChanged = (
-      val: number, attr: keyof TransitionType,
+    val: number, attr: keyof TransitionType,
   ) => {
     if (attr === 'pos')setPosTime(val);
     else setColorTime(val);
@@ -67,29 +67,31 @@ const CardPage = () => {
   return (
     <>
       <h6>Border</h6>
-      <label>Show</label>
+      <span>Show</span>
       <Switch defaultValue={showBorder}
         onClick={handleSwitchStyle}
       />
       {showBorder &&
         <>
-          <label className={css.subOption}>┠ Width(px)</label>
+          <span className={css.subOption}>┠ Width(px)</span>
           <Slider min={1} max={BORDER_MAX_WIDTH} step={1}
             value={currentWidth}
             onChange={handleWidth}
           />
-          <label className={css.subOption}>┖ Color</label>
-          <Select options={BORDER_COLOR} onSelect={handleSelectColor}
+          <span className={css.subOption}>┖ Color</span>
+          <Select
             className={css.subOption}
+            options={BORDER_COLOR}
+            onSelect={handleSelectColor}
           />
         </>
       }
       <h6>Transition</h6>
-      <label>Position(ms)</label>
+      <span>Position(ms)</span>
       <Slider min={0} max={TRANSITION_MAX_POS} digit={0} step={50}
         value={posTime} onChange={(e) => handleTransitionChanged(e, 'pos')}
       />
-      <label>Color(ms)</label>
+      <span>Color(ms)</span>
       <Slider min={0} max={TRANSITION_MAX_COLOR} digit={0} step={50}
         value={colorTime} onChange={(e) => handleTransitionChanged(e, 'color')}
       />
@@ -110,13 +112,13 @@ const ContrastPage = ({
 }) => {
   const dispatch = useAppDispatch();
   const contrastBtnEvent = useCallback((ev: 'start' | 'reset') => {
-    dispatch(setPltIsEditing(ev));
+    dispatch(setIsAdjustingPlt(ev));
     contrastChanged({ coeff: 1 });
   }, []);
   const max = contrastArgs.method === 'gamma' ? GAMMA_MAX : MULTIPLICATION_MAX;
   return (
     <>
-      <label>Method</label>
+      <span>Method</span>
       <Select options={CONTRAST_METHODS} value={contrastArgs.method}
         onSelect={(newVal) => contrastChanged({
           method: newVal as ContrastMethods,
@@ -169,9 +171,9 @@ const SettingDialog = ({
     setPage(i);
     // Page 1 is contrast.
     if (i === 1) {
-      dispatch(setPltIsEditing('start'));
+      dispatch(setIsAdjustingPlt('start'));
       contrastChanged(contrastArgs);
-    } else if (page === 1) dispatch(setPltIsEditing('cancel'));
+    } else if (page === 1) dispatch(setIsAdjustingPlt('cancel'));
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import './icons.module.scss';
 
 import CloseUrl from '@/assets/icons/x-lg.svg?url';

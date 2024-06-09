@@ -1,11 +1,19 @@
 {
+  "include": ["./test.ts", "./testHelper.ts"],
   "compilerOptions": {
-    "composite": true,
-    "skipLibCheck": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "module": "commonjs",
+    "lib": ["DOM", "ES6", "DOM.Iterable", "ScriptHost"],
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true
-  },
-  "include": ["vite.config.ts"]
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "noEmit": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+  }
 }

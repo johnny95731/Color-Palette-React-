@@ -10,9 +10,11 @@ export type ColorSpaceInfos = {
    */
   labels: string[];
   /**
-   * Maximum of intervals of each channels
+   * Range of each channels.
+   * If type of `range` is [number, number], it means [min, max].
+   * If type of `range` is number, it means the maximum, [0, range].
    */
-  maxes: number[];
+  range: (number | [number, number])[];
 };
 
 /**

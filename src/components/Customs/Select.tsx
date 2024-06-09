@@ -1,69 +1,172 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import TriangleUrl from '@/assets/icons/triangle-down.svg?url';
 import css from './menu.module.scss';
-import { showPopupMenu } from '@/common/utils/helpers.ts';
-import { MouseHandler, FocusHandler } from 'types/eventHandler.ts';
-import { CURRENT_OPTION_WEIGHT } from '@/common/utils/constants';
+import { CURRENT_OPTION_WEIGHT } from 'utils/constants';
+import { toClass } from '@/common/utils/helpers';
 
-const Select = ({
-  options,
-  defaultValue,
-  value,
-  contentClass = css.menuContent,
-  className,
-  onSelect,
-}: {
+type SelectProps = {
+  isMobile?: boolean,
+  className?: string;
+  titleClass?: string;
+  contentClass?: string;
+  children?: React.JSX.Element | React.JSX.Element[];
   options: readonly string[];
   defaultValue?: string;
   value?: string;
-  contentClass?: string;
-  className?: string;
   onSelect?: (val: string) => any;
-}): React.JSX.Element => {
+}
+
+export type SelectExposed = {
+  /**
+   * Ref of container
+   */
+  element: HTMLSpanElement,
+  /**
+   * Select item of index idx.
+   */
+  select: (idx: number) => void,
+  /**
+   * Return the style of selected list item if idx is selected.
+   */
+  liStyle: (idx: number) => React.CSSProperties | undefined,
+}
+
+const Select = React.memo(forwardRef<SelectExposed, SelectProps>(({
+  isMobile,
+  className,
+  titleClass,
+  contentClass,
+  children,
+  options,
+  defaultValue,
+  value,
+  onSelect,
+},
+ref
+): React.JSX.Element => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const [isOpened, setIsOpened] = useState(() => false);
+  const handleBtnClick = useCallback((e: React.MouseEvent | React.FocusEvent, newVal?: boolean) => {
+    if ( // Avoid closing menu when click child.
+      e?.type === 'blur' &&
+      // `e.relatedTarget !== null` can not deal the case that click another
+      // foucusable element.
+      e.currentTarget.contains(e.relatedTarget as Element | null)
+    ) return;
+    setIsOpened(prev => {
+      newVal = newVal ?? !prev;
+      const container = containerRef.current as HTMLDivElement;
+      const rect = container.getBoundingClientRect();
+      const content = contentRef.current as HTMLDivElement;
+      content.style.maxHeight = (
+        newVal ?
+          `${document.body.clientHeight - rect.bottom}px` : // open
+          '' // close
+      );
+      if (!newVal) {
+        container.blur();
+        (container.firstChild as HTMLElement).blur();
+      }
+      return newVal;
+    });
+  }, []);
+
+  const handleContentChanged = () => { // called after transition end.
+    const content = contentRef.current as HTMLDivElement;
+    if (!content) return;
+    const rect = content.getBoundingClientRect();
+    const height = isOpened ? `${rect.height}px` : '';
+    content.style.maxHeight = height;
+    content.style.height = height;
+  };
+
+  // Selected state
   const [currentVal, setCurrentVal] = useState(
-      () => defaultValue ? defaultValue : (value ? value : options[0]),
+    () => defaultValue ? defaultValue : (value ? value : options[0]),
   );
+  const currentIdx = useRef<number>(options.indexOf(currentVal));
   // Handle prop `value` changed.
   useEffect(() => {
     if (value && value !== currentVal && options.includes(value)) {
+      options.indexOf(value);
       setCurrentVal(value);
     }
   }, [value]);
 
-  const handleSelect: MouseHandler = (e) => {
-    const target = e.currentTarget;
-    const val = target.innerText;
-    if (onSelect) onSelect(val);
-    setCurrentVal(val);
-  };
+  const handleSelect = useCallback((idx: number) => {
+    const newVal = options[idx];
+    currentIdx.current = idx;
+    setCurrentVal(newVal);
+    if (onSelect) onSelect(newVal);
+  }, [options, onSelect]);
 
-  const containerClass = (
-    className ? `${className} ${css.selectMenu}` : css.selectMenu
-  );
+  const liStyle = useCallback((idx: number) => 
+    idx === currentIdx.current ? CURRENT_OPTION_WEIGHT : undefined,
+  []);
+
+  const containerClass_ = useMemo(() =>(
+    toClass([css.selectMenu, className])
+  ), [className]);
+  const titleClass_ = useMemo(() =>(
+    toClass([css.menuTitle, titleClass])
+  ), [titleClass]);
+  const contentClass_ = useMemo(() =>(
+    toClass([
+      isMobile ? css.mobileContentWrapper : css.contentWrapper,
+      contentClass
+    ])
+  ), [contentClass]);
+
+  // Expose data.
+  useImperativeHandle(ref, () => {
+    return {
+      element: containerRef.current as HTMLSpanElement,
+      select: handleSelect,
+      liStyle,
+    };
+  }, [handleSelect]);
 
   return (
-    <span className={containerClass}
+    <div
+      ref={containerRef}
+      className={containerClass_}
       tabIndex={-1}
-      onClick={showPopupMenu as MouseHandler}
-      onBlur={showPopupMenu as FocusHandler}
+      onClick={handleBtnClick}
+      onBlur={(e) => handleBtnClick(e, false)}
     >
-      <div className={css.menuTitle}>
-        {currentVal}
+      <button
+        className={titleClass_}
+        type='button'
+        aria-haspopup="menu"
+        aria-expanded={isOpened || undefined}
+      >
+        <div>{currentVal}</div>
         <img src={TriangleUrl} alt="clickable" className={css.triangle} />
+      </button>
+      <div
+        ref={contentRef}
+        className={contentClass_}
+        onTransitionEnd={handleContentChanged}
+      >
+        <menu
+          className={css.menuContent}
+        >
+          {
+            children ??
+            options.map((val, i) => (
+              <li key={`Option ${val}`}
+                style={liStyle(i)}    
+                onClick={() => handleSelect(i)}
+              >
+                {val}
+              </li>
+            ))
+          }
+        </menu>
       </div>
-      <ul className={contentClass}>
-        {
-          options.map((val) => (
-            <li key={`Option ${val}`}
-              onClick={handleSelect}
-              style={val === currentVal ? CURRENT_OPTION_WEIGHT : undefined}
-            >
-              {val}
-            </li>
-          ))
-        }
-      </ul>
-    </span>
+    </div>
   );
-};
+}));
 export default Select;

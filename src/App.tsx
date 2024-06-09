@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 
 import Header from './components/Header';
 import Palette from './components/Palette';
@@ -6,12 +6,10 @@ import SettingDialog from './components/SettingDialog';
 import FavOffcanvas from './components/FavOffcanvas';
 import './App.module.scss';
 // Stores
+import { useAppDispatch, useAppSelector, selectPlt } from './features';
 import {
-  useAppDispatch, useAppSelector, selectPlt,
-} from './features';
-import {
-  refreshCard, setPltIsEditing, sortCards,
-} from '@/features/slices/pltSlice.ts';
+  refreshCard, setIsAdjustingPlt, setEditingIdx, sortCards,
+} from 'slices/pltSlice.ts';
 import { initColors, initPlts } from './features/slices/favSlice.ts';
 import MediaProvider from './features/MediaProvider.tsx';
 // Types
@@ -25,30 +23,44 @@ const App = () => {
   // -Display page.
   const [isSettingsShowing, setIsSettingsShowing] = useState(() => false);
   const [isfavShowing, setFavShowing] = useState<boolean>(() => false);
-  const [isMasking, setIsMasking] = useState<boolean>(() => false);
-  const isInEvent = useRef<boolean>(false);
+  const [isShowOverlay, setIsShowOverlay] = useState<boolean>(() => false);
+  const isEditing = useRef(false);
+  /**
+   * For blocking keyboard event when
+   *  1. 
+   */
+  const isDuringEvent = useRef<boolean>(true);
+  const { editingIdx, isPending } = useAppSelector(selectPlt);
+  isEditing.current = editingIdx !== -1;
+  isDuringEvent.current = (
+    isEditing.current ||
+    isPending ||
+    isShowOverlay
+  );
+
+  useLayoutEffect(() => {
+    setIsShowOverlay(isEditing.current);
+  }, [isEditing.current]);
 
   const handleClickMask = useCallback(() => {
     setIsSettingsShowing(false);
-    dispatch(setPltIsEditing('cancel'));
+    if (isEditing.current) {
+      dispatch(setEditingIdx());
+      return;
+    }
+    dispatch(setIsAdjustingPlt('cancel'));
     setFavShowing(false);
-    setIsMasking(false);
+    setIsShowOverlay(false);
   }, []);
   const showSettings = () => {
     setIsSettingsShowing(!isSettingsShowing);
-    setIsMasking(!isSettingsShowing);
+    setIsShowOverlay(!isSettingsShowing);
+    dispatch(setIsAdjustingPlt('cancel'));
   };
   const showFavOffcanvas = () => {
     setFavShowing(!isfavShowing);
-    setIsMasking(!isfavShowing);
+    setIsShowOverlay(!isfavShowing);
   };
-
-  const { cards, isPending } = useAppSelector(selectPlt);
-  isInEvent.current = (
-    cards.some((card) => card.isEditing) ||
-    isPending ||
-    isMasking
-  );
 
   const { refreshPlt, sortPlt } = useMemo(() => {
     return {
@@ -66,32 +78,29 @@ const App = () => {
     dispatch(initColors());
     dispatch(initPlts());
     // `preload` class for preventing annimation occurs on page load.
-    setTimeout(() => {
-      document.body.classList.remove('preload');
-    }, 500);
+    document.body.classList.remove('preload');
     // Connect hotkey.
     const keyDownEvent = (e: KeyboardEvent) => {
       // Prevent trigger hotkey/shortcut when editing card.
-      if (isInEvent.current || e.ctrlKey || e.altKey || e.shiftKey) return;
+      if (isDuringEvent.current || e.ctrlKey || e.altKey || e.shiftKey) return;
       switch (e.key.toLowerCase()) {
-        case ' ':
-          refreshPlt();
-          break;
-        case 'g':
-          sortPlt('gray');
-          break;
-        case 'r':
-          sortPlt('random');
-          break;
-        case 'i':
-          sortPlt('inversion');
-          break;
+      case ' ':
+        refreshPlt();
+        break;
+      case 'g':
+        sortPlt('gray');
+        break;
+      case 'r':
+        sortPlt('random');
+        break;
+      case 'i':
+        sortPlt('inversion');
+        break;
       }
     };
     document.body.addEventListener('keydown', keyDownEvent);
     return () => document.body.removeEventListener('keydown', keyDownEvent);
   }, []);
-
   return (
     <MediaProvider>
       <Header
@@ -101,20 +110,23 @@ const App = () => {
         showFavOffcanvas={showFavOffcanvas}
       />
       <Palette />
-      <div id="mask"
+      <div id="overlay"
         style={{
-          display: isMasking ? undefined : 'none',
+          display: isShowOverlay ? undefined : 'none',
+          backgroundColor: isEditing.current ? 'transparent' : undefined,
         }}
         onClick={handleClickMask}
       />
-      <>{
-        isSettingsShowing &&
-        <SettingDialog showingChanged={showSettings}/>
-      }</>
-      <FavOffcanvas
-        isShowing={isfavShowing}
-        showingChanged={showFavOffcanvas}
-      />
+      <>
+        {
+          isSettingsShowing &&
+          <SettingDialog showingChanged={showSettings}/>
+        }
+        <FavOffcanvas
+          isShowing={isfavShowing}
+          showingChanged={showFavOffcanvas}
+        />
+      </>
     </MediaProvider>
   );
 };

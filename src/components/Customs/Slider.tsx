@@ -2,12 +2,13 @@ import React, {
   useEffect, useState, useRef, useCallback, useLayoutEffect,
 } from 'react';
 import css from './slider.module.scss';
-import { clip, round, rangeMapping } from '@/common/utils/helpers.ts';
-console.log(typeof css);
+import { clip, round, rangeMapping } from 'utils/helpers.ts';
+
 const pointSize = Number(css['point-size'].slice(0, -2));
 const pointRadius = pointSize / 2;
 
 type SliderProps = {
+  id?: string;
   min?: number;
   max?: number;
   defaultValue?: number;
@@ -22,6 +23,7 @@ type SliderProps = {
 }
 
 const Slider = ({
+  id,
   min = 0,
   max = 100,
   defaultValue,
@@ -38,46 +40,66 @@ const Slider = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState<boolean>(() => false);
 
+  // Handle value
   const [currentVal, setCurrentVal] = useState<number>(() => {
     const val = defaultValue !== undefined ?
-        defaultValue :
-        (value !== undefined ? value : (max + min) / 2);
+      defaultValue :
+      (value !== undefined ? value : (max + min) / 2);
     return clip(val, min, max);
   });
+  // css attribute `left` of tracker
   const [pos, setPos] = useState<number>(() => pointRadius);
 
-  const updateValue = useCallback((newVal: number, pos?: number) => {
-    setCurrentVal(newVal);
-    if (newVal !== currentVal && onChange) onChange(newVal);
-    if (pos === undefined) {
-      const rect = trackerRef.current?.getBoundingClientRect() as DOMRect;
-      pos = round(rangeMapping(
-          newVal, min, max,
-          pointRadius, rect.right - rect.left - pointRadius,
+  /**
+   * Map `currentVal` to tracker's `pos`. Or, map `pos` to the distance between
+   * `min` and `currentVal`.
+   */
+  const transfer = useCallback((num: number, valToPos: boolean = true) => {
+    const rect = trackerRef.current?.getBoundingClientRect();
+    if (!rect) return num;
+    if (valToPos) 
+      return round(rangeMapping(
+        num,
+        min, max,
+        pointRadius, rect.right - rect.left - pointRadius,
       ));
+    else
+      return rangeMapping(
+        num,
+        pointRadius, rect.width - pointRadius,
+        0, max - min,
+      );
+  }, [min, max]);
+  const updateValue = useCallback((newVal: number, pos?: number) => {
+    if (newVal !== currentVal) {
+      setCurrentVal(newVal);
+      onChange && onChange(newVal);
     }
-    setPos(pos);
+    setPos(pos === undefined ? transfer(newVal) : pos);
   }, [min, max, onChange]);
 
+  // Initialize `pos` before component be rendered.
   useLayoutEffect(() => {
-    updateValue(currentVal);
+    setPos(transfer(currentVal));
   }, []);
 
   // Handle prop `value`, `min`, and `max` changed.
   useLayoutEffect(() => {
     const newVal = round(
-        clip(value !== undefined ? value : currentVal, min, max),
-        digit,
+      clip(value !== undefined ? value : currentVal, min, max),
+      digit,
     );
-    updateValue(newVal);
-  }, [value, min, max, onChange]);
+    if (newVal !== currentVal) {
+      updateValue(newVal);
+    }
+  }, [value, min, max]);
 
   // Step increment function. If num < 0, then becomes decrement.
   const increment = (num: number = 1) => {
     const unitVal = step ? step : 10**(-digit);
     const newVal = round(
-        clip(currentVal + num * unitVal, min, max),
-        digit,
+      clip(currentVal + num * unitVal, min, max),
+      digit,
     );
     updateValue(newVal);
   };
@@ -86,7 +108,7 @@ const Slider = ({
   // -Mouse down / Touch start.
   // -Mouse move / Touch move.
   const handleDrag = useCallback((
-      e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent,
+    e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent,
   ) => {
     if (!e.type.endsWith('move')) { // touch start / mouse down
       (e.currentTarget as HTMLDivElement).focus();
@@ -100,17 +122,14 @@ const Slider = ({
     );
     // Evaluate value.
     const pointPos = clip(
-        clientX - rect.left, pointRadius, rect.width - pointRadius,
+      clientX - rect.left, pointRadius, rect.width - pointRadius,
     );
-    const valBias = rangeMapping(
-        pointPos, pointRadius, rect.width - pointRadius,
-        0, max - min,
-    );
+    const valBias = transfer(pointPos, false); // distance between min and currentVal.
     let val: number;
-    if (step) val = round(min + Math.floor(valBias / step) * step, digit);
+    if (step) val = clip(round(min + round(valBias / step, 0) * step, digit), min, max);
     else val = round(min + valBias, digit);
     updateValue(val, pointPos);
-  }, [isDragging, max, min, onChange]);
+  }, [isDragging, updateValue, transfer]);
 
   // -Mouse up / Touch end.
   const handleDragEnd = useCallback(() => setIsDragging(false), []);
@@ -133,16 +152,24 @@ const Slider = ({
       body.removeEventListener('touchend', handleDragEnd);
     };
   }, []);
+  useEffect(() => {
+    if (!isDragging) setPos(transfer(currentVal));
+  }, [isDragging]);
   // -Key down
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key == 'ArrowRight') increment();
     else if (e.key === 'ArrowLeft') increment(-1);
-  };
+  }, [increment]);
   // end: onChange event
 
   return (
-    <div className={css.sliderWrapper}>
-      <div className={css.tracker} ref={trackerRef} tabIndex={-1}
+    <div
+      className={css.sliderWrapper}
+    >
+      <div
+        ref={trackerRef}
+        className={css.tracker}
+        tabIndex={0}
         style={{
           background: trackerBackground,
         }}
@@ -165,7 +192,7 @@ const Slider = ({
           {showVal &&
             <div className={css.tooltip} ref={tooltipRef}
               style={{
-                display: isDragging ? 'block' : '',
+                display: isDragging ? 'block' : undefined,
               }}
             >
               {currentVal}
@@ -173,6 +200,14 @@ const Slider = ({
           }
         </div>
       </div>
+      <input
+        id={id}
+        value={currentVal}
+        readOnly
+        style={{
+          display: 'none',
+        }}
+      />
     </div>
   );
 };

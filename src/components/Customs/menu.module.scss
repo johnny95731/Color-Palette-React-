@@ -2,55 +2,88 @@
 
 $transDuration: 120ms;
 
-.popupMenu, .selectMenu {
+.dropdownMenu, .selectMenu {
   position: relative;
   // shape
-  padding: 5px 8px;
+  height: auto;
+  width: fit-content;
   box-sizing: border-box;
+  border: 0;
   border-radius: $radius-md;
   // style
   transition: border-radius $transDuration;
   cursor: pointer;
-  .triangle {
-    animation: rotation-out $transDuration 1 linear;
-  }
-  &:focus {
-    border-radius: $radius-md $radius-md 0 0;
-    .triangle {
-      transform: rotate(180deg);
-      animation: rotation-in $transDuration 1 linear;
-    }
-  }
-  @include small {
-    &:focus .menuTitle {
-      padding-bottom: 5px;
-      transition: padding-bottom $transDuration ease-in-out;
-    }
+}
+
+.dropdownMenu {
+  .menuTitle {
+    justify-content: center;
   }
 }
 
 .selectMenu {
   width: 100%;
-  box-sizing: border-box;
   color: $color5;
   background-color: $color1;
-  &:focus, &:hover {
+  &:hover {
     background-color: $color2;
   }
+  .menuTitle {
+    >div {
+      flex: 1 1 0;
+      padding: 8px 0 8px 4px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
   .triangle {
+    margin-right: 4px;
     float: right;
   }
 }
 
-// select value
-.currentVal {
-  width: auto;
+.active {
+  >.selectMenu, >.dropdownMenu {
+    @include small {
+      >.menuTitle {
+        padding-bottom: 5px;
+        transition: padding-bottom $transDuration ease-in-out;
+      }
+    }
+  }
+  >.selectMenu {
+    background-color: $color2;
+  }
+  >.menuTitle {
+    border-radius: $radius-md $radius-md 0 0;
+    >.triangle {
+      transform: rotate(180deg);
+      animation: rotation-in $transDuration 1 linear;
+    }
+  }
 }
 
-// popup menu title
+
+// dropdown menu title
 .menuTitle {
+  display: flex;
+  align-items: center;
+  // shape;
+  width: 100%;
+  border: none;
+  border-radius: $radius-md;
+  padding: 0;
+  // style
+  background-color: inherit;
+  text-align: start;
   font-size: var(--font-body);
+  font-weight: 600;
   transition: padding-bottom $transDuration ease-in-out;
+  .triangle {
+    animation: rotation-out $transDuration 1 linear;
+    flex: 0 0;
+  }
 }
 
 .triangle {
@@ -58,28 +91,49 @@ $transDuration: 120ms;
   vertical-align: top;
 }
 
-%menuContent {
+%contentWrapper {
   // position
   position: absolute;
   top: 100%;
   z-index: 1;
   // shape
-  width: max-content;
-  max-height: 0;
   min-width: 100%;
+  max-height: 0;
   border-radius: $radius-md;
   overflow: hidden;
+  
+  background-color: $color1;
+  box-sizing: border-box;
+  transition: max-height $transDuration ease-in-out;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  @include small {
+    box-shadow: none;
+  }
+}
+.contentWrapper {
+  @extend %contentWrapper;
+  width: max-content;
+}
+
+.mobileContentWrapper {
+  @extend %contentWrapper;
+  width: 100vw;
+  left: auto !important;
+  right: 0 !important;
+}
+
+.menuContent {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 
   list-style-type: none;
-  margin-block-start: 0em;
-  margin-block-end: 0em;
-  padding-inline-start: 0px;
-
-  background-color: $color1;
-  cursor: pointer;
-  transition: max-height $transDuration ease-in-out;
-
-  >* {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  padding-inline-start: 0;
+  box-sizing: border-box;
+  >li {
+    display: block;
     width: 100%;
     font-weight: 600;
     padding: 5px 10px;
@@ -91,42 +145,10 @@ $transDuration: 120ms;
     &:hover {
       background-color: $color3;
     }
-  }
-  :global(.icon) {
-    position: absolute;
-    transform: translateX(-100%);
-    z-index: 10;
-  }
-  
-  @include small {
-    background-color: $color1;
-    >* {
-      padding: 10px 10px;
+    >:global(.icon) {
+      position: absolute;
+      transform: translateX(-100%);
+      z-index: 10;
     }
   }
-}
-
-.menuContent { // Align center
-  @extend %menuContent;
-  left: 0;
-  // transform: translateX(-50%);
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  
-  @include small {
-    position: relative;
-    top: 0;
-    width: 100%;
-    box-shadow: none;
-  }
-}
-
-.menuContentR { // Align right.
-  left: auto;
-  right: 0;
-  transform: none;
-}
-
-.mobileMenuContent {
-  @extend %menuContent;
-  width: 100vw;
 }

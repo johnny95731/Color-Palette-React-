@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import css from './switch.module.scss';
 
 const switchStyle = {

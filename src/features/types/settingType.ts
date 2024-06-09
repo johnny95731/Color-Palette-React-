@@ -1,4 +1,4 @@
-import {BORDER_COLOR} from "@/common/utils/constants";
+import {BORDER_COLOR} from "utils/constants";
 
 export type BorderStyleType = {
   /**

@@ -1,17 +1,17 @@
-import {createSlice} from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 // Utils
 import {
   hex2rgb, randRgbGen, rgb2gray, rgb2hex, gammaCorrection, getSpaceTrans,
   scaling,
-} from "@/common/utils/colors";
-import {shuffle} from "@/common/utils/helpers";
+} from 'utils/colors';
+import { shuffle } from 'utils/helpers';
 import {
   INIT_NUM_OF_CARDS, INIT_COLOR_SPACE, MAX_NUM_OF_CARDS,
-} from "@/common/utils/constants";
+} from 'utils/constants';
 // Types
 import type {
   CardType, OrderStateType, SortActionType, ColorSpacesType, BlendingType,
-} from "types/pltType";
+} from 'types/pltType';
 
 /**
  * Create a new state object.
@@ -32,7 +32,6 @@ export const newCard = (
     originColor: color,
     isLock: false,
     isFav: false,
-    isEditing: false,
   };
 };
 
@@ -51,9 +50,13 @@ type StateType = {
    */
   isPending: boolean;
   /**
-   * Edit the palette.
+   * Index of card that is editing.
    */
-  isEditingPlt: boolean;
+  editingIdx: number;
+  /**
+   * Adjust entire the palette.
+   */
+  isAdjustingPlt: boolean;
   /**
    * How to evaluate a new color when insert a new card.
    */
@@ -67,17 +70,18 @@ type StateType = {
 
 const initialState: StateType = {
   numOfCards: INIT_NUM_OF_CARDS,
-  cards: Array.from({length: INIT_NUM_OF_CARDS},
+  cards: Array.from({ length: INIT_NUM_OF_CARDS },
       (_, i) => newCard(i, INIT_COLOR_SPACE)),
-  sortBy: "random",
+  sortBy: 'random',
   isPending: false,
-  isEditingPlt: false,
-  blendMode: "mean",
+  editingIdx: -1,
+  isAdjustingPlt: false,
+  blendMode: 'mean',
   colorSpace: INIT_COLOR_SPACE,
 };
 
 const cardSlice = createSlice({
-  name: "plt",
+  name: 'plt',
   initialState,
   reducers: {
     // Card actions
@@ -89,7 +93,7 @@ const cardSlice = createSlice({
       type: string;
     }) {
       if (state.numOfCards == MAX_NUM_OF_CARDS) return state;
-      const {idx, rgb} = action.payload;
+      const { idx, rgb } = action.payload;
       const cards = state.cards;
       const cardState = newCard(idx, state.colorSpace, rgb);
       cards.forEach((card) => {
@@ -123,7 +127,7 @@ const cardSlice = createSlice({
           state.cards[i] = newCard(state.cards[i].order, state.colorSpace);
         }
       }
-      state.sortBy = "random";
+      state.sortBy = 'random';
     },
     editCard(state, action: {
       payload: {
@@ -132,29 +136,29 @@ const cardSlice = createSlice({
       };
       type: string;
     }) {
-      const {idx, color} = action.payload;
-      const {inverter} = getSpaceTrans(state.colorSpace);
+      const { idx, color } = action.payload;
+      const { inverter } = getSpaceTrans(state.colorSpace);
       state.cards[idx].hex = rgb2hex(inverter(color));
       state.cards[idx].color = color;
-      state.sortBy = "random";
+      state.sortBy = 'random';
     },
     sortCards(state, action: {
       payload: SortActionType;
       type: string;
     }) {
       const sortBy = action.payload;
-      const {inverter} = getSpaceTrans(state.colorSpace);
+      const { inverter } = getSpaceTrans(state.colorSpace);
       switch (sortBy) {
-        case "gray":
-          if (state.sortBy === "gray") state.cards.reverse();
+        case 'gray':
+          if (state.sortBy === 'gray') state.cards.reverse();
           else {
             state.cards.sort((a, b) => {
               return rgb2gray(inverter(a.color)) - rgb2gray(inverter(b.color));
             });
-            state.sortBy = "gray";
+            state.sortBy = 'gray';
           }
           break;
-        case "inversion":
+        case 'inversion':
           /**
            * Inversion will not change sortBy. For example, if cards are sorted
            * by gray (brightness), inversion just change most lightest card on
@@ -162,9 +166,9 @@ const cardSlice = createSlice({
            */
           state.cards.reverse();
           break;
-        case "random":
+        case 'random':
           shuffle(state.cards);
-          state.sortBy = "random";
+          state.sortBy = 'random';
       }
       state.cards.forEach((card, i) => card.order = i);
     },
@@ -175,18 +179,11 @@ const cardSlice = createSlice({
       const idx = action.payload;
       state.cards[idx].isLock = !state.cards[idx].isLock;
     },
-    setIsEditing(state, action: {
-      payload: number;
-      type: string;
-    }) {
-      const idx = action.payload;
-      state.cards[idx].isEditing = !state.cards[idx].isEditing;
-    },
     moveCardOrder(state, action: {
       payload: {cardIdx: number; to: number};
       type: string;
     }) {
-      const {cardIdx, to} = action.payload;
+      const { cardIdx, to } = action.payload;
       const initOrder = state.cards[cardIdx].order;
       if (initOrder <= to) {
         state.cards.forEach((card) => {
@@ -198,9 +195,19 @@ const cardSlice = createSlice({
         });
       }
       state.cards[cardIdx].order = to;
-      state.sortBy = "random";
+      state.sortBy = 'random';
     },
     // Plt state
+    /**
+     * which card start editing
+     */
+    setEditingIdx(state, action: {
+      payload: number | undefined;
+      type: string;
+    }) {
+      const idx = action.payload ?? -1;
+      state.editingIdx = state.editingIdx === idx ? -1 : idx;
+    },
     resetOrder(state) {
       state.cards.sort((a, b) => a.order - b.order);
       state.cards.forEach((card, i) => card.order = i);
@@ -212,13 +219,16 @@ const cardSlice = createSlice({
       const newVal = action.payload;
       state.isPending = newVal;
     },
-    setPltIsEditing(state, action: {
-      payload: "start" | "reset" | "cancel";
+    setIsAdjustingPlt(state, action: {
+      payload: 'start' | 'reset' | 'cancel';
       type: string;
     }) {
+      // start: Start adjusting and store origin color.
+      // reset: Keep adjusting and reset color.
+      // cancel: Keep adjusting and reset color.
       const val = action.payload;
-      state.isEditingPlt = val !== "cancel";
-      if (val === "start") {
+      state.isAdjustingPlt = val !== 'cancel';
+      if (val === 'start') {
         state.cards.forEach((card) => {
           card.originHex = card.hex;
           card.originColor = card.color;
@@ -239,14 +249,14 @@ const cardSlice = createSlice({
           i, state.colorSpace, hex2rgb(hex) as number[],
       ));
       state.numOfCards = plt.length;
-      state.sortBy = "random";
+      state.sortBy = 'random';
     },
     setColorSpace(state, action: {
       payload: ColorSpacesType;
       type: string;
     }) {
       state.colorSpace = action.payload;
-      const {converter} = getSpaceTrans(action.payload);
+      const { converter } = getSpaceTrans(action.payload);
       for (let i = 0; i < state.numOfCards; i++) {
         const rgb = hex2rgb(state.cards[i].hex) as number[];
         state.cards[i].color = converter(rgb);
@@ -265,16 +275,16 @@ const cardSlice = createSlice({
       };
       type: string;
     }) {
-      if (!state.isEditingPlt) return state;
-      const {method, coeff} = action.payload;
-      const {converter, inverter} = getSpaceTrans(state.colorSpace);
+      if (!state.isAdjustingPlt) return state;
+      const { method, coeff } = action.payload;
+      const { converter, inverter } = getSpaceTrans(state.colorSpace);
       const originRgbs = state.cards.map((card) => inverter(card.originColor));
       let newRgbs = originRgbs;
       switch (method) {
-        case "multiplication":
+        case 'multiplication':
           newRgbs = scaling(originRgbs, coeff as number) as number[][];
           break;
-        case "gamma":
+        case 'gamma':
           newRgbs = gammaCorrection(originRgbs, coeff as number) as number[][];
           break;
       }
@@ -287,8 +297,8 @@ const cardSlice = createSlice({
 });
 
 export const {
-  addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setIsEditing,
-  moveCardOrder, setIsPending, setPltIsEditing, setPlt, setColorSpace,
+  addCard, delCard, refreshCard, editCard, sortCards, setIsLock, setEditingIdx,
+  moveCardOrder, setIsPending, setIsAdjustingPlt, setPlt, setColorSpace,
   setBlendMode, adjustContrast, resetOrder,
 } = cardSlice.actions;
 export default cardSlice.reducer;
