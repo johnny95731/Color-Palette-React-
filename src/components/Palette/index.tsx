@@ -99,9 +99,6 @@ const Palette = () => {
   const [isInTrans, setIsInTrans] = useState<boolean[]>(() =>
     Array.from({ length: INIT_NUM_OF_CARDS }, () => false),
   );
-  // After transition end, some side effect will happen. This state is present
-  // for checking the entire event and side effect is complete.
-  const [isEventEnd, setIsEventEnd] = useState(true);
 
   const handleTransitionEnd = (cardIdx: number) => {
     setIsInTrans((prev) => {
@@ -115,7 +112,7 @@ const Palette = () => {
    * Infomation that be used in some events like mouseup(dragging end), add a
    * card, or remove card.
    */
-  const eventInfo = useRef<{
+  const [eventInfo, setEventInfo] = useState<{
     event: 'mouseup' | 'add' | 'remove';
     idx?: number;
     rgb?: number[];
@@ -145,7 +142,7 @@ const Palette = () => {
       return;
     }
     document.body.style.backgroundColor = rgb2hex(rgb);
-    eventInfo.current = { event: 'add', idx, rgb };
+    setEventInfo({ event: 'add', idx, rgb });
     // Transition: shrink and move card. The enpty space is new card
     const newSize = equallyLength(numOfCards + 1);
     for (let i = 0; i < numOfCards; i++) {
@@ -156,13 +153,11 @@ const Palette = () => {
     // Trigger side effect when !isInTrans.some()
     setIsInTrans(Array.from({ length: numOfCards }, () => true));
     dispatch(setIsPending(true));
-    setIsEventEnd(false);
   };
 
   // Handle delete card.
   /**
    * Transition before delete card object.
-   * @param idx
    */
   const handleRemoveCard = (idx: number) => {
     if (!transition.pos) { // no transition.
@@ -178,10 +173,9 @@ const Palette = () => {
       const bias = i > idx ? 1 : 0;
       cardRefs.current[i].setPos(evalPosition(i - bias, numOfCards - 1));
     }
-    eventInfo.current = { event: 'remove', idx };
+    setEventInfo({ event: 'remove', idx });
     setIsInTrans(Array.from({ length: numOfCards - 1 }, () => true));
     dispatch(setIsPending(true));
-    setIsEventEnd(false);
   };
 
   // Drag events start
@@ -217,7 +211,6 @@ const Palette = () => {
           });
         }
         dispatch(setIsPending(true));
-        setIsEventEnd(false);
         dragIdx.current.draggingIdx = cardIdx;
         dragIdx.current.finalIdx = cardIdx;
         card = cardRefs.current[cardIdx];
@@ -280,17 +273,16 @@ const Palette = () => {
         if (idx === null) return;
         // Remove class.
         card_.element.classList.remove(css.dragging);
+        setEventInfo({ event: 'mouseup' });
         if (!transition.pos) {
           removeTransition();
           dispatch(resetOrder());
           resetPosition();
-          setIsEventEnd(true); // Trigger `resetTransition`;
           return;
         }
         // Dragging card move to target position.
         card_.setPos(evalPosition(finalOrder, numOfCards));
         card_.setTransDuration('reset');
-        eventInfo.current = { event: 'mouseup' };
       },
     };
   }, [numOfCards, isSmall, bound, transition.pos]);
@@ -319,16 +311,16 @@ const Palette = () => {
   // Side effect when transition is over.
   const someCardIsInTrans = isInTrans.some((val) => val);
   useLayoutEffect(() => {
-    if (someCardIsInTrans || !eventInfo.current) return;
+    if (someCardIsInTrans || !eventInfo) return;
     // This LayoutEffect occurs only when transition is over.
     removeTransition();
-    const start = eventInfo.current?.idx ? eventInfo.current.idx : 0;
-    switch (eventInfo.current.event) {
+    const start = eventInfo?.idx ? eventInfo.idx : 0;
+    switch (eventInfo.event) {
     case 'add':
       document.body.style.backgroundColor = '';
       dispatch(addCard({
         idx: start,
-        rgb: eventInfo.current.rgb as number[],
+        rgb: eventInfo.rgb as number[],
       }));
       break;
     case 'remove':
@@ -337,18 +329,18 @@ const Palette = () => {
     case 'mouseup':
       dispatch(resetOrder());
       resetPosition();
+      break;
     }
-    eventInfo.current = null;
-    setIsEventEnd(true);
+    setEventInfo(null);
   }, [someCardIsInTrans]);
   useEffect(() => {
-    if (isEventEnd) {
+    if (!eventInfo) {
       setTimeout(() => {
         resetTransition();
         dispatch(setIsPending(false));
       }, 50);
     }
-  }, [isEventEnd]);
+  }, [eventInfo]);
 
   const displayStyle = (
     (numOfCards === MAX_NUM_OF_CARDS || isPending) ?
@@ -356,7 +348,7 @@ const Palette = () => {
       undefined
   );
   return (
-    <main className={css.main}>
+    <main id="main">
       {cards.map((card, i) => {
         return <Card key={`card${i}`}
           ref={(el) => cardRefs.current[i] = el as CardExposed}

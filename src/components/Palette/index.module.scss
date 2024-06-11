@@ -1,11 +1,11 @@
 @import "@/assets/commons.module.scss";
 
-.main {
+:global(#main) {
   display: inline-block;
   position: relative;
   top: var(--header-height);
-  height: calc(100vh - var(--header-height));
-  width: 100vw;
+  height: calc(var(--app-height) - var(--header-height));
+  width: 100%;
 }
 
 .insertWrapper {

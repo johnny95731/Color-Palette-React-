@@ -14,10 +14,9 @@ const MediaProvider = ({
   children: React.JSX.Element | React.JSX.Element[];
 }) => {
   // The device is small.
-  const [windowSize, setWindowSize] = useState<[number, number]>(() => {
-    const body = document.body;
-    return [body.clientHeight, body.clientWidth];
-  });
+  const [windowSize, setWindowSize] = useState<[number, number]>(
+    () => [window.innerHeight, window.innerWidth]
+  );
 
   const context = useMemo<MediaContextType>(() => {
     const isSmall = windowSize[1] <= maxSmallSize;
@@ -39,9 +38,13 @@ const MediaProvider = ({
   // Connect to window resize.
   useEffect(() => {
     const handleWindowResize = () => {
-      const body = document.body;
-      setWindowSize([body.clientHeight, body.clientWidth]);
+      setWindowSize([window.innerHeight, window.innerWidth]);
+      // Mobile browser 100vh including toolbar.
+      // window.innerHeight did not include toolbar.
+      document.documentElement.style
+        .setProperty('--app-height', `${window.innerHeight}px`);
     };
+    handleWindowResize();
     window.addEventListener('resize', handleWindowResize);
     return () => {
       window.removeEventListener('resize', handleWindowResize);
