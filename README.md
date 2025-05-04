@@ -57,6 +57,5 @@
 palettes頁面中，書籤左方可切換至此調色盤。
 
 ## 版權宣告
-Favicon: color-wheel.png來自flaticon之[Color creator](https://www.flaticon.com/authors/color-creator)<br />
 triangle-down.svg來自[svgrepo](https://www.svgrepo.com/svg/108052/arrow-down-filled-triangle)<br />
 其餘圖案來自[Bootstrap Icons](https://icons.getbootstrap.com/)
